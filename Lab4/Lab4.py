@@ -29,13 +29,13 @@ class AtBat:
         if self.strikes == 3:
             return
 
-        if self.strikes > 3 or self.strikes < 0:
+        if self.strikes < 0 or 3 < self.strikes:
             self.strikes = 0
         else:
           self.strikes += 1
 
     def foul(self):  # call when a foul ball is called; only increment strikes if < 2
-        if self.strikes >= 3 or self.strikes < 0:
+        if self.strikes < 0 or 3 <= self.strikes:
             return
 
         self.strikes += 1
