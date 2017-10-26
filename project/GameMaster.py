@@ -1,7 +1,7 @@
 import unittest
 
 
-class GameMaster():
+class GameMaker():
     def __init__(self):
         self.game = None
         self.username = ""
@@ -14,6 +14,6 @@ class GameMaster():
         return None
 
 
-class TestGameMaster(unittest.TestCase):
+class TestGameMaker(unittest.TestCase):
     def setUp(self):
-        self.gm = GameMaster()
+        self.gm = GameMaker()

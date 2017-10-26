@@ -2,6 +2,9 @@ import unittest
 
 
 class CLI():
+    def __init__(self):
+        self.gm = None
+
     def command(self, args):
         return ''
 
