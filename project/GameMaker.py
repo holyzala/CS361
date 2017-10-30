@@ -1,22 +1,36 @@
 import unittest
+from abc import ABC
 
 
-class GameMaker():
-    def __init__(self):
-        self.game = None
-        self.username = "gamemaker"
-        self.password = "1234"
-
+class GMI(ABC):
     def login(self, username, password):
-        return "", False
+        pass
 
     def create_game(self):
-        return None
+        pass
+
+
+class GMFactory:
+    def getGM(self):
+        return self.GameMaker()
+
+    class GameMaker(GMI):
+        def __init__(self):
+            self.username = "gamemaker"
+            self.password = "1234"
+
+        def login(self, username, password):
+            if self.username == username and self.password == password:
+                return self.username, True
+            return "", False
+
+        def create_game(self):
+            return None
 
 
 class TestLogin(unittest.TestCase):
     def setUp(self):
-        self.gm = GameMaker()
+        self.gm = GMFactory().getGM()
 
     def test_login_success(self):
         username, isadmin = self.gm.login("gamemaker", "1234")

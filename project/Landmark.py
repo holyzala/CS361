@@ -1,7 +1,7 @@
 import unittest
 
 
-class Landmark():
+class Landmark:
     def __init__(self):
         self.location = ""
         self.clues = []

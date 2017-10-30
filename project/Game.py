@@ -1,7 +1,7 @@
 import unittest
 
 
-class Game():
+class Game:
     def __init__(self):
         self.teams = []
         self.landmarks = []

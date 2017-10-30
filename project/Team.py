@@ -1,7 +1,7 @@
 import unittest
 
 
-class Team():
+class Team:
     def __init__(self):
         self.username = ""
         self.password = ""
