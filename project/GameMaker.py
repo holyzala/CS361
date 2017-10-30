@@ -6,9 +6,6 @@ class GMI(ABC):
     def login(self, username, password):
         pass
 
-    def create_game(self):
-        pass
-
 
 class GMFactory:
     def getGM(self):
@@ -23,9 +20,6 @@ class GMFactory:
             if self.username == username and self.password == password:
                 return self.username, True
             return "", False
-
-        def create_game(self):
-            return None
 
 
 class TestLogin(unittest.TestCase):
