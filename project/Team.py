@@ -5,10 +5,16 @@ class Team():
     def __init__(self):
         self.username = ""
         self.password = ""
-
+        
     def login(self, username, password):
-        return "", False
+        return username == self.username && password == self.password;
+    
+    def changeName(self, name):
+        self.username = name;
 
+    def changePassword(self, password):
+        self.password = password;
+        
     def answer_question(self, answer):
         return ""
 
@@ -34,6 +40,22 @@ class TestTeam(unittest.TestCase):
        self.password = "password123"
         
        self.assertFalse(login(self, "team1", "random"))
+    
+    def test_change_name(self):
+       self.username = "team1"
+       self.password = "password123"
+        
+       self.changeName(self, "team2")
+       self.assertFalse(login(self, "team1", "password123"))
+       self.assertTrue(login(self, "team2", "password123"))
+        
+    def test_change_password(self):
+        self.username = "team1"
+        self.password = "password123"
+        
+        self.changePassword(self, "random")
+        self.assertFalse(login(self, "team1", "password123")
+        self.assertTrue(login(self, "team1", "random")
     
 if __name__ == "__main__":
     suite = unittest.TestSuite()
