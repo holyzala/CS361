@@ -22,7 +22,7 @@ class CLI:
         commands = {"login": self.__login}
         inp = args.split(" ")
         try:
-            return commands[inp[0]](inp)
+            return commands[inp[0].lower()](inp)
         except KeyError:
             return "Invalid command"
 
