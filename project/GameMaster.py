@@ -32,15 +32,6 @@ class TestLogin(unittest.TestCase):
         username, isadmin = self.gm.login("___", "1234")
         self.assertFalse(isadmin, "Admin flag incorrectly set")
         self.assertEqual("", username, "Username has value when it should be empty")
-
-class TestNewGame(unittest.TestCase):
-    def setUp(self):
-        self.gm = GameMaker()
-
-    def test_create_game(self):
-        self.assertEqual(None, self.gm.game, "Current Game is Running, Can't make a new one")
-        self.gm.game = "Game"
-        self.assertEquals("Game", self.gm.game, "Instances of Game do not Match")
         
 if __name__ == "__main__":
     suite = unittest.TestSuite()
