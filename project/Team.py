@@ -7,7 +7,7 @@ class Team():
         self.password = ""
         
     def login(self, username, password):
-        return username == self.username && password == self.password;
+        return username == self.username and password == self.password;
     
     def changeName(self, name):
         self.username = name;
@@ -30,32 +30,32 @@ class TestTeam(unittest.TestCase):
         self.team = Team()
     
     def test_team_login_success(self):
-        self.username = "team1"
-        self.password = "password123"
+        self.team.username = "team1"
+        self.team.password = "password123"
       
         self.assertTrue(login(self, "team1", "password123"))
                          
     def test_team_login_fail(self):
-       self.username = "team1"
-       self.password = "password123"
+       self.team.username = "team1"
+       self.team.password = "password123"
         
        self.assertFalse(login(self, "team1", "random"))
     
     def test_change_name(self):
-       self.username = "team1"
-       self.password = "password123"
+       self.team.username = "team1"
+       self.team.password = "password123"
         
-       self.changeName(self, "team2")
+       self.team.changeName(self, "team2")
        self.assertFalse(login(self, "team1", "password123"))
        self.assertTrue(login(self, "team2", "password123"))
         
     def test_change_password(self):
-        self.username = "team1"
-        self.password = "password123"
+        self.team.username = "team1"
+        self.team.password = "password123"
         
-        self.changePassword(self, "random")
-        self.assertFalse(login(self, "team1", "password123")
-        self.assertTrue(login(self, "team1", "random")
+        self.team.changePassword(self, "random")
+        self.assertFalse(login(self, "team1", "password123"))
+        self.assertTrue(login(self, "team1", "random"))
     
 if __name__ == "__main__":
     suite = unittest.TestSuite()
