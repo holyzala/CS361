@@ -18,8 +18,14 @@ class CLI:
             return "Login failed"
         return "Login successful"
 
+    def __creategame(self, args):
+        pass
+
+    def __editTeam(self, args):
+        pass
+
     def command(self, args):
-        commands = {"login": self.__login}
+        commands = {"login": self.__login, "createGame" : self.__creategame, "editTeam": self.__editTeam}
         inp = args.split(" ")
         try:
             return commands[inp[0].lower()](inp)
@@ -44,9 +50,21 @@ class TestLogin(unittest.TestCase):
         self.assertEqual("Invalid parameters", self.cli.command("login gamemaker"), "Invalid parameters")
 
 
+class TestNewGame(unittest.TestCase):
+    def setUp(self):
+        self.cli = CLI()
+
+    def test_no_current_game(self):
+        self.assertEquals(None, self.cli.game, "Current Game In Progress")
+
+    def test_is_admin(self):
+        self.assertTrue(self.cli.is_gm, "User is not the admin, cannot create game")
+
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestLogin))
+    suite.addTest(unittest.makeSuite(TestNewGame))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
     print(res)
