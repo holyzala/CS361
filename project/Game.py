@@ -39,7 +39,20 @@ class Game():
     def end(self):
         pass
 
+    
+    
 
 class TestGame(unittest.TestCase):
     def setUp(self):
         self.game = Game()
+     
+    def test_modify_team_name(self):
+       self.addTeam(TeamFactory().getTeam("Team1", "21212"))
+       assertTrue(self.modify_team("Team1", name="Team2")), "Team was not modified")
+       
+    def test_modifiy_team_password(self):
+        self.addTeam(TeamFactory().getTeam("Team1", "1234"))
+        assertTrue(self.modify_team("Team1", password="5678"), "password was not modified")
+        
+
+  
