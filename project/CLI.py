@@ -27,6 +27,7 @@ class CLI:
         except KeyError:
             return "Invalid command"
 
+   
       
 
 class TestLogin(unittest.TestCase):
@@ -47,9 +48,16 @@ class TestLogin(unittest.TestCase):
         
     def test_team_add(self):
         self.is_gm = True;
+        self.game.add("Team1")
         
+        assertEquals("Team1", self.game.getTeam("Team1"), "Team added is not coming up");
+    
+    def test_team_edit(self):
+        self.is_gm = True;
+        self.game.add("Team1")
+        self.game.modify_team(self, oldname, name=None, password=None):
         
-
+        assertEquals("Team2", self.game.getTeam("Team1"));
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
