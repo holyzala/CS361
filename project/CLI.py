@@ -45,19 +45,20 @@ class TestLogin(unittest.TestCase):
 
     def test_login_bad_args(self):
         self.assertEqual("Invalid parameters", self.cli.command("login gamemaker"), "Invalid parameters")
-        
-    def test_team_add(self):
-        self.is_gm = True;
-        self.game.add("Team1")
-        
-        assertEquals("Team1", self.game.getTeam("Team1"), "Team added is not coming up");
     
-    def test_team_edit(self):
-        self.is_gm = True;
-        self.game.add("Team1")
-        self.game.modify_team(self, oldname, name=None, password=None):
-        
-        assertEquals("Team2", self.game.getTeam("Team1"));
+    
+    def test_team_edit_name(self):
+        self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Invalid parameters")
+        self.assertEqual("Game created", self.cli.command("Create Game"), "Invalid parameters")
+        self.assertEqual("Team added", self.cli.command("Add teamName teamPassword")
+        self.assertEqual("Team name changed", self.cli.command("Edit teamName name newName")
+
+    def test_team_edit_password(self):
+        self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Invalid parameters")
+        self.assertEqual("Game created", self.cli.command("Create Game"), "Invalid parameters")
+        self.assertEqual("Team added", self.cli.command("Add teamName teamPassword")
+        self.assertEqual("Team password changed", self.cli.command("Edit teamName password newPassword")
+             
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
