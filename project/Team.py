@@ -7,7 +7,9 @@ class Team():
         self.password = ""
         
     def login(self, username, password):
-        return username == self.username and password == self.password;
+     if username == self.username and password == self.password:
+        return self.username, False
+     return "", False
     
     def changeName(self, name):
         self.username = name;
@@ -28,34 +30,35 @@ class Team():
 class TestTeam(unittest.TestCase):
     def setUp(self):
         self.team = Team()
-    
-    def test_team_login_success(self):
         self.team.username = "team1"
         self.team.password = "password123"
-      
-        self.assertTrue(login(self, "team1", "password123"))
+        
+    def test_team_login_success(self):
+        username, isadmin = self.team.login("team1", "password123")
+        
+        self.assertEquals(self.team.username, username)
+        self.assertFalse(isadmin)
                          
     def test_team_login_fail(self):
-       self.team.username = "team1"
-       self.team.password = "password123"
-        
-       self.assertFalse(login(self, "team1", "random"))
+       username, isadmin = self.team.login("team1", "wrongpassword")
+       self.assertEquals("", username)
+       self.assertFalse(isadmin)
     
-    def test_change_name(self):
-       self.team.username = "team1"
-       self.team.password = "password123"
-        
+    def test_change_name(self):        
        self.team.changeName(self, "team2")
-       self.assertFalse(login(self, "team1", "password123"))
-       self.assertTrue(login(self, "team2", "password123"))
+       username = self.team.login("team2", "password123")
+        
+        self.assertEquals(self.team.username, username)
+        self.assertFalse(isadmin)
+
         
     def test_change_password(self):
-        self.team.username = "team1"
-        self.team.password = "password123"
-        
         self.team.changePassword(self, "random")
-        self.assertFalse(login(self, "team1", "password123"))
-        self.assertTrue(login(self, "team1", "random"))
+        
+        username = self.team.login("team1", "random")
+        self.assertEquals(self.team.username, username)
+        self.assertFalse(isadmin)
+      
     
 if __name__ == "__main__":
     suite = unittest.TestSuite()
