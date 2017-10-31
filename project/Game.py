@@ -49,15 +49,33 @@ class GameFactory:
             self.penaltyTime = 0
 
         def add_team(self, name, password):
+            if not self.started:
+                team = TeamFactory().getTeam(name, password)
+                if team in self.teams:
+                    return False
+                self.teams.append(team)
+                return True
             return False
 
         def remove_team(self, name):
+            if not self.started:
+                for team in self.teams:
+                    if team.get_username() == name:
+                        self.teams.remove(team)
+                        return True
+                return False
             return False
 
         def modify_team(self, oldname, name=None, password=None):
             pass
 
         def add_landmark(self, location, clue, answer):
+            if not self.started:
+                landmark = LandmarkFactory().getLandmark(location, clue, answer)
+                if landmark in self.landmarks:
+                    return False
+                self.landmarks.append(landmark)
+                return True
             return False
 
         def remove_landmark(self, landmark):
@@ -73,7 +91,7 @@ class GameFactory:
             pass
 
         def start(self):
-            pass
+            self.started = True
 
         def end(self):
             pass
@@ -126,11 +144,6 @@ class TestStartGame(unittest.TestCase):
     def test_start_game(self):
         self.game.start()
         self.assertTrue(self.game.started, "game in progress value not set")
-
-    def test_start_while_game_in_progress(self):
-        self.game.GameInProgress = True
-        self.game.start()
-        self.assertFalse(self.game.GameInProgress, "there is a game that has already has been started")
 
 
 class TestAddLandmark(unittest.TestCase):

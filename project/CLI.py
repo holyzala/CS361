@@ -164,7 +164,6 @@ class TestStartGame(unittest.TestCase):
         self.assertEqual("Invalid parameters", self.cli.command(""), "Invalid parameters")
 
 
-# change format of string input, using commas for now.
 class TestAddLandmark(unittest.TestCase):
     def setUp(self):
         self.cli = CLI()

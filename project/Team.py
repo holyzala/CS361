@@ -21,6 +21,9 @@ class TeamI(ABC):
     def set_pass(self, password):
         pass
 
+    def get_username(self):
+        pass
+
 class TeamFactory:
     def getTeam(self, username, password):
         return self.Team(username, password)
@@ -42,6 +45,9 @@ class TeamFactory:
         def get_clue(self):
             return ""
 
+        def get_username(self):
+            return self.get_username()
+
 
 class TestInit(unittest.TestCase):
     def test_init(self):
@@ -49,6 +55,10 @@ class TestInit(unittest.TestCase):
         self.assertEqual("TeamA", self.team.username, "username value improperly set")
         self.assertEqual("2123", self.team.password, "password value improperly set")
 
+class TestGetAnswer(unittest.TestCase):
+    def test_get_answer(self):
+        self.team = TeamFactory().getTeam("TeamA", "2123")
+        self.assertEqual("TeamA", self.team.get_username(), "getter does not work")
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
