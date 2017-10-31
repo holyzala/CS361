@@ -62,7 +62,7 @@ class CLI:
         return "Failed to start Game"
 
     def __create(self, args):
-        if self.is_gm and self.game is None:
+        if self.gm is self.currentuser and self.game is None:
             try:
                 game = GameFactory.getGame()
             except IndexError:
