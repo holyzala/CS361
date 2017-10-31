@@ -44,6 +44,18 @@ class TestGMLogin(unittest.TestCase):
     def test_login_bad_args(self):
         self.assertEqual("Invalid parameters", self.cli.command("login gamemaker"), "Invalid parameters")
 
+    def test_team_edit_name(self):
+        self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Invalid parameters")
+        self.assertEqual("Game created", self.cli.command("Create Game"), "Invalid parameters")
+        self.assertEqual("Team added", self.cli.command("Add teamName teamPassword"))
+        self.assertEqual("Team name changed", self.cli.command("Edit teamName name newName"))
+
+    def test_team_edit_password(self):
+        self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Invalid parameters")
+        self.assertEqual("Game created", self.cli.command("Create Game"), "Invalid parameters")
+        self.assertEqual("Team added", self.cli.command("Add teamName teamPassword"))
+        self.assertEqual("Team password changed", self.cli.command("Edit TeamName password newPassword"))
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

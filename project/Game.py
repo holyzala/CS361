@@ -55,6 +55,16 @@ class TestEditLandmarkClue(unittest.TestCase):
         self.game.modify_landmark("Chicago", "Vegas")
         self.assertIn("Vegas", self.game.landmarks, "Landmark edited incorrectly")
 
+class TestModifyTeam(unittest.TestCase):
+    def test_modify_team_name(self):
+        self.add_Team("Team1", "1234")
+        self.assertTrue(self.modify_team("Team1", name="Team2"), "Team was not modified")
+
+    def test_modifiy_team_password(self):
+        self.add_Team("Team1", "21212")
+        self.assertTrue(self.modify_team("Team1", password="5678"), "password was not modified")
+
+
 class TestEndGame(unittest.TestCase):
     def setUp(self):
        self.game = Game()
@@ -73,7 +83,7 @@ class TestEndGame(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestLogin))
+    suite.addTest(unittest.makeSuite(TestModifyTeam))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
     print(res)
