@@ -1,6 +1,6 @@
 import unittest
 from abc import ABC
-
+from GameMaker import UserABC
 
 class TeamI(ABC):
     def login(self, password):
@@ -34,7 +34,7 @@ class TeamFactory:
     def getTeam(self, username, password):
         return self.Team(username, password)
 
-    class Team(TeamI):
+    class Team(TeamI, UserABC):
         def __init__(self, username, password):
             self.username = username
             self.password = password

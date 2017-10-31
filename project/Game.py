@@ -5,16 +5,6 @@ from Landmark import LandmarkFactory
 from Team import TeamFactory
 
 
-class Game:
-    def __init__(self):
-        self.teams = []
-        self.landmarks = []
-        self.started = False
-        self.ended = False
-        self.penaltyValue = 0
-        self.penaltyTime = 0
-
-
 class GameInterface(ABC):
     def add_team(self, name, password):
         return False
@@ -53,9 +43,10 @@ class GameFactory:
 
     class Game(GameInterface):
         def __init__(self):
-            self.teams = [TeamFactory().Team]
-            self.landmarks = [LandmarkFactory().Landmark]
+            self.teams = []
+            self.landmarks = []
             self.started = False
+            self.ended = False
             self.penaltyValue = 0
             self.penaltyTime = 0
 
@@ -163,23 +154,24 @@ class TestAddLandmark(unittest.TestCase):
         self.game.started = False
 
     def test_add_landmark(self):
-        landmark = LandmarkFactory().getLandmark("New York", "Gift given by the French", "statue of liberty")
-        self.assertTrue(self.game.add_landmark(landmark), "Failed to add landmark")
+        self.assertTrue(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
+                        "Failed to add landmark")
 
     def test_add_landmark_game_in_progress(self):
         self.game.started = True
-        landmark = LandmarkFactory().getLandmark("New York", "Gift given by the French", "statue of liberty")
-        self.assertFalse(self.game.add_landmark(landmark), "Cannot add landmark once game has started")
+        self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
+                         "Cannot add landmark once game has started")
 
     def test_add_landmark_duplicates(self):
         ld = LandmarkFactory().getLandmark("New York", "Gift given by the French", "statue of liberty")
         self.game.landmarks.append(ld)
-        self.assertFalse(self.game.add_landmark(ld), "Cannot add duplicate landmarks")
+        self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
+                         "Cannot add duplicate landmarks")
 
       
 class TestEditLandmarkClue(unittest.TestCase):
     def setUp(self):
-        self.game = Game()
+        self.game = GameFactory().getGame()
 
     def test_edit_clue(self):
         self.game.landmarks = ["Chicago", "Madison"]
@@ -188,18 +180,21 @@ class TestEditLandmarkClue(unittest.TestCase):
         self.assertIn("Vegas", self.game.landmarks, "Landmark edited incorrectly")
 
 class TestModifyTeam(unittest.TestCase):
+    def setUp(self):
+        self.game = GameFactory().getGame()
+
     def test_modify_team_name(self):
-        self.add_Team("Team1", "1234")
-        self.assertTrue(self.modify_team("Team1", name="Team2"), "Team was not modified")
+        self.game.add_team("Team1", "1234")
+        self.assertTrue(self.game.modify_team("Team1", name="Team2"), "Team was not modified")
 
     def test_modifiy_team_password(self):
-        self.add_Team("Team1", "21212")
-        self.assertTrue(self.modify_team("Team1", password="5678"), "password was not modified")
+        self.game.add_team("Team1", "21212")
+        self.assertTrue(self.game.modify_team("Team1", password="5678"), "password was not modified")
 
 
 class TestEndGame(unittest.TestCase):
     def setUp(self):
-       self.game = Game()
+       self.game = GameFactory().getGame()
 
     def test_end_game_command(self):
         self.game.started = True
@@ -216,7 +211,6 @@ class TestEndGame(unittest.TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestModifyTeam))
-    suite.addTest(unittest.makeSuite(TestLogin))
     suite.addTest(unittest.makeSuite(TestAddTeam))
     suite.addTest(unittest.makeSuite(TestRemoveTeam))
     suite.addTest(unittest.makeSuite(TestStartGame))

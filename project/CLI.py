@@ -7,19 +7,18 @@ from GameMaker import GMFactory
 
 class CLI:
     def __init__(self):
-        self.gm = GMFactory().getGM()
-        self.current_user = ""
-        self.is_gm = False
+        self.gm = GMFactory().get_gm()
+        self.current_user = None
         self.game = None
 
     def __login(self, args):
         try:
-            self.current_user, self.is_gm = self.gm.login(args[1], args[2])
+            self.current_user = self.gm.login(args[1], args[2])
         except IndexError:
             return "Invalid parameters"
-        if self.current_user is "":
-            return "Login failed"
-        return "Login successful"
+        if self.current_user:
+            return "Login successful"
+        return "Login failed"
 
     def __add_team(self, args):
         if self.is_gm:
