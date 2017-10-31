@@ -162,17 +162,6 @@ class TestRemoveTeam(unittest.TestCase):
         self.cli.is_gm = True
         self.assertEqual("Invalid parameters", self.cli.command("remove"), "Invalid parameters")
 
-class TestCreate(unittest.TestCase):
-    def setUp(self):
-        self.cli = CLI()
-        self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
-
-    def test_create_is_gm(self):
-        self.assertEqual("Game Creation Succesful". self.cli.command("create"), "Failed to Create Game")
-
-    def test_create_not_gm(self):
-        self.assertEqual("logged out", self.cli.command("logout"), "Failed to logout")
-        self.assertEqual("Failed to start Game", self.cli.command("create"), "Only admin can Create a new Game")
 
 class TestStartGame(unittest.TestCase):
     def setUp(self):
@@ -191,6 +180,19 @@ class TestStartGame(unittest.TestCase):
 
     def test_start_team_bad_args(self):
         self.assertEqual("Invalid parameters", self.cli.command(""), "Invalid parameters")
+
+class TestCreate(unittest.TestCase):
+    def setUp(self):
+        self.cli = CLI()
+        self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
+
+    def test_create_is_gm(self):
+        self.assertEqual(None, self.game)
+        self.assertEqual("Game Creation Succesful". self.cli.command("create"), "Failed to Create Game")
+
+    def test_create_not_gm(self):
+        self.assertEqual("logged out", self.cli.command("logout"), "Failed to logout")
+        self.assertEqual("Failed to start Game", self.cli.command("create"), "Only admin can Create a new Game")
 
 class TestAddLandmark(unittest.TestCase):
     def setUp(self):
