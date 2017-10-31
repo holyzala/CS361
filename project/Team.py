@@ -5,17 +5,13 @@ class Team:
     def __init__(self):
         self.username = ""
         self.password = ""
-
+        self.points
+        self.currentLandmark
+        self.timelog = []
     def login(self, password):
         return "", False
 
-    def answer_question(self, answer):
-        return ""
-
-    def get_status(self):
-        return ""
-
-    def get_clue(self):
+    def get_clue(self): #probably dont need this here anymore
         return ""
 
 
