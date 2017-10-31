@@ -1,7 +1,8 @@
 import unittest
 from abc import ABC
-from project.Landmark import LandmarkFactory
-from project.Team import TeamFactory
+
+from Landmark import LandmarkFactory
+from Team import TeamFactory
 
 
 class GameInterface(ABC):
