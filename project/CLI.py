@@ -1,6 +1,5 @@
 import unittest
 import shlex
-
 from Game import GameFactory
 from GameMaker import GMFactory
 
@@ -44,31 +43,30 @@ class CLI:
     def __add_landmark(self, args):
         if self.is_gm:
             try:
-                started = self.game.add_landmark(args[1],args[2],args[3])
+                added = self.game.add_landmark(args[1],args[2],args[3])
             except IndexError:
                 return "Invalid parameters"
-            if started:
+            if added:
                 return "Added landmark"
         return "Failed to add landmark"
 
-    def __start(self, args):
+    def __start(self):
         if self.is_gm:
             try:
-                removed = self.game.remove_team(args[1])
+                started = self.game.start()
             except IndexError:
                 return "Invalid parameters"
-            if removed:
+            if started:
                 return "Started Game"
         return "Failed to start Game"
 
     def __create(self, args):
-        if self.is_gm:
-            self.game = GameFactory().getGame()
-            return "Created Game"
-        return "Failed to create Game"
+        return ''
 
     def command(self, args):
-        commands = {"login": self.__login}
+        commands = {"login": self.__login, "addTeam": self.__add_team,
+                    "addLandmark": self.__add_landmark, "removeTeam": self.__remove_team,
+                    "start": self.__start}
         inp = shlex.split(args)
         try:
             return commands[inp[0].lower()](inp)

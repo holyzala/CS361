@@ -30,8 +30,8 @@ class TeamFactory:
 
     class Team(TeamI):
         def __init__(self, username, password):
-            self.username = ""
-            self.password = ""
+            self.username = username
+            self.password = password
 
         def login(self, password):
             return "", False
@@ -55,6 +55,7 @@ class TestInit(unittest.TestCase):
         self.assertEqual("TeamA", self.team.username, "username value improperly set")
         self.assertEqual("2123", self.team.password, "password value improperly set")
 
+
 class TestGetAnswer(unittest.TestCase):
     def test_get_answer(self):
         self.team = TeamFactory().getTeam("TeamA", "2123")
@@ -63,6 +64,7 @@ class TestGetAnswer(unittest.TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestInit))
+    suite.addTest(unittest.makeSuite(TestGetAnswer))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
     print(res)

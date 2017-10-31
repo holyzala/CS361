@@ -1,6 +1,7 @@
 import unittest
 from abc import ABC
 
+
 class LandmarkI(ABC):
     def submit_answer(self, answer):
         return False
@@ -21,21 +22,21 @@ class LandmarkFactory:
 
     class Landmark(LandmarkI):
         def __init__(self, location, clue, answer):
-            self.location = ''
-            self.clue = ''
-            self.answer = ''
+            self.location = location
+            self.clue = clue
+            self.answer = answer
 
         def submit_answer(self, answer):
             return False
 
         def get_location(self):
-            return ''
+            return self.location
 
         def get_clue(self):
-            return ''
+            return self.clue
 
         def get_answer(self):
-            return ''
+            return self.answer
 
 
 class TestInit(unittest.TestCase):
