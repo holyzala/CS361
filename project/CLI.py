@@ -19,6 +19,15 @@ class CLI:
             return "Login failed"
         return "Login successful"
 
+    def __create_game(self, args):
+        try:
+            self.gm = self.game.start(args[1])
+        except IndexError:
+            return "Invalid Parameters"
+        if self.is_gm is False:
+            return "Game Creation Failed"
+        return "Game Creation Success"
+
     def command(self, args):
         commands = {"login": self.__login}
         inp = shlex.split(args)
@@ -44,6 +53,15 @@ class TestGMLogin(unittest.TestCase):
     def test_login_bad_args(self):
         self.assertEqual("Invalid parameters", self.cli.command("login gamemaker"), "Invalid parameters")
 
+class TestCreateGame(unittest.TestCase):
+    def setUp(self):
+        self.cli = CLI()
+
+    def test_create_game_success(self):
+        self.assertEquals("Game Creation Success", self.cli.command("creategame"), "GameCreate message not correct")
+
+    def test_create_game_bad_args(self):
+        self.assertEqual("Invalid Parameters", self.cli.command("create game"), "Invalid Parameters")
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
