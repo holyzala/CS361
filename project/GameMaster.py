@@ -1,6 +1,5 @@
 import unittest
 
-
 class GameMaker():
     def __init__(self):
         self.game = None
@@ -33,6 +32,21 @@ class TestLogin(unittest.TestCase):
         self.assertFalse(isadmin, "Admin flag incorrectly set")
         self.assertEqual("", username, "Username has value when it should be empty")
 
+class TestEndGame(unittest.TestCase):
+    def setUp(self):
+        self.gm = GameMaker()
+
+    def test_end_game_command(self):
+        self.gm.game = "Game in progress"
+        self.assertTrue(self.gm.game, "Game in progress")
+        self.gm.game = "Game Ended"
+        self.assertEqual(self.gm.game, "Game Ended", "Game Has Ended")
+
+    def test_completed_game(self):
+        self.gm.game = "Final Clue solved"
+        self.assertEqual(self.gm.game, "Final Clue solved", "Final clue has been solved, the game is over")
+        self.gm.game = "Game Ended"
+        self.assertEqual(self.gm.game, "Game Ended", "Game Has Ended")
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
