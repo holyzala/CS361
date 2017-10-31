@@ -39,9 +39,10 @@ class TeamFactory:
             self.username = username
             self.password = password
 
-        def login(self, password):
+        def login(self, username, password):
             if username == self.username and password == self.password:
                 return self.username, False
+            return "", False
 
         def answer_question(self, answer):
             return ""
@@ -53,7 +54,7 @@ class TeamFactory:
             return ""
 
         def get_username(self):
-            return self.get_username()
+            return self.username
 
 
 class TestInit(unittest.TestCase):
@@ -70,9 +71,7 @@ class TestGetAnswer(unittest.TestCase):
 
 class TestTeam(unittest.TestCase):
     def setUp(self):
-        self.team = TeamFactory().getTeam()
-        self.team.username = "team1"
-        self.team.password = "password123"
+        self.team = TeamFactory().getTeam("team1", "password123")
 
     def test_team_login_success(self):
         username, isadmin = self.team.login("team1", "password123")
