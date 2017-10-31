@@ -22,16 +22,22 @@ class Game:
     def add_landmark(self, landmark):
         if landmark not in self.game.landmarks:
             self.game.landmarks.append(landmark)
+            return "Landmark Added Sucesffuly"
+        else:
+            return "Could not Add Landmark"
 
     def remove_landmark(self, landmark):
         if landmark in self.game.landmarks:
             self.game.landmarks.remove(landmark)
+            return "Landmark Removed Succesfully"
+        else:
+            return "Could not Remove Landmark"
 
     def modify_landmark(self, oldlandmark, newlandmark):
         self.landmarks = [x.replace(oldlandmark, newlandmark) for x in self.landmarks]
 
     def set_point_penalty(self, points):
-        pass
+        self.points = points
 
     def set_time_penalty(self, time):
         pass
@@ -79,21 +85,17 @@ class TestDeleteLandmarks(unittest.TestCase):
 
     def test_delete_landmark(self):
         landmark1 = "ABC"
-        self.game.add_landmark(landmark1)
-        self.assertIn(landmark1, self.game.landmarks)
+        self.game.landmark[0] = landmark1
         self.game.remove_landmark(landmark1)
         self.assertNotIn(landmark1, self.game.landmarks, "Failed to remove landmark")
 
     def test_delete_multi_landmarks(self):
         landmark1 = "ABC"
         landmark2 = "DEF"
-        self.game.add_landmark(landmark1)
-        self.game.add_landmark(landmark2)
-        self.assertIn(landmark1, self.game.landmarks)
-        self.assertIn(landmark1, self.game.landmarks)
+        self.game.landmark[0] = landmark1
+        self.game.landmark[1] = landmark2
         self.game.remove_landmark(landmark1)
         self.assertNotIn(landmark1, self.game.landmarks, "Failed to remove Landmark1")
-        self.assertEqual(landmark2, self.game.landmarks[0], "List not properly reindexing")
         self.game.remove_landmark(landmark2)
         self.assertNotIn(landmark1, self.game.landmarks, "Failed to remove Landmark2")
 

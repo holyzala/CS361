@@ -1,7 +1,7 @@
 import unittest
 import shlex
+from Game import GameFactory
 from GameMaker import GMFactory
-
 
 class CLI:
     def __init__(self):
@@ -19,13 +19,10 @@ class CLI:
             return "Login failed"
         return "Login successful"
 
-    def __create_game(self, args):
-        try:
-            self.gm = self.game.start(args[1])
-        except IndexError:
-            return "Invalid Parameters"
-        if self.is_gm is False:
+    def __create_game(self):
+        if self.is_gm is False and self.game is None:
             return "Game Creation Failed"
+        self.game = GameFactory.getGame()
         return "Game Creation Success"
 
     def command(self, args):
@@ -58,9 +55,11 @@ class TestCreateGame(unittest.TestCase):
         self.cli = CLI()
 
     def test_create_game_success(self):
+        self.gm.login("gamemaker, 1234")
         self.assertEquals("Game Creation Success", self.cli.command("creategame"), "GameCreate message not correct")
 
     def test_create_game_bad_args(self):
+        self.gm.login("gamemaker, 1234")
         self.assertEqual("Invalid Parameters", self.cli.command("create game"), "Invalid Parameters")
 
 if __name__ == "__main__":
