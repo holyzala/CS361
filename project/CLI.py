@@ -1,4 +1,5 @@
 import unittest
+import shlex
 from GameMaker import GMFactory
 
 
@@ -20,7 +21,7 @@ class CLI:
 
     def command(self, args):
         commands = {"login": self.__login}
-        inp = args.split(" ")
+        inp = shlex.split(args)
         try:
             return commands[inp[0].lower()](inp)
         except KeyError:
