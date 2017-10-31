@@ -1,5 +1,6 @@
 import unittest
 import shlex
+
 from Game import GameFactory
 from GameMaker import GMFactory
 
@@ -74,7 +75,7 @@ class CLI:
             return "Invalid command"
 
 
-class TestLogin(unittest.TestCase):
+class TestGMLogin(unittest.TestCase):
     def setUp(self):
         self.cli = CLI()
 
@@ -189,7 +190,7 @@ class TestAddLandmark(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestLogin))
+    suite.addTest(unittest.makeSuite(TestGMLogin))
     suite.addTest(unittest.makeSuite(TestAddTeam))
     suite.addTest(unittest.makeSuite(TestRemoveTeam))
     suite.addTest(unittest.makeSuite(TestStartGame))

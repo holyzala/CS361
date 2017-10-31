@@ -5,6 +5,16 @@ from Landmark import LandmarkFactory
 from Team import TeamFactory
 
 
+class Game:
+    def __init__(self):
+        self.teams = []
+        self.landmarks = []
+        self.started = False
+        self.ended = False
+        self.penaltyValue = 0
+        self.penaltyTime = 0
+
+
 class GameInterface(ABC):
     def add_team(self, name, password):
         return False
@@ -22,7 +32,7 @@ class GameInterface(ABC):
         pass
 
     def modify_landmark(self, oldlandmark, newlandmark):
-        pass
+        self.landmarks = [x.replace(oldlandmark, newlandmark) for x in self.landmarks]
 
     def set_point_penalty(self, points):
         pass
@@ -34,7 +44,7 @@ class GameInterface(ABC):
         return False
 
     def end(self):
-        pass
+        self.ended = True
 
 
 class GameFactory:
@@ -166,16 +176,45 @@ class TestAddLandmark(unittest.TestCase):
         self.game.landmarks.append(ld)
         self.assertFalse(self.game.add_landmark(ld), "Cannot add duplicate landmarks")
 
+      
+class TestEditLandmarkClue(unittest.TestCase):
+    def setUp(self):
+        self.game = Game()
 
+    def test_edit_clue(self):
+        self.game.landmarks = ["Chicago", "Madison"]
+        self.assertTrue(self.game.landmarks, "List is empty")
+        self.game.modify_landmark("Chicago", "Vegas")
+        self.assertIn("Vegas", self.game.landmarks, "Landmark edited incorrectly")
+
+class TestEndGame(unittest.TestCase):
+    def setUp(self):
+       self.game = Game()
+
+    def test_end_game_command(self):
+        self.game.started = True
+        self.assertTrue(self.game.started, "Game in progress")
+        self.game.end()
+        self.assertTrue(self.game.ended, "Game Has Ended")
+
+    def test_completed_game(self):
+        self.game.landmarks = "Final Clue solved"
+        self.assertEqual(self.game.landmarks, "Final Clue solved", "Final clue has been solved, the game is over")
+        self.game.end()
+        self.assertTrue(self.game.ended, "Game Has Ended")
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestLogin))
     suite.addTest(unittest.makeSuite(TestAddTeam))
     suite.addTest(unittest.makeSuite(TestRemoveTeam))
     suite.addTest(unittest.makeSuite(TestStartGame))
     suite.addTest(unittest.makeSuite(TestAddLandmark))
+    suite.addTest(unittest.makeSuite(TestEditLandmarkClue))
+    suite.addTest(unittest.makeSuite(TestEndGame))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
     print(res)
     print("*" * 20)
     for i in res.failures: print(i[1])
+
