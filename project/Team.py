@@ -1,21 +1,20 @@
 import unittest
-
+import datetime
+import time
 
 class Team:
     def __init__(self):
         self.username = ""
         self.password = ""
+        self.points = 0
+        self.clueTime = datetime.time(0,0,0)
+        self.currentLandmark = 0
+        self.timelog = []
 
     def login(self, password):
         return "", False
 
-    def answer_question(self, answer):
-        return ""
-
-    def get_status(self):
-        return ""
-
-    def get_clue(self):
+    def get_clue(self): #THIS PROBABLY SHOULDN'T BE HERE
         return ""
 
 
