@@ -28,6 +28,9 @@ class Game:
     def modify_landmark(self, oldlandmark, newlandmark):
         self.landmarks = [x.replace(oldlandmark, newlandmark) for x in self.landmarks]
 
+    def reorder_landmarks(self, landmark, position):
+        self.landmarks.insert(position, landmark)
+
     def set_point_penalty(self, points):
         pass
 
@@ -71,9 +74,22 @@ class TestEndGame(unittest.TestCase):
         self.game.end()
         self.assertTrue(self.game.ended, "Game Has Ended")
 
+class TestReOrderLandmarks(unittest.TestCase):
+    def setUp(self):
+        self.game = Game()
+
+    def test_change_order(self):
+        self.game.landmarks = ["Chicago", "Vegas", "Dallas"]
+        self.assertTrue(self.game.landmarks, "List is empty")
+        self.game.reorder_landmarks("Dallas", 1)
+        self.assertEqual("Dallas", self.game.landmarks[1], "Reorder did not move landmark to correct location")
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestLogin))
+    suite.addTest(unittest.makeSuite(TestGame))
+    suite.addTest(unittest.makeSuite(TestEditLandmarkClue))
+    suite.addTest(unittest.makeSuite(TestEndGame))
+    suite.addTest(unittest.makeSuite(TestReOrderLandmarks))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
     print(res)
