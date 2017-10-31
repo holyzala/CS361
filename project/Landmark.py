@@ -38,11 +38,6 @@ class LandmarkFactory:
             return ''
 
 
-class TestLandmark(unittest.TestCase):
-    def setUp(self):
-        self.landmark = LandmarkFactory().getLandmark()
-
-
 class TestInit(unittest.TestCase):
     def test_init(self):
         self.landmark = LandmarkFactory().getLandmark("New York", "Gift given by the French", "Statue of Liberty")

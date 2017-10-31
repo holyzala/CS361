@@ -82,14 +82,13 @@ class GameFactory:
 class TestAddTeam(unittest.TestCase):
     def setUp(self):
         self.game = GameFactory().getGame()
+        self.game.started = False
 
     def test_add_team(self):
-        self.game.started = False
         self.assertTrue(self.game.add_team(TeamFactory().getTeam("Team1", "1232")), "Did not add team")
 
     def test_add_team_duplicates(self):
-        self.game.started = False
-        self.game.teams.append(TeamFactory().getTeam("Team1", "1232"))
+        self.assertTrue(self.game.add_team(TeamFactory().getTeam("Team1", "1232")), "Did not add team")
         self.assertFalse(self.game.add_team(TeamFactory().getTeam("Team1", "1232")), "duplicate teams!")
 
     def test_add_team_after_Game_started(self):
@@ -101,39 +100,31 @@ class TestAddTeam(unittest.TestCase):
 class TestRemoveTeam(unittest.TestCase):
     def setUp(self):
         self.game = GameFactory().getGame()
+        self.game.started = False
+        self.game.teams.append(TeamFactory().getTeam("Team1", "1232"))
 
     def test_remove_team(self):
-        self.game.started = False
-        team1 = TeamFactory().getTeam("Team1", "1232")
-        self.game.teams.append(team1)
-        self.assertTrue(self.game.remove_team(team1.username), "Failed to remove team")
+        self.assertTrue(self.game.remove_team("Team1"), "Failed to remove team")
 
     def test_remove_team_does_not_exist(self):
-        self.game.started = False
-        team1 = TeamFactory().getTeam("Team1", "1232")
-        self.game.teams.append(team1)
-        self.game.remove_team(team1.username)
-        self.assertFalse(self.game.remove_team(team1.username), "Team does not exist")
+        self.assertTrue(self.game.remove_team("Team1"), "Failed to remove team")
+        self.assertFalse(self.game.remove_team("Team1"), "Team does not exist")
 
     def test_remove_team_from_empty_team_list(self):
-        self.game.started = False
-        team1 = TeamFactory().getTeam("Team1", "1232")
         self.game.teams.clear()
-        self.assertFalse(self.game.remove_team(team1.username), "Failed to remove team, list of teams empty")
+        self.assertFalse(self.game.remove_team("Team1"), "Failed to remove team, list of teams empty")
 
     def test_remove_team_game_started(self):
-        team1 = TeamFactory().getTeam("Team1", "1232")
-        self.game.teams.append(team1)
         self.game.started = True
-        self.assertFalse(self.game.remove_team("team1"), "should not remove teams once game starts")
+        self.assertFalse(self.game.remove_team("Team1"), "should not remove teams once game starts")
 
 
 class TestStartGame(unittest.TestCase):
     def setUp(self):
         self.game = GameFactory().getGame()
+        self.game.started = False
 
     def test_start_game(self):
-        self.game.started = False
         self.game.start()
         self.assertTrue(self.game.started, "game in progress value not set")
 
@@ -146,9 +137,10 @@ class TestStartGame(unittest.TestCase):
 class TestAddLandmark(unittest.TestCase):
     def setUp(self):
         self.game = GameFactory().getGame()
+        self.game.started = False
 
     def test_add_landmark(self):
-        self.game.started = False
+
         landmark = LandmarkFactory().getLandmark("New York", "Gift given by the French", "statue of liberty")
         self.assertTrue(self.game.add_landmark(landmark), "Failed to add landmark")
 
@@ -158,10 +150,10 @@ class TestAddLandmark(unittest.TestCase):
         self.assertFalse(self.game.add_landmark(landmark), "Cannot add landmark once game has started")
 
     def test_add_landmark_duplicates(self):
-        self.game.started = False
         ld = LandmarkFactory().getLandmark("New York", "Gift given by the French", "statue of liberty")
         self.game.landmarks.append(ld)
         self.assertFalse(self.game.add_landmark(ld), "Cannot add duplicate landmarks")
+
 
 
 if __name__ == "__main__":
