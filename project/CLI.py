@@ -28,7 +28,7 @@ class CLI:
             return "Invalid command"
 
 
-class TestLogin(unittest.TestCase):
+class TestGMLogin(unittest.TestCase):
     def setUp(self):
         self.cli = CLI()
 
@@ -47,7 +47,7 @@ class TestLogin(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestLogin))
+    suite.addTest(unittest.makeSuite(TestGMLogin))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
     print(res)
