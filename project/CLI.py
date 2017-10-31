@@ -1,8 +1,8 @@
 import unittest
 import shlex
 
-from project.Game import GameFactory
-from project.GameMaker import GMFactory
+from Game import GameFactory
+from GameMaker import GMFactory
 
 
 class CLI:
