@@ -29,7 +29,7 @@ class CLI:
         return "Game Creation Success"
 
     def command(self, args):
-        commands = {"login": self.__login}
+        commands = {"login": self.__login, "creategame" :self.__create_game}
         inp = shlex.split(args)
         try:
             return commands[inp[0].lower()](inp)
