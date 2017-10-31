@@ -218,43 +218,24 @@ class TestEndGame(unittest.TestCase):
 
 class TestDeleteLandmarks(unittest.TestCase):
     def setUp(self):
-        self.game = Game()
+        self.game = GameFactory().getGame()
 
     def test_delete_landmark(self):
         landmark1 = "ABC"
-        self.game.landmark[0] = landmark1
+        self.game.landmarks.append(landmark1)
         self.game.remove_landmark(landmark1)
         self.assertNotIn(landmark1, self.game.landmarks, "Failed to remove landmark")
 
     def test_delete_multi_landmarks(self):
         landmark1 = "ABC"
         landmark2 = "DEF"
-        self.game.landmark[0] = landmark1
-        self.game.landmark[1] = landmark2
+        self.game.landmarks.append(landmark1)
+        self.game.landmarks.append(landmark2)
         self.game.remove_landmark(landmark1)
         self.assertNotIn(landmark1, self.game.landmarks, "Failed to remove Landmark1")
         self.game.remove_landmark(landmark2)
         self.assertNotIn(landmark1, self.game.landmarks, "Failed to remove Landmark2")
 
-class TestAddLandmark(unittest.testcase):
-    def setUp(self):
-        self.game = Game()
-
-    def test_add_landmark(self):
-        landmark1 = "ABC"
-        self.assertNotIn(landmark1, self.game.landmarks, "Landmark already Exists")
-        self.game.add_landmark(landmark1)
-        self.assertIn(landmark1, self.game.landmarks, "Landmark was not successfully added")
-
-    def test_add_landmark(self):
-        landmark1 = "ABC"
-        landmark2 = "DEF"
-        self.assertNotIn(landmark1, self.game.landmarks, "Landmark already Exists")
-        self.game.add_landmark(landmark1)
-        self.assertIn(landmark1, self.game.landmarks, "Landmark1 was not successfully added")
-        self.game.add_landmark(landmark2)
-        self.assertIn(landmark2, self.game.landmarks, "Landmark2 was not sucessfully added")
-        self.assertEqual((self.game.landmark[0], self.game.landmarks[1]), (landmark1, landmark2), "Adding not indexing properly")
 
 
 if __name__ == "__main__":
