@@ -22,16 +22,44 @@ class CLI:
         return "Login successful"
 
     def __add_team(self, args):
-        return ''
+        if self.is_gm:
+            try:
+                added = self.game.add_team(args[1], args[2])
+            except IndexError:
+                return "Invalid parameters"
+            if added:
+                return "Team added"
+        return "Failed to add team"
 
     def __remove_team(self, args):
-        return ''
+        if self.is_gm:
+            try:
+                removed = self.game.remove_team(args[1])
+            except IndexError:
+                return "Invalid parameters"
+            if removed:
+                return "Removed Team"
+        return 'Remove Team Failed'
 
     def __add_landmark(self, args):
-        return ''
+        if self.is_gm:
+            try:
+                started = self.game.add_landmark(args[1],args[2],args[3])
+            except IndexError:
+                return "Invalid parameters"
+            if started:
+                return "Added landmark"
+        return "Failed to add landmark"
 
     def __start(self, args):
-        return ''
+        if self.is_gm:
+            try:
+                removed = self.game.remove_team(args[1])
+            except IndexError:
+                return "Invalid parameters"
+            if removed:
+                return "Started Game"
+        return "Failed to start Game"
 
     def __create(self, args):
         if self.is_gm:
@@ -106,11 +134,11 @@ class TestRemoveTeam(unittest.TestCase):
 
     def test_remove_team_does_not_exist(self):
         self.cli.game.teams.pop()
-        self.assertEqual("Removed Team Failed", self.cli.command("remove Team3"), "team does not exist")
+        self.assertEqual("Remove Team Failed", self.cli.command("remove Team3"), "team does not exist")
 
     def test_remove_team_from_empty_team_list(self):
         self.cli.game.teams.clear()
-        self.assertEqual("Removed Team Failed", self.cli.command("remove Team1"), "list of teams empty")
+        self.assertEqual("Remove Team Failed", self.cli.command("remove Team1"), "list of teams empty")
 
     def test_remove_team_bad_args(self):
         self.cli.is_gm = True

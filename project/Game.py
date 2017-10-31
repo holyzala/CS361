@@ -5,17 +5,17 @@ from project.Team import TeamFactory
 
 
 class GameInterface(ABC):
-    def add_team(self, team):
-        pass
+    def add_team(self, name, password):
+        return False
 
     def remove_team(self, name):
-        pass
+        return False
 
     def modify_team(self, oldname, name=None, password=None):
         pass
 
-    def add_landmark(self, landmark):
-        pass
+    def add_landmark(self, location, clue, answer):
+        return False
 
     def remove_landmark(self, landmark):
         pass
@@ -30,7 +30,7 @@ class GameInterface(ABC):
         pass
 
     def start(self):
-        pass
+        return False
 
     def end(self):
         pass
@@ -48,7 +48,7 @@ class GameFactory:
             self.penaltyValue = 0
             self.penaltyTime = 0
 
-        def add_team(self, team):
+        def add_team(self, name, password):
             return False
 
         def remove_team(self, name):
@@ -57,7 +57,7 @@ class GameFactory:
         def modify_team(self, oldname, name=None, password=None):
             pass
 
-        def add_landmark(self, landmark):
+        def add_landmark(self, location, clue, answer):
             return False
 
         def remove_landmark(self, landmark):
@@ -85,16 +85,15 @@ class TestAddTeam(unittest.TestCase):
         self.game.started = False
 
     def test_add_team(self):
-        self.assertTrue(self.game.add_team(TeamFactory().getTeam("Team1", "1232")), "Did not add team")
+        self.assertTrue(self.game.add_team("Team1", "1232"), "Did not add team")
 
     def test_add_team_duplicates(self):
-        self.assertTrue(self.game.add_team(TeamFactory().getTeam("Team1", "1232")), "Did not add team")
-        self.assertFalse(self.game.add_team(TeamFactory().getTeam("Team1", "1232")), "duplicate teams!")
+        self.assertTrue(self.game.add_team("Team1", "1232"), "Did not add team")
+        self.assertFalse(self.game.add_team("Team1", "1232"), "duplicate teams!")
 
     def test_add_team_after_Game_started(self):
         self.game.started = True
-        self.assertFalse(self.game.add_team(TeamFactory().getTeam("Team1", "1232")),
-                         "should not add teams once Game starts")
+        self.assertFalse(self.game.add_team("Team1", "1232"), "should not add teams once Game starts")
 
 
 class TestRemoveTeam(unittest.TestCase):
@@ -140,7 +139,6 @@ class TestAddLandmark(unittest.TestCase):
         self.game.started = False
 
     def test_add_landmark(self):
-
         landmark = LandmarkFactory().getLandmark("New York", "Gift given by the French", "statue of liberty")
         self.assertTrue(self.game.add_landmark(landmark), "Failed to add landmark")
 
