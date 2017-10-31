@@ -1,30 +1,12 @@
 import unittest
-from GameMaker import GMFactory
 
 
-class CLI:
+class CLI():
     def __init__(self):
-        self.gm = GMFactory().getGM()
-        self.current_user = ""
-        self.is_gm = False
-        self.game = None
-
-    def __login(self, args):
-        try:
-            self.current_user, self.is_gm = self.gm.login(args[1], args[2])
-        except IndexError:
-            return "Invalid parameters"
-        if self.current_user is "":
-            return "Login failed"
-        return "Login successful"
+        self.gm = None
 
     def command(self, args):
-        commands = {"login": self.__login}
-        inp = args.split(" ")
-        try:
-            return commands[inp[0].lower()](inp)
-        except KeyError:
-            return "Invalid command"
+        return ''
 
 
 class TestLogin(unittest.TestCase):
@@ -39,9 +21,6 @@ class TestLogin(unittest.TestCase):
 
     def test_login_bad_username(self):
         self.assertEqual("Login failed", self.cli.command("login ___ 1234"), "Login return message not correct")
-
-    def test_login_bad_args(self):
-        self.assertEqual("Invalid parameters", self.cli.command("login gamemaker"), "Invalid parameters")
 
 
 if __name__ == "__main__":
