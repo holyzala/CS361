@@ -1,7 +1,7 @@
 import unittest
 
 
-class Game():
+class Game:
     def __init__(self):
         self.teams = []
         self.landmarks = []
@@ -43,3 +43,22 @@ class Game():
 class TestGame(unittest.TestCase):
     def setUp(self):
         self.game = Game()
+
+class TestDeleteLandmarks(unittest.TestCase):
+    def setUp(self):
+        self.game = Game()
+
+    def test_list_not_empty(self):
+        self.assertFalse([], self.game.landmarks, "Landmark list is Empty, Cannot Remove")
+
+    def test_list_contains_element(self):
+        landmark1 = "ABC"
+        self.assertIn(landmark1, self.game.landmarks, "Landmark does not exist in this list")
+
+class TestAddLandmarks(unittest.TestCase):
+    def setUp(self):
+        self.game = Game()
+
+    def test_list_contains_element(self):
+        landmark1 = "ABC"
+        self.assertNotIn(landmark1, self.game.landmarks, "Landmark already Exists in this list")
