@@ -117,8 +117,13 @@ class TestAddLandmark(unittest.testcase):
         self.assertIn(landmark2, self.game.landmarks, "Landmark2 was not sucessfully added")
         self.assertEqual((self.game.landmark[0], self.game.landmarks[1]), (landmark1, landmark2), "Adding not indexing properly")
 
+
+if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestLogin))
+    suite.addTest(unittest.makeSuite(TestEndGame))
+    suite.addTest(unittest.makeSuite(TestEditLandmarkClue))
+    suite.addTest(unittest.makeSuite(TestAddLandmark))
+    suite.addTest(unittest.makeSuite(TestDeleteLandmarks))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
     print(res)
