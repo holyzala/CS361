@@ -46,7 +46,7 @@ class TeamFactory:
             return ""
 
         def get_username(self):
-            return self.get_username()
+            return self.username
 
 
 class TestInit(unittest.TestCase):

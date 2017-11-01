@@ -53,7 +53,7 @@ class GameFactory:
             if not self.started:
                 teamToBeAdded = TeamFactory().getTeam(name, password)
                 for team in self.teams:
-                    if team.username == teamToBeAdded.username:
+                    if team.get_username() == teamToBeAdded.username:
                         return False
                 self.teams.append(teamToBeAdded)
                 return True
