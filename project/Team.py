@@ -1,48 +1,50 @@
 import unittest
 from abc import ABC
+from GameMaker import UserABC
 
 
 class TeamI(ABC):
     def login(self, password):
-        return "", False
-
-    def changeName(self, name):
-        self.username = name;
-
-    def changePassword(self, password):
-        self.password = password;
-
-    def answer_question(self, answer):
-        return ""
-
-    def get_status(self):
-        return ""
-
-    def get_clue(self):
-        return ""
-
-    def set_username(self, username):
         pass
 
-    def set_pass(self, password):
+    def changeName(self, name):
+        pass
+
+    def changePassword(self, password):
+        pass
+
+    def answer_question(self, answer):
+        pass
+
+    def get_status(self):
+        pass
+
+    def get_clue(self):
         pass
 
     def get_username(self):
         pass
 
+
 class TeamFactory:
     def getTeam(self, username, password):
         return self.Team(username, password)
 
-    class Team(TeamI):
+    class Team(TeamI, UserABC):
         def __init__(self, username, password):
             self.username = username
             self.password = password
 
+        def changeName(self, name):
+            self.username = name
+
+        def changePassword(self, password):
+            self.password = password
+
         def login(self, username, password):
             if username == self.username and password == self.password:
-                return self.username, False
-            return "", False
+                return self
+            return None
 
         def answer_question(self, answer):
             return ""
@@ -74,29 +76,29 @@ class TestTeam(unittest.TestCase):
         self.team = TeamFactory().getTeam("team1", "password123")
 
     def test_team_login_success(self):
-        username, isadmin = self.team.login("team1", "password123")
-
-        self.assertEquals(self.team.username, username)
-        self.assertFalse(isadmin)
+        user = self.team.login("team1", "password123")
+        self.assertEqual(self.team, user, "Different user returned")
+        self.assertEquals(self.team.username, user.username)
+        self.assertFalse(user.is_admin())
 
     def test_team_login_fail(self):
-        username, isadmin = self.team.login("team1", "wrongpassword")
-        self.assertEquals("", username)
-        self.assertFalse(isadmin)
+        user = self.team.login("team1", "wrongpassword")
+        self.assertEqual(None, user, "Invalid user returned")
 
     def test_change_name(self):
         self.team.changeName("team2")
-        username, isadmin = self.team.login("team2", "password123")
-
-        self.assertEquals(self.team.username, username)
-        self.assertFalse(isadmin)
+        user = self.team.login("team2", "password123")
+        self.assertEqual(self.team, user, "Wrong user returned")
+        self.assertEquals(self.team.username, user.username, "Wrong username")
+        self.assertFalse(user.is_admin(), "Invalid admin rights")
 
     def test_change_password(self):
         self.team.changePassword("random")
+        user = self.team.login("team1", "random")
+        self.assertEqual(self.team, user, "Wrong user returned")
+        self.assertEquals(self.team.username, user.username, "Wrong username")
+        self.assertFalse(user.is_admin(), "Invalid admin rights")
 
-        username, isadmin = self.team.login("team1", "random")
-        self.assertEquals(self.team.username, username)
-        self.assertFalse(isadmin)
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
