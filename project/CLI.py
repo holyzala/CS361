@@ -133,7 +133,7 @@ class TestAddTeam(unittest.TestCase):
         self.assertEqual("Permission denied", self.cli.command("addTeam Team1 1234"), "Only game maker can add teams")
 
     def test_add_team_duplicate(self):
-        self.assertEqual("Added team", self.cli.command("addTeam Team1 1234"), "Failed to add team")
+        self.assertEqual("Team added", self.cli.command("addTeam Team1 1234"), "Failed to add team")
         self.assertEqual("Failed to add team", self.cli.command("addTeam Team1 1234"),
                          "can not have duplicate teams")
 

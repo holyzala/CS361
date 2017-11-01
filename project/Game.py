@@ -92,7 +92,11 @@ class GameFactory:
             return False
 
         def remove_landmark(self, landmark):
-            pass
+            if landmark in self.game.landmarks:
+                self.game.landmarks.remove(landmark)
+                return "Landmark Removed Succesfully"
+            else:
+                return "Could not Remove Landmark"
 
         def modify_landmark(self, oldlandmark, newlandmark):
             self.landmarks = [x.replace(oldlandmark, newlandmark) for x in self.landmarks]
@@ -190,6 +194,7 @@ class TestEditLandmarkClue(unittest.TestCase):
         self.game.modify_landmark("Chicago", "Vegas")
         self.assertIn("Vegas", self.game.landmarks, "Landmark edited incorrectly")
 
+
 class TestModifyTeam(unittest.TestCase):
     def setUp(self):
         self.game = GameFactory().getGame()
@@ -213,15 +218,18 @@ class TestEndGame(unittest.TestCase):
         self.game.end()
         self.assertTrue(self.game.ended, "Game Has Ended")
 
+    # how does this test work? Not understanding setting "Final cue sloved" to a landmark list
     def test_completed_game(self):
         self.game.landmarks = "Final Clue solved"
         self.assertEqual(self.game.landmarks, "Final Clue solved", "Final clue has been solved, the game is over")
         self.game.end()
         self.assertTrue(self.game.ended, "Game Has Ended")
 
+
 class TestDeleteLandmarks(unittest.TestCase):
     def setUp(self):
         self.game = GameFactory().getGame()
+        self.game.started = False
 
     def test_delete_landmark(self):
         landmark1 = "ABC"
@@ -242,7 +250,7 @@ class TestDeleteLandmarks(unittest.TestCase):
 
 class TestAddLandmark2(unittest.TestCase):
     def setUp(self):
-        self.game = Game()
+        self.game = GameFactory().getGame()
 
     def test_add_landmark(self):
         landmark1 = "ABC"
