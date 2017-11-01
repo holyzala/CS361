@@ -17,25 +17,17 @@ class GameInterface(ABC):
     def modify_team(self, oldname, name=None, password=None):
         pass
 
-    def add_landmark(self, landmark):
-        if landmark not in self.game.landmarks:
-            self.game.landmarks.append(landmark)
-            return "Landmark Added Sucesffuly"
-        else:
-            return "Could not Add Landmark"
+    def add_landmark(self, location, clue, answer):
+        return False
 
     def remove_landmark(self, landmark):
-        if landmark in self.game.landmarks:
-            self.game.landmarks.remove(landmark)
-            return "Landmark Removed Succesfully"
-        else:
-            return "Could not Remove Landmark"
+        pass
 
     def modify_landmark(self, oldlandmark, newlandmark):
-        self.landmarks = [x.replace(oldlandmark, newlandmark) for x in self.landmarks]
+        pass
 
     def set_point_penalty(self, points):
-        self.points = points
+        pass
 
     def set_time_penalty(self, time):
         pass
@@ -44,14 +36,14 @@ class GameInterface(ABC):
         return False
 
     def end(self):
-        self.ended = True
-    
+        pass
+
     def get_status(self,team):
         pass
 
     def answer_question(self,team,answer):
         return False
-    
+
     def quit_question(self,team,password):
         return False
 
@@ -70,10 +62,11 @@ class GameFactory:
 
         def add_team(self, name, password):
             if not self.started:
-                team = TeamFactory().getTeam(name, password)
-                if team in self.teams:
-                    return False
-                self.teams.append(team)
+                teamToBeAdded = TeamFactory().getTeam(name, password)
+                for team in self.teams:
+                    if team.get_username() == teamToBeAdded.username:
+                        return False
+                self.teams.append(teamToBeAdded)
                 return True
             return False
 
@@ -83,7 +76,6 @@ class GameFactory:
                     if team.get_username() == name:
                         self.teams.remove(team)
                         return True
-                return False
             return False
 
         def modify_team(self, oldname, name=None, password=None):
@@ -91,21 +83,26 @@ class GameFactory:
 
         def add_landmark(self, location, clue, answer):
             if not self.started:
-                landmark = LandmarkFactory().getLandmark(location, clue, answer)
-                if landmark in self.landmarks:
-                    return False
-                self.landmarks.append(landmark)
+                landmarkToBeAdded = LandmarkFactory().getLandmark(location, clue, answer)
+                for landmark in self.landmarks:
+                    if landmark.location == landmarkToBeAdded.location:
+                        return False
+                self.landmarks.append(landmarkToBeAdded)
                 return True
             return False
 
         def remove_landmark(self, landmark):
-            pass
+            if landmark in self.game.landmarks:
+                self.game.landmarks.remove(landmark)
+                return "Landmark Removed Succesfully"
+            else:
+                return "Could not Remove Landmark"
 
         def modify_landmark(self, oldlandmark, newlandmark):
-            pass
+            self.landmarks = [x.replace(oldlandmark, newlandmark) for x in self.landmarks]
 
         def set_point_penalty(self, points):
-            pass
+            self.points = points
 
         def set_time_penalty(self, time):
             pass
@@ -114,7 +111,7 @@ class GameFactory:
             self.started = True
 
         def end(self):
-            pass
+            self.ended = True
 
 
 class TestAddTeam(unittest.TestCase):
@@ -155,6 +152,7 @@ class TestRemoveTeam(unittest.TestCase):
         self.game.started = True
         self.assertFalse(self.game.remove_team("Team1"), "should not remove teams once game starts")
 
+
 class TestStartGame(unittest.TestCase):
     def setUp(self):
         self.game = GameFactory().getGame()
@@ -171,13 +169,13 @@ class TestAddLandmark(unittest.TestCase):
         self.game.started = False
 
     def test_add_landmark(self):
-        self.assertTrue(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
-                        "Failed to add landmark")
+        self.assertTrue(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty")
+                        , "Failed to add landmark")
 
     def test_add_landmark_game_in_progress(self):
         self.game.started = True
-        self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
-                         "Cannot add landmark once game has started")
+        self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty")
+                        , "Cannot add landmark once game has started")
 
     def test_add_landmark_duplicates(self):
         ld = LandmarkFactory().getLandmark("New York", "Gift given by the French", "statue of liberty")
@@ -185,7 +183,7 @@ class TestAddLandmark(unittest.TestCase):
         self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
                          "Cannot add duplicate landmarks")
 
-      
+
 class TestEditLandmarkClue(unittest.TestCase):
     def setUp(self):
         self.game = GameFactory().getGame()
@@ -195,6 +193,7 @@ class TestEditLandmarkClue(unittest.TestCase):
         self.assertTrue(self.game.landmarks, "List is empty")
         self.game.modify_landmark("Chicago", "Vegas")
         self.assertIn("Vegas", self.game.landmarks, "Landmark edited incorrectly")
+
 
 class TestModifyTeam(unittest.TestCase):
     def setUp(self):
@@ -219,15 +218,18 @@ class TestEndGame(unittest.TestCase):
         self.game.end()
         self.assertTrue(self.game.ended, "Game Has Ended")
 
+    # how does this test work? Not understanding setting "Final cue sloved" to a landmark list
     def test_completed_game(self):
         self.game.landmarks = "Final Clue solved"
         self.assertEqual(self.game.landmarks, "Final Clue solved", "Final clue has been solved, the game is over")
         self.game.end()
         self.assertTrue(self.game.ended, "Game Has Ended")
 
+
 class TestDeleteLandmarks(unittest.TestCase):
     def setUp(self):
         self.game = GameFactory().getGame()
+        self.game.started = False
 
     def test_delete_landmark(self):
         landmark1 = "ABC"
@@ -246,9 +248,9 @@ class TestDeleteLandmarks(unittest.TestCase):
         self.assertNotIn(landmark1, self.game.landmarks, "Failed to remove Landmark2")
 
 
-class TestAddLandmark(unittest.TestCase):
+class TestAddLandmark2(unittest.TestCase):
     def setUp(self):
-        self.game = Game()
+        self.game = GameFactory().getGame()
 
     def test_add_landmark(self):
         landmark1 = "ABC"
@@ -284,7 +286,7 @@ class teamDummy:
     clueTime = datetime.time(0,0,0)
     password = "password"
 
-class Test_Game_Team(unittest.TestCase): 
+class Test_Game_Team(unittest.TestCase):
     def setUp(self):
         self.team = teamDummy()
         self.game = GameFactory().getGame()
@@ -297,7 +299,7 @@ class Test_Game_Team(unittest.TestCase):
         self.game.timer = datetime.time(00,00,15)
 
     def test_get_status(self):
-        self.team.clueTime = datetime.time(5,30,50)    
+        self.team.clueTime = datetime.time(5,30,50)
         currenttimecalc = (str(datetime.datetime.now().hour-self.team.clueTime.hour)+":"+str(datetime.datetime.now().minute-self.team.clueTime.minute)+":"+str(datetime.datetime.now().second-self.team.clueTime.second))
         self.assertEqual(self.game.get_status(self.team), 'Points:100;You Are On Landmark:2;Current Time:'+currenttimecalc+';Time Taken For Landmarks:00:55:40)', 'get_status did not print the proper stats!')
 
@@ -310,7 +312,7 @@ class Test_Game_Team(unittest.TestCase):
         self.assertEqual(self.team.currentLandmark,2,"Landmark Index Did Not Properly Incriment")
         self.assertEqual(len(self.team.timelog),2,"Time log did not recieve new entry")
         self.assertEqual(self.team.timelog[2],self.team.clueTime,"Time Log Did Not Recieve The Correct Time") #this may not work correctly
-    
+
     def test_quit_question_incorrectpass(self):
         self.team.clueTime = datetime.datetime.now()
         self.assertFalse(self.game.quit_question(self.team,"incorrectpasswerd"),"Quit Question Returned True After Incorrect Password!")
@@ -338,7 +340,7 @@ class Test_Game_Team(unittest.TestCase):
         self.assertEqual(len(self.team.timelog),3,"Time Log Did Not recieve a new entry")
         self.assertEqual(self.team.timelog[2],self.team.clueTime,"Time Log Did Not Save The Correct Time")#This may not work properly
 
-        #TIME PENELTY TESTS HAVE A WAIT THAT WILl CAUSE THE TEST TO RUN A UNORMALLY LONG AMOUNT OF TIME, 
+        #TIME PENELTY TESTS HAVE A WAIT THAT WILl CAUSE THE TEST TO RUN A UNORMALLY LONG AMOUNT OF TIME,
         # IT IS RECCOMENDED TO HAVE THESE TESTS BE LAST IN THE SUITE
 
     def test_answer_question_time_penalty(self):
@@ -380,6 +382,7 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(TestRemoveTeam))
     suite.addTest(unittest.makeSuite(TestStartGame))
     suite.addTest(unittest.makeSuite(TestAddLandmark))
+    suite.addTest(unittest.makeSuite(TestAddLandmark2))
     suite.addTest(unittest.makeSuite(TestEditLandmarkClue))
     suite.addTest(unittest.makeSuite(TestEndGame))
     suite.addTest(unittest.makeSuite(Test_Game_Team))

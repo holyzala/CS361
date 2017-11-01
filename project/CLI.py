@@ -30,26 +30,27 @@ class CLI:
         return "Login failed"
 
     @need_admin
-    def __add_team(self, args):
+    def __addteam(self, args):
         try:
             added = self.game.add_team(args[1], args[2])
         except IndexError:
             return "Invalid parameters"
         if added:
             return "Team added"
+        return "Failed to add team"
 
     @need_admin
-    def __remove_team(self, args):
+    def __removeteam(self, args):
         try:
             removed = self.game.remove_team(args[1])
         except IndexError:
             return "Invalid parameters"
         if removed:
             return "Removed Team"
-        return 'Remove Team Failed'
+        return "Remove Team Failed"
 
     @need_admin
-    def __add_landmark(self, args):
+    def __addlandmark(self, args):
         try:
             added = self.game.add_landmark(args[1],args[2],args[3])
         except IndexError:
@@ -79,8 +80,8 @@ class CLI:
         return "Game Failed"
 
     def command(self, args):
-        commands = {"login": self.__login, "addteam": self.__add_team,
-                    "addlandmark": self.__add_landmark, "removeteam": self.__remove_team,
+        commands = {"login": self.__login, "addteam": self.__addteam,
+                    "addlandmark": self.__addlandmark, "removeteam": self.__removeteam,
                     "start": self.__start, "create": self.__create}
         inp = shlex.split(args)
         try:
@@ -132,7 +133,7 @@ class TestAddTeam(unittest.TestCase):
         self.assertEqual("Permission denied", self.cli.command("addTeam Team1 1234"), "Only game maker can add teams")
 
     def test_add_team_duplicate(self):
-        self.assertEqual("Added team", self.cli.command("addTeam Team1 1234"), "Failed to add team")
+        self.assertEqual("Team added", self.cli.command("addTeam Team1 1234"), "Failed to add team")
         self.assertEqual("Failed to add team", self.cli.command("addTeam Team1 1234"),
                          "can not have duplicate teams")
 
@@ -145,7 +146,7 @@ class TestRemoveTeam(unittest.TestCase):
         self.cli = CLI()
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create game"), "Failed to create game")
-        self.assertEqual("Team addedm", self.cli.command("addTeam Team1 1526"), "setup failed")
+        self.assertEqual("Team added", self.cli.command("addTeam Team1 1526"), "setup failed")
         self.assertEqual("Team added", self.cli.command("addTeam Team2 02ka"), "setup failed")
         self.assertEqual("Team added", self.cli.command("addTeam Team3 192j"), "setup failed")
 
@@ -176,6 +177,9 @@ class TestStartGame(unittest.TestCase):
         self.assertEqual("Game Created", self.cli.command("create game"), "Failed to create game")
         self.assertEqual("Team added", self.cli.command("addTeam Team1 1526"), "setup failed")
         self.assertEqual("Team added", self.cli.command("addTeam Team2 02ka"), "setup failed")
+        self.assertEqual("Added landmark",
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         "Failed to add landmark")
 
     def test_start_game_is_gm(self):
         self.assertEqual("Started Game", self.cli.command("start"), "Failed to start game")
@@ -210,22 +214,25 @@ class TestAddLandmark(unittest.TestCase):
 
     def test_add_landmark_is_gm(self):
         self.assertEqual("Added landmark",
-                         self.cli.command('addLandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
                          "Failed to add landmark")
 
     def test_add_landmark_not_gm(self):
         self.assertEqual("logged out", self.cli.command("logout"), "Failed to logout")
         self.assertEqual("Permission denied",
-                         self.cli.command('addLandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
                          "Only admin can add landmarks")
 
     def test_add_landmark_duplicate(self):
+        self.assertEqual("Added landmark",
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         "Failed to add landmark")
         self.assertEqual("Failed to add landmark",
-                         self.cli.command('addLandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
                          "no duplicate landmarks")
 
     def test_add_landmark_bad_args(self):
-        self.assertEqual("Invalid parameters", self.cli.command("addLandmark"), "Invalid parameters")
+        self.assertEqual("Invalid parameters", self.cli.command("addlandmark"), "Invalid parameters")
 
 
 if __name__ == "__main__":
