@@ -43,28 +43,28 @@ class GameFactory:
 
     class Game(GameInterface):
         def __init__(self):
-            self.teams = [TeamFactory().Team]
-            self.landmarks = [LandmarkFactory().Landmark]
+            self.teams = []
+            self.landmarks = []
             self.started = False
             self.penaltyValue = 0
             self.penaltyTime = 0
 
         def add_team(self, name, password):
             if not self.started:
-                team = TeamFactory().getTeam(name, password)
-                if team in self.teams:
-                    return False
-                self.teams.append(team)
+                teamToBeAdded = TeamFactory().getTeam(name, password)
+                for team in self.teams:
+                    if team.username == teamToBeAdded.username:
+                        return False
+                self.teams.append(teamToBeAdded)
                 return True
             return False
 
         def remove_team(self, name):
             if not self.started:
                 for team in self.teams:
-                    if team.get_username() == name:
+                    if team.username == name:
                         self.teams.remove(team)
                         return True
-                return False
             return False
 
         def modify_team(self, oldname, name=None, password=None):
@@ -72,10 +72,11 @@ class GameFactory:
 
         def add_landmark(self, location, clue, answer):
             if not self.started:
-                landmark = LandmarkFactory().getLandmark(location, clue, answer)
-                if landmark in self.landmarks:
-                    return False
-                self.landmarks.append(landmark)
+                landmarkToBeAdded = LandmarkFactory().getLandmark(location, clue, answer)
+                for landmark in self.landmarks:
+                    if landmark.location == landmarkToBeAdded.location:
+                        return False
+                self.landmarks.append(landmarkToBeAdded)
                 return True
             return False
 
@@ -153,18 +154,19 @@ class TestAddLandmark(unittest.TestCase):
         self.game.started = False
 
     def test_add_landmark(self):
-        landmark = LandmarkFactory().getLandmark("New York", "Gift given by the French", "statue of liberty")
-        self.assertTrue(self.game.add_landmark(landmark), "Failed to add landmark")
+        self.assertTrue(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty")
+                        , "Failed to add landmark")
 
     def test_add_landmark_game_in_progress(self):
         self.game.started = True
-        landmark = LandmarkFactory().getLandmark("New York", "Gift given by the French", "statue of liberty")
-        self.assertFalse(self.game.add_landmark(landmark), "Cannot add landmark once game has started")
+        self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty")
+                        , "Cannot add landmark once game has started")
 
     def test_add_landmark_duplicates(self):
         ld = LandmarkFactory().getLandmark("New York", "Gift given by the French", "statue of liberty")
         self.game.landmarks.append(ld)
-        self.assertFalse(self.game.add_landmark(ld), "Cannot add duplicate landmarks")
+        self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
+                         "Cannot add duplicate landmarks")
 
 
 

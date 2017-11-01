@@ -20,7 +20,7 @@ class CLI:
             return "Login failed"
         return "Login successful"
 
-    def __add_team(self, args):
+    def __addteam(self, args):
         if self.is_gm:
             try:
                 added = self.game.add_team(args[1], args[2])
@@ -30,7 +30,7 @@ class CLI:
                 return "Team added"
         return "Failed to add team"
 
-    def __remove_team(self, args):
+    def __removeteam(self, args):
         if self.is_gm:
             try:
                 removed = self.game.remove_team(args[1])
@@ -38,9 +38,10 @@ class CLI:
                 return "Invalid parameters"
             if removed:
                 return "Removed Team"
-        return 'Remove Team Failed'
+            return "Remove Team Failed: Team does not exist"
+        return "Remove Team Failed: not GM"
 
-    def __add_landmark(self, args):
+    def __addlandmark(self, args):
         if self.is_gm:
             try:
                 added = self.game.add_landmark(args[1],args[2],args[3])
@@ -50,7 +51,7 @@ class CLI:
                 return "Added landmark"
         return "Failed to add landmark"
 
-    def __start(self):
+    def __start(self,args):
         if self.is_gm:
             try:
                 started = self.game.start()
@@ -60,13 +61,21 @@ class CLI:
                 return "Started Game"
         return "Failed to start Game"
 
-    def __create(self, args):
+    def __create(self,args):
+        if self.is_gm:
+            self.game = GameFactory().getGame()
+            return "Created Game"
+        return "Failed to Create Game"
+
+    def __logout(self,args):
         return ''
 
     def command(self, args):
-        commands = {"login": self.__login, "addTeam": self.__add_team,
-                    "addLandmark": self.__add_landmark, "removeTeam": self.__remove_team,
-                    "start": self.__start}
+        if len(args) == 0:
+            return "Empty string input"
+        commands = {"login": self.__login, "addteam": self.__addteam,
+                    "addlandmark": self.__addlandmark, "remove": self.__removeteam,
+                    "start": self.__start, "create": self.__create}
         inp = shlex.split(args)
         try:
             return commands[inp[0].lower()](inp)
@@ -79,64 +88,64 @@ class TestLogin(unittest.TestCase):
         self.cli = CLI()
 
     def test_login_success(self):
-        self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual("Login successful", self.cli.command('login "gamemaker" "1234"'), "Login message not correct")
 
     def test_login_bad_password(self):
-        self.assertEqual("Login failed", self.cli.command("login gamemaker 4321"), "Login return message not correct")
+        self.assertEqual("Login failed", self.cli.command('login "gamemaker" "4321"'), "Login return message not correct")
 
     def test_login_bad_username(self):
-        self.assertEqual("Login failed", self.cli.command("login ___ 1234"), "Login return message not correct")
+        self.assertEqual("Login failed", self.cli.command('login "___" "1234"'), "Login return message not correct")
 
     def test_login_bad_args(self):
-        self.assertEqual("Invalid parameters", self.cli.command("login gamemaker"), "Invalid parameters")
+        self.assertEqual("Invalid parameters", self.cli.command('login "gamemaker"'), "Invalid parameters")
 
 
 class TestAddTeam(unittest.TestCase):
     def setUp(self):
         self.cli = CLI()
-        self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
-        self.assertEqual("Created Game", self.cli.command("create game"), "Failed to create game")
+        self.assertEqual("Login successful", self.cli.command('login "gamemaker" "1234"'), "Login message not correct")
+        self.assertEqual("Created Game", self.cli.command("create"), "Failed to create game")
 
     def test_add_team_is_gm(self):
-        self.assertEqual("Team added", self.cli.command("addTeam Team1 1234"), "Failed to add team")
+        self.assertEqual("Team added", self.cli.command('addteam "Team1" "1234"'), "Failed to add team")
 
     def test_add_team_not_gm(self):
         self.assertEqual("logged out", self.cli.command("logout"), "Failed to logout")
-        self.assertEqual("Failed to add team", self.cli.command("addTeam Team1 1234"), "Only game maker can add teams")
+        self.assertEqual("Failed to add team", self.cli.command('addteam "Team1" "1234"'), "Only game maker can add teams")
 
     def test_add_team_duplicate(self):
-        self.assertEqual("Added team", self.cli.command("addTeam Team1 1234"), "Failed to add team")
-        self.assertEqual("Failed to add team", self.cli.command("addTeam Team1 1234"),
+        self.assertEqual("Team added", self.cli.command('addteam "Team1" "1234"'), "Failed to add team")
+        self.assertEqual("Failed to add team", self.cli.command('addteam "Team1" "1234"'),
                          "can not have duplicate teams")
 
     def test_add_team_bad_args(self):
         self.cli.is_gm = True
-        self.assertEqual("Invalid parameters", self.cli.command("addTeam"), "Invalid parameters")
+        self.assertEqual("Invalid parameters", self.cli.command("addteam"), "Invalid parameters")
 
 
 class TestRemoveTeam(unittest.TestCase):
     def setUp(self):
         self.cli = CLI()
-        self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
-        self.assertEqual("Created Game", self.cli.command("create game"), "Failed to create game")
-        self.assertEqual("Failed to add team", self.cli.command("addTeam Team1 1526"), "Only game maker can add teams")
-        self.assertEqual("Failed to add team", self.cli.command("addTeam Team2 02ka"), "Only game maker can add teams")
-        self.assertEqual("Failed to add team", self.cli.command("addTeam Team3 192j"), "Only game maker can add teams")
+        self.assertEqual("Login successful", self.cli.command('login "gamemaker" "1234"'), "Login message not correct")
+        self.assertEqual("Created Game", self.cli.command("create"), "Failed to create game")
+        self.assertEqual("Team added", self.cli.command('addteam "Team1" "1526"'), "Only game maker can add teams")
+        self.assertEqual("Team added", self.cli.command('addteam "Team2" "02ka"'), "Only game maker can add teams")
+        self.assertEqual("Team added", self.cli.command('addteam "Team3" "192j"'), "Only game maker can add teams")
 
     def test_remove_team_is_gm(self):
-        self.assertEqual("Removed Team", self.cli.command("remove Team1"), "Failed to remove team")
+        self.assertEqual("Removed Team", self.cli.command('remove "Team1"'), "Failed to remove team")
 
     def test_remove_team_is_not_gm(self):
         self.assertEqual("logged out", self.cli.command("logout"), "Failed to logout")
-        self.assertEqual("Remove Team Failed", self.cli.command("remove Team1"), "only game maker can remove")
+        self.assertEqual("Remove Team Failed: not GM", self.cli.command('remove "Team1"'), "only game maker can remove")
 
     def test_remove_team_does_not_exist(self):
         self.cli.game.teams.pop()
-        self.assertEqual("Remove Team Failed", self.cli.command("remove Team3"), "team does not exist")
+        self.assertEqual("Remove Team Failed: Team does not exist", self.cli.command('remove "Team3"'), "team does not exist")
 
     def test_remove_team_from_empty_team_list(self):
         self.cli.game.teams.clear()
-        self.assertEqual("Remove Team Failed", self.cli.command("remove Team1"), "list of teams empty")
+        self.assertEqual("Remove Team Failed: Team does not exist", self.cli.command('remove "Team1"'), "list of teams empty")
 
     def test_remove_team_bad_args(self):
         self.cli.is_gm = True
@@ -146,10 +155,13 @@ class TestRemoveTeam(unittest.TestCase):
 class TestStartGame(unittest.TestCase):
     def setUp(self):
         self.cli = CLI()
-        self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
-        self.assertEqual("Created Game", self.cli.command("create game"), "Failed to create game")
-        self.assertEqual("Failed to add team", self.cli.command("addTeam Team1 1526"), "Only game maker can add teams")
-        self.assertEqual("Failed to add team", self.cli.command("addTeam Team2 02ka"), "Only game maker can add teams")
+        self.assertEqual("Login successful", self.cli.command('login "gamemaker" "1234"'), "Login message not correct")
+        self.assertEqual("Created Game", self.cli.command("create"), "Failed to create game")
+        self.assertEqual("Team added", self.cli.command('addteam "Team1" "1526"'), "Only game maker can add teams")
+        self.assertEqual("Team added", self.cli.command('addteam "Team2" "02ka"'), "Only game maker can add teams")
+        self.assertEqual("Added landmark",
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         "Failed to add landmark")
 
     def test_start_game_is_gm(self):
         self.assertEqual("Started Game", self.cli.command("start"), "Failed to start game")
@@ -159,32 +171,36 @@ class TestStartGame(unittest.TestCase):
         self.assertEqual("Failed to start Game", self.cli.command("start"), "Only admin can not start a Game")
 
     def test_start_team_bad_args(self):
-        self.assertEqual("Invalid parameters", self.cli.command(""), "Invalid parameters")
+        self.assertEqual("Empty string input", self.cli.command(""), "Invalid command")
 
 
 class TestAddLandmark(unittest.TestCase):
     def setUp(self):
         self.cli = CLI()
-        self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual("Login successful", self.cli.command('login "gamemaker" "1234"'), "Login message not correct")
+        self.assertEqual("Created Game", self.cli.command("create"), "Failed to create game")
 
     def test_add_landmark_is_gm(self):
         self.assertEqual("Added landmark",
-                         self.cli.command('addLandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
                          "Failed to add landmark")
 
     def test_add_landmark_not_gm(self):
         self.assertEqual("logged out", self.cli.command("logout"), "Failed to logout")
         self.assertEqual("Failed to add landmark",
-                         self.cli.command('addLandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
                          "Only admin can add landmarks")
 
     def test_add_landmark_duplicate(self):
+        self.assertEqual("Added landmark",
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         "Failed to add landmark")
         self.assertEqual("Failed to add landmark",
-                         self.cli.command('addLandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
                          "no duplicate landmarks")
 
     def test_add_landmark_bad_args(self):
-        self.assertEqual("Invalid parameters", self.cli.command("addLandmark"), "Invalid parameters")
+        self.assertEqual("Invalid parameters", self.cli.command("addlandmark"), "Invalid parameters")
 
 
 if __name__ == "__main__":
