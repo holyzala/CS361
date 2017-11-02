@@ -1,51 +1,65 @@
 import unittest
 import datetime
 import time
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from Landmark import LandmarkFactory
 from Team import TeamFactory
 
 
 class GameInterface(ABC):
+    @abstractmethod
     def add_team(self, name, password):
-        return False
+        pass
 
+    @abstractmethod
     def remove_team(self, name):
-        return False
+        pass
 
+    @abstractmethod
     def modify_team(self, oldname, name=None, password=None):
         pass
 
+    @abstractmethod
     def add_landmark(self, location, clue, answer):
-        return False
+        pass
 
+    @abstractmethod
     def remove_landmark(self, landmark):
         pass
 
+    @abstractmethod
     def modify_landmark(self, oldlandmark, newlandmark):
         pass
 
+    @abstractmethod
     def set_point_penalty(self, points):
         pass
 
+    @abstractmethod
     def set_time_penalty(self, time):
         pass
 
+    @abstractmethod
     def start(self):
-        return False
+        pass
 
+    @abstractmethod
     def end(self):
         pass
 
+    @abstractmethod
     def get_status(self,team):
         pass
 
+    @abstractmethod
     def answer_question(self,team,answer):
-        return False
+        pass
 
+    @abstractmethod
     def quit_question(self,team,password):
-        return False
+        pass
+
 
 class GameFactory:
     def getGame(self):
@@ -112,6 +126,14 @@ class GameFactory:
         def end(self):
             self.ended = True
 
+        def quit_question(self, team, password):
+            return True
+
+        def answer_question(self, team, answer):
+            return True
+
+        def get_status(self, team):
+            return ""
 
 class TestAddTeam(unittest.TestCase):
     def setUp(self):
