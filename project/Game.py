@@ -68,7 +68,7 @@ class GameFactory:
 
     class Game(GameInterface):
         def __init__(self):
-            self.teams = []
+            self.teams = {}
             self.landmarks = []
             self.started = False
             self.ended = False
@@ -77,31 +77,31 @@ class GameFactory:
 
         def add_team(self, name, password):
             if not self.started:
-                teamToBeAdded = TeamFactory().getTeam(name, password)
-                if teamToBeAdded in self.teams:
+                if name in self.teams:
                     return False
-                self.teams.append(teamToBeAdded)
+                self.teams[name] = TeamFactory().getTeam(name, password)
                 return True
             return False
 
         def remove_team(self, name):
             if not self.started:
-                for team in self.teams:
-                    if team.get_username() == name:
-                        self.teams.remove(team)
-                        return True
+                try:
+                    del self.teams[name]
+                except KeyError:
+                    return False
+                else:
+                    return True
             return False
 
         def modify_team(self, oldname, newname=None, newpassword=None):
-            for team in self.teams:
-                if oldname == team.get_username():
-                    if newname:
-                        team.changeName(newname)
-                        return True
-                    else:
-                        team.changePassword(newpassword)
-                        return True
-            return False
+            try:
+                if newname:
+                    self.teams[oldname].changeName(newname)
+                if newpassword:
+                    self.teams[oldname].changePassword(newpassword)
+                return True
+            except KeyError:
+                return False
 
         def add_landmark(self, location, clue, answer):
             if not self.started:
@@ -165,7 +165,7 @@ class TestRemoveTeam(unittest.TestCase):
     def setUp(self):
         self.game = GameFactory().getGame()
         self.game.started = False
-        self.game.teams.append(TeamFactory().getTeam("Team1", "1232"))
+        self.game.teams["Team1"] = TeamFactory().getTeam("Team1", "1232")
 
     def test_remove_team(self):
         self.assertTrue(self.game.remove_team("Team1"), "Failed to remove team")
@@ -228,7 +228,7 @@ class TestEditLandmarkClue(unittest.TestCase):
 class TestModifyTeam(unittest.TestCase):
     def setUp(self):
         self.game = GameFactory().getGame()
-        self.game.teams.append(TeamFactory().getTeam("Team1", "1234"))
+        self.game.teams["Team1"] = TeamFactory().getTeam("Team1", "1234")
 
     def test_modify_team_name(self):
         self.assertTrue(self.game.modify_team("Team1", newname="Team2", newpassword=None), "Team name was not modified")
@@ -330,12 +330,14 @@ class landmarkDummy:
     timepenelty = 20
     answerpenalty = 10
 
+
 class teamDummy:
     points = 100
     currentLandmark = 1
     timelog = [datetime.time(0,20,15),datetime.time(0,35,25)]
     clueTime = datetime.time(0,0,0)
     password = "password"
+
 
 class Test_Game_Team(unittest.TestCase):
     def setUp(self):
