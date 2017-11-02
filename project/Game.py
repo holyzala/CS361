@@ -141,7 +141,7 @@ class Game(GameInterface):
 
 
 def make_game(*args, **kwargs):
-    """This function should only ever return classes that impement GameInterface"""
+    """This function should only ever return classes that implement GameInterface"""
     return Game()
 
 
