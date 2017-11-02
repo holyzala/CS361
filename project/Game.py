@@ -84,9 +84,8 @@ class GameFactory:
         def add_landmark(self, location, clue, answer):
             if not self.started:
                 landmarkToBeAdded = LandmarkFactory().get_landmark(location, clue, answer)
-                for landmark in self.landmarks:
-                    if landmark.location == landmarkToBeAdded.location:
-                        return False
+                if landmarkToBeAdded in self.landmarks:
+                    return False
                 self.landmarks.append(landmarkToBeAdded)
                 return True
             return False
