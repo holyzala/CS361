@@ -98,7 +98,7 @@ class Game(GameInterface):
         except KeyError:
             return False
 
-   def add_landmark(self, location, clue, answer):
+    def add_landmark(self, location, clue, answer):
         if not self.started:
             landmarkToBeAdded = LandmarkFactory().get_landmark(location, clue, answer)
             if landmarkToBeAdded in self.landmarks:
