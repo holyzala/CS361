@@ -71,13 +71,13 @@ class TeamFactory:
             return self.username
 
         def get_points(self):
-            return self.team.points
+            return self.points
 
         def set_points(self, points):
-            if self.team.points + points is 0:
-                self.team.points = 0
+            if self.points + points < 0:
+                self.points = 0
             else:
-                self.team.points += points
+                self.points += points
 
         def is_admin(self):
             return False
@@ -107,8 +107,8 @@ class TestGetPoints(unittest.TestCase):
         self.team = TeamFactory().getTeam("Team 1", "1234")
 
     def test_get_points(self):
-        self.points = 100
-        self.assertEqual(100, self.team.get_points, "Points are not setting properly")
+        self.team.points = 100
+        self.assertEqual(100, self.team.get_points(), "Points are not setting properly")
 
 class TestSetPoints(unittest.TestCase):
     def setUp(self):
@@ -125,13 +125,13 @@ class TestSetPoints(unittest.TestCase):
         self.assertEquals(115, self.team.points, "Failed to add 15 to 100 points properly")
 
     def test_add_once_negative(self):
-        self.team.set(-15)
+        self.team.set_points(-15)
         self.assertEquals(0, self.team.points, "Cannot drop below the 0 threshold")
 
     def test_add_cumulative_posandneg(self):
-        self.team.set(100)
+        self.team.set_points(100)
         self.assertEquals(100, self.team.points, "Failed to add 100 points properly")
-        self.team.set(-15)
+        self.team.set_points(-15)
         self.assertEquals(85, self.team.points, "Failed to remove 15 points properly")
 
 class TestTeamLogin(unittest.TestCase):
