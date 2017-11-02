@@ -203,20 +203,25 @@ class TestEditTeams(unittest.TestCase):
 
     def test_team_edit_password_logged_in(self):
         self.assertEqual("Login successful", self.cli.command("login currentName currentPass"), "Valid login failed")
-        self.assertEqual("Team password changed", self.cli.command("editteam password currentName currentPass newpass")
+        self.assertEqual("Team password changed", self.cli.command("editteam password currentName currentPass newPass")
                          , "Failed to change pass")
 
     def test_team_edit_name_not_logged_in(self):
         self.assertEqual("Have to be logged in to Edit team",
-                         self.cli.command("editteam name currentName currentPass newName"), "Have to be logged in first")
+                         self.cli.command("editteam name currentName currentPass newName"), "no team is logged in")
 
     def test_team_edit_password_not_logged_in(self):
         self.assertEqual("Have to be logged in to Edit team",
-                         self.cli.command("editteam password currentName currentPass newpass"), "Have to be logged in first")
+                         self.cli.command("editteam password currentName currentPass newPass"), "no team is logged in")
 
     def test_gm_edit_team_name(self):
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
-        self.assertEqual("Team password changed", self.cli.command("editteam password currentName currentPass newpass")
+        self.assertEqual("Team name changed", self.cli.command("editteam name currentName currentPass newName")
+                         , "Failed to change pass")
+
+    def test_gm_edit_team_pass(self):
+        self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual("Team password changed", self.cli.command("editteam password currentName currentPass newPass")
                          , "Failed to change pass")
 
 
