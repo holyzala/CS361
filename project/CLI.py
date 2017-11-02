@@ -125,8 +125,8 @@ def edit_team(self, args):
             return perform_team_edit(self, args)
         else:
             if self.current_user: # if current user is a some team and not game maker
-                if self.current_user.get_username() == args[2]: # loggedin team can only edit themselves
-                    return self.perform_team_edit(self, args)
+                if self.current_user.get_username() == args[2]: # logged in team can only edit themselves
+                    return perform_team_edit(self, args)
     except IndexError:
         return "Invalid Parameters"
     except AttributeError:
