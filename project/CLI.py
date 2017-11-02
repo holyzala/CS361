@@ -365,7 +365,7 @@ class TestRemoveLandmark(unittest.TestCase):
         self.cli.game.landmarks.clear()
         self.assertEqual("Failed to remove Landmark", self.cli.command("removelandmark UWM"), "list of teams empty")
 
-    def test_remove_team_bad_args(self):
+    def test_remove_landmark_bad_args(self):
         self.cli.is_gm = True
         self.assertEqual("Invalid parameters", self.cli.command("removelandmark"), "Invalid parameters")
 
