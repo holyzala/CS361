@@ -141,8 +141,7 @@ class Game(GameInterface):
 
 
 def make_game(*args, **kwargs):
-    """We can use the args and kwargs at some later date to determine what type of GameInterface object to return
-        For now, we only have one."""
+    """This function should only ever return classes that impement GameInterface"""
     return Game()
 
 
