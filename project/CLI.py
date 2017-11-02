@@ -22,12 +22,13 @@ def login(self, args):
         if self.current_user:
             return "Login successful"
         if self.game:
-            for team in self.game.teams:
-                self.current_user = team.login(args[1], args[2])
-                if self.current_user:
-                    return "Login successful"
+            self.current_user = self.game.teams[args[1]].login(args[1], args[2])
+            if self.current_user:
+                return "Login successful"
     except IndexError:
         return "Invalid parameters"
+    except KeyError:
+        return "Login failed"
     return "Login failed"
 
 
@@ -275,7 +276,7 @@ class TestRemoveTeam(unittest.TestCase):
         self.assertEqual("Permission denied", self.cli.command("removeteam Team1"), "only game maker can remove")
 
     def test_remove_team_does_not_exist(self):
-        self.cli.game.teams.pop()
+        del self.cli.game.teams["Team3"]
         self.assertEqual("Remove Team Failed", self.cli.command("removeteam Team3"), "team does not exist")
 
     def test_remove_team_from_empty_team_list(self):
