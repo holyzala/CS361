@@ -61,6 +61,9 @@ class TeamFactory:
         def is_admin(self):
             return False
 
+        def __eq__(self, other):
+            return self.username == other.username
+
 
 class TestGetters(unittest.TestCase):
     def setUp(self):
@@ -79,13 +82,7 @@ class TestInit(unittest.TestCase):
         self.assertEqual("2123", self.team.password, "password value improperly set")
 
 
-class TestGetAnswer(unittest.TestCase):
-    def test_get_answer(self):
-        self.team = TeamFactory().getTeam("TeamA", "2123")
-        self.assertEqual("TeamA", self.team.get_username(), "getter does not work")
-
-
-class TestTeam(unittest.TestCase):
+class TestTeamLogin(unittest.TestCase):
     def setUp(self):
         self.team = TeamFactory().getTeam("team1", "password123")
 
@@ -96,30 +93,29 @@ class TestTeam(unittest.TestCase):
         self.assertFalse(user.is_admin())
 
     def test_team_login_fail(self):
-        user = self.team.login("team1", "wrongpassword")
+        user = self.team.login("team1", "wrong password")
         self.assertEqual(None, user, "Invalid user returned")
 
+
+class TestEditTeam(unittest.TestCase):
+    def setUp(self):
+        self.team = TeamFactory().getTeam("team2", "password123")
+
     def test_change_name(self):
-        self.team.changeName("team2")
-        user = self.team.login("team2", "password123")
-        self.assertEqual(self.team, user, "Wrong user returned")
-        self.assertEquals(self.team.username, user.username, "Wrong username")
-        self.assertFalse(user.is_admin(), "Invalid admin rights")
+        self.team.changeName("team zebra")
+        self.assertEqual(self.team.username, "team zebra", "username was not changed")
 
     def test_change_password(self):
         self.team.changePassword("random")
-        user = self.team.login("team1", "random")
-        self.assertEqual(self.team, user, "Wrong user returned")
-        self.assertEquals(self.team.username, user.username, "Wrong username")
-        self.assertFalse(user.is_admin(), "Invalid admin rights")
+        self.assertEquals(self.team.password, "random", "password was not changed")
 
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestInit))
-    suite.addTest(unittest.makeSuite(TestGetAnswer))
     suite.addTest(unittest.makeSuite(TestGetters))
-    suite.addTest(unittest.makeSuite(TestTeam))
+    suite.addTest(unittest.makeSuite(TestTeamLogin))
+    suite.addTest(unittest.makeSuite(TestEditTeam))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
     print(res)
