@@ -92,19 +92,12 @@ class Game(GameInterface):
         try:
             if newname in self.teams:
                 return False
-            else:
-                if newname and newpassword:
-                    self.teams[oldname].changeName(newname)
-                    self.teams[oldname].changePassword(newpassword)
-                    self.teams[newname] = self.teams.pop(oldname)
-                    return True
-                elif newname:
-                    self.teams[oldname].changeName(newname)
-                    self.teams[newname] = self.teams.pop(oldname)
-                    return True
-                else:
-                    self.teams[oldname].changePassword(newpassword)
-                    return True
+            if newpassword:
+                self.teams[oldname].changePassword(newpassword)
+            if newname:
+                self.teams[oldname].changeName(newname)
+                self.teams[newname] = self.teams.pop(oldname)
+            return True
         except KeyError:
             return False
 

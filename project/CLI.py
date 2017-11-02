@@ -112,7 +112,7 @@ def perform_team_edit(self, args):
                 return "Team name changed"
             else:
                 return "Team new name already exists"
-        elif args[2] == "password" and len(args) < 5:
+        elif args[2] == "password":
             if self.game.modify_team(args[1], args[3]):
                 return "Team password changed"
         elif args[2] == "name" and args[4] == "password":
