@@ -1,7 +1,7 @@
 import unittest
 import shlex
 
-from Game import GameFactory
+from Game import GameFactory, make_game
 from GameMaker import GMFactory
 
 
@@ -96,7 +96,7 @@ def start(self, _):
 @need_admin
 def create(self, args):
     try:
-        self.game = GameFactory().getGame()
+        self.game = GameFactory(make_game).create_game()
     except IndexError:
         return "Invalid Parameters"
     if self.game:
