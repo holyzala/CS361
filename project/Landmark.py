@@ -4,16 +4,16 @@ from abc import ABC
 
 class LandmarkI(ABC):
     def submit_answer(self, answer):
-        return False
+        pass
 
     def get_location(self):
-        return ""
+        pass
 
     def get_clue(self):
-        return ""
+        pass
 
     def get_answer(self):
-        return ""
+        pass
 
 
 class LandmarkFactory:
@@ -27,16 +27,16 @@ class LandmarkFactory:
             self.answer = answer
 
         def submit_answer(self, answer):
-            return False
+            pass
 
         def get_location(self):
-            return self.location
+            pass
 
         def get_clue(self):
-            return self.clue
+            pass
 
         def get_answer(self):
-            return self.answer
+            pass
 
 
 class TestInit(unittest.TestCase):
