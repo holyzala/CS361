@@ -36,6 +36,7 @@ class TeamI(ABC):
     def add_points(self, points):
         pass
 
+
 class TeamFactory:
     def getTeam(self, username, password):
         return self.Team(username, password)
@@ -45,6 +46,9 @@ class TeamFactory:
             self.username = username
             self.password = password
             self.points = 0
+
+        def __eq__(self, other):
+            return self.username == other.username
 
         def changeName(self, name):
             self.username = name
@@ -78,8 +82,8 @@ class TeamFactory:
         def is_admin(self):
             return False
 
-        def __eq__(self, other):
-            return self.username == other.username
+        def add_points(self, points):
+            pass
 
 
 class TestGetters(unittest.TestCase):

@@ -14,129 +14,139 @@ def need_admin(func):
     return wrapper
 
 
+def login(self, args):
+    if self.current_user:
+        return "Already logged in"
+    try:
+        self.current_user = self.gm.login(args[1], args[2])
+        if self.current_user:
+            return "Login successful"
+        if self.game:
+            for team in self.game.teams:
+                self.current_user = team.login(args[1], args[2])
+                if self.current_user:
+                    return "Login successful"
+    except IndexError:
+        return "Invalid parameters"
+    return "Login failed"
+
+
+def logout(self, _):
+    if not self.current_user:
+        return "No user logged in"
+    self.current_user = None
+    return "Logged out"
+
+
+@need_admin
+def add_team(self, args):
+    try:
+        added = self.game.add_team(args[1], args[2])
+    except IndexError:
+        return "Invalid parameters"
+    if added:
+        return "Team added"
+    return "Failed to add team"
+
+
+@need_admin
+def remove_team(self, args):
+    try:
+        removed = self.game.remove_team(args[1])
+    except IndexError:
+        return "Invalid parameters"
+    if removed:
+        return "Removed Team"
+    return "Remove Team Failed"
+
+
+@need_admin
+def add_landmark(self, args):
+    try:
+        added = self.game.add_landmark(args[1],args[2],args[3])
+    except IndexError:
+        return "Invalid parameters"
+    if added:
+        return "Added landmark"
+    return "Failed to add landmark"
+
+
+@need_admin
+def remove_landmark(self, args):
+    try:
+        removed = self.game.remove_landmark(args[1])
+    except IndexError:
+        return "Invalid parameters"
+    if removed:
+        return "Removed Landmark"
+    return "Failed to remove Landmark"
+
+
+@need_admin
+def start(self, _):
+    try:
+        self.game.start()
+    except IndexError:
+        return "Invalid parameters"
+    if self.game.started:
+        return "Started Game"
+    return "Failed to start Game"
+
+
+@need_admin
+def create(self, args):
+    try:
+        self.game = GameFactory().getGame()
+    except IndexError:
+        return "Invalid Parameters"
+    if self.game:
+        return "Game Created"
+    return "Game Failed"
+
+
+def perform_team_edit(self, args):
+    try:
+        if args[1] == "name":
+            if self.game.modify_team(args[2], args[4]):
+                return "Team name changed"
+        elif args[1] == "password":
+            if self.game.modify_team(args[2], args[4]):
+                return "Team password changed"
+        else:
+            return "Invalid command, check 2nd argument"
+    except IndexError:
+        return "Invalid Parameters"
+
+
+# bit complicated because both GM and teams can edit (their own for team), (GM -> any team)
+def edit_team(self, args):
+    try:
+        if self.current_user.is_admin():
+            return perform_team_edit(self, args)
+        else:
+            if self.current_user: # if current user is a some team and not game maker
+                if self.current_user.get_username() == args[2]: # loggedin team can only edit themselves
+                    return self.perform_team_edit(self, args)
+    except IndexError:
+        return "Invalid Parameters"
+    except AttributeError:
+        return "Have to be logged in to Edit team"
+
+
+commands = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
+            "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark}
+
 class CLI:
-    def __init__(self):
+    def __init__(self, commands):
         self.gm = GMFactory().get_gm()
+        self.commands = commands
         self.current_user = None
         self.game = None
 
-    def __login(self, args):
-        if self.current_user:
-            return "Already logged in"
-        try:
-            self.current_user = self.gm.login(args[1], args[2])
-            if self.current_user:
-                return "Login successful"
-            if self.game:
-                for team in self.game.teams:
-                    self.current_user = team.login(args[1], args[2])
-                    if self.current_user:
-                        return "Login successful"
-        except IndexError:
-            return "Invalid parameters"
-        return "Login failed"
-
-    def __logout(self, _):
-        if not self.current_user:
-            return "No user logged in"
-        self.current_user = None
-        return "Logged out"
-
-    @need_admin
-    def __addteam(self, args):
-        try:
-            added = self.game.add_team(args[1], args[2])
-        except IndexError:
-            return "Invalid parameters"
-        if added:
-            return "Team added"
-        return "Failed to add team"
-
-    @need_admin
-    def __removeteam(self, args):
-        try:
-            removed = self.game.remove_team(args[1])
-        except IndexError:
-            return "Invalid parameters"
-        if removed:
-            return "Removed Team"
-        return "Remove Team Failed"
-
-    @need_admin
-    def __addlandmark(self, args):
-        try:
-            added = self.game.add_landmark(args[1],args[2],args[3])
-        except IndexError:
-            return "Invalid parameters"
-        if added:
-            return "Added landmark"
-        return "Failed to add landmark"
-
-    @need_admin
-    def __removelandmark(self, args):
-        try:
-            removed = self.game.remove_landmark(args[1])
-        except IndexError:
-            return "Invalid parameters"
-        if removed:
-            return "Removed Landmark"
-        return "Failed to remove Landmark"
-
-    @need_admin
-    def __start(self, _):
-        try:
-            self.game.start()
-        except IndexError:
-            return "Invalid parameters"
-        if self.game.started:
-            return "Started Game"
-        return "Failed to start Game"
-
-    @need_admin
-    def __create(self, args):
-        try:
-            self.game = GameFactory().getGame()
-        except IndexError:
-            return "Invalid Parameters"
-        if self.game:
-            return "Game Created"
-        return "Game Failed"
-
-    def __performTeamEdit(self, args):
-        try:
-            if args[1] == "name":
-                if self.game.modify_team(args[2], args[4]):
-                    return "Team name changed"
-            elif args[1] == "password":
-                if self.game.modify_team(args[2], args[4]):
-                    return "Team password changed"
-            else:
-                return "Invalid command, check 2nd argument"
-        except IndexError:
-            return "Invalid Parameters"
-
-
-    #bit complicated because both GM and teams can edit (their own for team), (GM -> any team)
-    def __editteam(self, args):
-        try:
-            if self.current_user.is_admin():
-                return self.__performTeamEdit(args)
-            else:
-                if self.current_user: # if current user is a some team and not game maker
-                    if self.current_user.get_username() == args[2]: # loggedin team can only edit themselves
-                        return self.__performTeamEdit(args)
-        except IndexError:
-            return "Invalid Parameters"
-        except AttributeError:
-            return "Have to be logged in to Edit team"
-
     def command(self, args):
-        commands = {"login": self.__login, "addteam": self.__addteam, "addlandmark": self.__addlandmark,
-                    "removeteam": self.__removeteam, "start": self.__start, "create": self.__create,
-                    "logout": self.__logout, "editteam": self.__editteam, "removelandmark": self.__removelandmark}
         inp = shlex.split(args)
         try:
-            return commands[inp[0].lower()](inp)
+            return self.commands[inp[0].lower()](self, inp)
         except KeyError:
             return "Invalid command"
         except IndexError:
@@ -145,7 +155,7 @@ class CLI:
 
 class TestGMLogin(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI()
+        self.cli = CLI(commands)
 
     def test_login_success(self):
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
@@ -162,7 +172,7 @@ class TestGMLogin(unittest.TestCase):
 
 class TestTeamExistsLogin(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI()
+        self.cli = CLI(commands)
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Valid login failed")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
         self.assertEqual("Team added", self.cli.command("addteam teamName teamPassword"), "Failed to add Team")
@@ -180,7 +190,7 @@ class TestTeamExistsLogin(unittest.TestCase):
 
 class TestTeamNotExistsLogin(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI()
+        self.cli = CLI(commands)
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Valid login failed")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
         self.assertEqual("Logged out", self.cli.command("logout"), "Failed to log out")
@@ -191,7 +201,7 @@ class TestTeamNotExistsLogin(unittest.TestCase):
 
 class TestEditTeams(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI()
+        self.cli = CLI(commands)
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
         self.assertEqual("Team added", self.cli.command("addteam currentName currentPass"))
@@ -228,7 +238,7 @@ class TestEditTeams(unittest.TestCase):
 
 class TestAddTeam(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI()
+        self.cli = CLI(commands)
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
 
@@ -250,7 +260,7 @@ class TestAddTeam(unittest.TestCase):
 
 class TestRemoveTeam(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI()
+        self.cli = CLI(commands)
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
         self.assertEqual("Team added", self.cli.command("addteam Team1 1526"), "setup failed")
@@ -279,7 +289,7 @@ class TestRemoveTeam(unittest.TestCase):
 
 class TestStartGame(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI()
+        self.cli = CLI(commands)
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
         self.assertEqual("Team added", self.cli.command("addteam Team1 1526"), "setup failed")
@@ -301,7 +311,7 @@ class TestStartGame(unittest.TestCase):
 
 class TestCreate(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI()
+        self.cli = CLI(commands)
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
 
     def test_create_is_gm(self):
@@ -315,7 +325,7 @@ class TestCreate(unittest.TestCase):
 
 class TestAddLandmark(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI()
+        self.cli = CLI(commands)
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to Create Game")
 
@@ -344,7 +354,7 @@ class TestAddLandmark(unittest.TestCase):
 
 class TestRemoveLandmark(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI()
+        self.cli = CLI(commands)
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
         self.assertEqual("Team added", self.cli.command("addteam Team1 1526"), "setup failed")
