@@ -28,6 +28,13 @@ class TeamI(ABC):
     def get_username(self):
         pass
 
+    @abstractmethod
+    def get_points(self):
+        pass
+
+    @abstractmethod
+    def add_points(self, points):
+        pass
 
 class TeamFactory:
     def getTeam(self, username, password):
@@ -37,6 +44,7 @@ class TeamFactory:
         def __init__(self, username, password):
             self.username = username
             self.password = password
+            self.points = 0
 
         def changeName(self, name):
             self.username = name
@@ -57,6 +65,15 @@ class TeamFactory:
 
         def get_username(self):
             return self.username
+
+        def get_points(self):
+            return self.team.points
+
+        def set_points(self, points):
+            if self.team.points + points is 0:
+                self.team.points = 0
+            else:
+                self.team.points += points
 
         def is_admin(self):
             return False
@@ -81,6 +98,37 @@ class TestInit(unittest.TestCase):
         self.assertEqual("TeamA", self.team.username, "username value improperly set")
         self.assertEqual("2123", self.team.password, "password value improperly set")
 
+class TestGetPoints(unittest.TestCase):
+    def setUp(self):
+        self.team = TeamFactory().getTeam("Team 1", "1234")
+
+    def test_get_points(self):
+        self.points = 100
+        self.assertEqual(100, self.team.get_points, "Points are not setting properly")
+
+class TestSetPoints(unittest.TestCase):
+    def setUp(self):
+        self.team = TeamFactory().getTeam("Team 1", "1234")
+
+    def test_add_once_positive(self):
+        self.team.set_points(100)
+        self.assertEquals(100, self.team.points, "Failed to add 100 points properly")
+
+    def test_add_cumulative_positive(self):
+        self.team.set_points(100)
+        self.assertEquals(100, self.team.points, "Failed to add 100 points properly")
+        self.team.set_points(15)
+        self.assertEquals(115, self.team.points, "Failed to add 15 to 100 points properly")
+
+    def test_add_once_negative(self):
+        self.team.set(-15)
+        self.assertEquals(0, self.team.points, "Cannot drop below the 0 threshold")
+
+    def test_add_cumulative_posandneg(self):
+        self.team.set(100)
+        self.assertEquals(100, self.team.points, "Failed to add 100 points properly")
+        self.team.set(-15)
+        self.assertEquals(85, self.team.points, "Failed to remove 15 points properly")
 
 class TestTeamLogin(unittest.TestCase):
     def setUp(self):

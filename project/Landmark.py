@@ -4,6 +4,10 @@ from abc import ABC, abstractmethod
 
 class LandmarkI(ABC):
     @abstractmethod
+    def submit_answer(self, answer):
+        pass
+
+    @abstractmethod
     def get_location(self):
         pass
 
@@ -25,6 +29,9 @@ class LandmarkFactory:
             self.location = location
             self.clue = clue
             self.answer = answer
+
+        def submit_answer(self, answer):
+            pass
 
         def get_location(self):
             return self.location
