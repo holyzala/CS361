@@ -112,11 +112,12 @@ class GameFactory:
                 return True
             return False
 
-        def remove_landmark(self, landmark):
+        def remove_landmark(self, location):
             if not self.started:
-                if landmark in self.landmarks:
-                    self.landmarks.remove(landmark)
-                    return True
+                for landmark in self.landmarks:
+                    if landmark.location == location:
+                        self.landmarks.remove(landmark)
+                        return True
             return False
 
         def modify_landmark(self, oldlandmark, newlandmark):
@@ -266,7 +267,7 @@ class TestDeleteLandmarks(unittest.TestCase):
     def test_delete_landmark(self):
         landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
         self.game.landmarks.append(landmark1)
-        self.game.remove_landmark(landmark1)
+        self.game.remove_landmark("ABC")
         self.assertNotIn(landmark1, self.game.landmarks, "Failed to remove landmark")
 
     def test_delete_multi_landmarks(self):
@@ -274,14 +275,14 @@ class TestDeleteLandmarks(unittest.TestCase):
         landmark2 = LandmarkFactory().get_landmark("JKL", "MNO", "PQR")
         self.game.landmarks.append(landmark1)
         self.game.landmarks.append(landmark2)
-        self.game.remove_landmark(landmark1)
+        self.game.remove_landmark("ABC")
         self.assertNotIn(landmark1, self.game.landmarks, "Failed to remove Landmark1")
-        self.game.remove_landmark(landmark2)
+        self.game.remove_landmark("JKL")
         self.assertNotIn(landmark1, self.game.landmarks, "Failed to remove Landmark2")
 
     def test_delete_landmark_does_not_exist(self):
         landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
-        self.assertFalse(self.game.remove_landmark(landmark1), "landmark does not exist")
+        self.assertFalse(self.game.remove_landmark("ABC"), "landmark does not exist")
 
     def test_delete_landmark_from_empty_landmark_list(self):
         landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
@@ -289,13 +290,13 @@ class TestDeleteLandmarks(unittest.TestCase):
         self.game.landmarks.append(landmark1)
         self.game.landmarks.append(landmark2)
         self.game.landmarks.clear()
-        self.assertFalse(self.game.remove_team(landmark1), "Failed to remove team, list of teams empty")
+        self.assertFalse(self.game.remove_team("ABC"), "Failed to remove team, list of teams empty")
 
-    def test_remove_team_game_started(self):
+    def test_remove_landmark_game_started(self):
         self.game.started = True
         landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
         self.game.landmarks.append(landmark1)
-        self.assertFalse(self.game.remove_team(landmark1), "should not remove teams once game starts")
+        self.assertFalse(self.game.remove_team("ABC"), "should not remove teams once game starts")
 
 
 class TestAddLandmark2(unittest.TestCase):

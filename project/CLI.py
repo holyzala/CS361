@@ -75,10 +75,7 @@ class CLI:
     @need_admin
     def __removelandmark(self, args):
         try:
-            removed = None
-            for landmark in self.game.landmarks:
-                if landmark.location == args[1]:
-                    removed = self.game.remove_landmark(landmark)
+            removed = self.game.remove_landmark(args[1])
         except IndexError:
             return "Invalid parameters"
         if removed:
@@ -106,14 +103,18 @@ class CLI:
         return "Game Failed"
 
     def __performTeamEdit(self, args):
-        if args[1] == "name":
-            if self.game.modify_team(args[2], args[4]):
-                return "Team name changed"
-        elif args[1] == "password":
-            if self.game.modify_team(args[2], args[4]):
-                return "Team password changed"
-        else:
-            return "Invalid command, check 2nd argument"
+        try:
+            if args[1] == "name":
+                if self.game.modify_team(args[2], args[4]):
+                    return "Team name changed"
+            elif args[1] == "password":
+                if self.game.modify_team(args[2], args[4]):
+                    return "Team password changed"
+            else:
+                return "Invalid command, check 2nd argument"
+        except IndexError:
+            return "Invalid Parameters"
+
 
     #bit complicated because both GM and teams can edit (their own for team), (GM -> any team)
     def __editteam(self, args):
