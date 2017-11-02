@@ -1,51 +1,65 @@
 import unittest
 import datetime
 import time
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from Landmark import LandmarkFactory
 from Team import TeamFactory
 
 
 class GameInterface(ABC):
+    @abstractmethod
     def add_team(self, name, password):
-        return False
+        pass
 
+    @abstractmethod
     def remove_team(self, name):
-        return False
+        pass
 
+    @abstractmethod
     def modify_team(self, oldname, name=None, password=None):
         pass
 
+    @abstractmethod
     def add_landmark(self, location, clue, answer):
-        return False
+        pass
 
+    @abstractmethod
     def remove_landmark(self, landmark):
         pass
 
+    @abstractmethod
     def modify_landmark(self, oldlandmark, newlandmark):
         pass
 
+    @abstractmethod
     def set_point_penalty(self, points):
         pass
 
+    @abstractmethod
     def set_time_penalty(self, time):
         pass
 
+    @abstractmethod
     def start(self):
-        return False
+        pass
 
+    @abstractmethod
     def end(self):
         pass
 
+    @abstractmethod
     def get_status(self,team):
         pass
 
+    @abstractmethod
     def answer_question(self,team,answer):
-        return False
+        pass
 
+    @abstractmethod
     def quit_question(self,team,password):
-        return False
+        pass
+
 
 class GameFactory:
     def getGame(self):
@@ -83,17 +97,16 @@ class GameFactory:
 
         def add_landmark(self, location, clue, answer):
             if not self.started:
-                landmarkToBeAdded = LandmarkFactory().getLandmark(location, clue, answer)
-                for landmark in self.landmarks:
-                    if landmark.location == landmarkToBeAdded.location:
-                        return False
+                landmarkToBeAdded = LandmarkFactory().get_landmark(location, clue, answer)
+                if landmarkToBeAdded in self.landmarks:
+                    return False
                 self.landmarks.append(landmarkToBeAdded)
                 return True
             return False
 
         def remove_landmark(self, landmark):
-            if landmark in self.game.landmarks:
-                self.game.landmarks.remove(landmark)
+            if landmark in self.landmarks:
+                self.landmarks.remove(landmark)
                 return "Landmark Removed Succesfully"
             else:
                 return "Could not Remove Landmark"
@@ -113,6 +126,14 @@ class GameFactory:
         def end(self):
             self.ended = True
 
+        def quit_question(self, team, password):
+            return True
+
+        def answer_question(self, team, answer):
+            return True
+
+        def get_status(self, team):
+            return ""
 
 class TestAddTeam(unittest.TestCase):
     def setUp(self):
@@ -178,7 +199,7 @@ class TestAddLandmark(unittest.TestCase):
                         , "Cannot add landmark once game has started")
 
     def test_add_landmark_duplicates(self):
-        ld = LandmarkFactory().getLandmark("New York", "Gift given by the French", "statue of liberty")
+        ld = LandmarkFactory().get_landmark("New York", "Gift given by the French", "statue of liberty")
         self.game.landmarks.append(ld)
         self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
                          "Cannot add duplicate landmarks")
@@ -253,20 +274,20 @@ class TestAddLandmark2(unittest.TestCase):
         self.game = GameFactory().getGame()
 
     def test_add_landmark(self):
-        landmark1 = "ABC"
+        landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
         self.assertNotIn(landmark1, self.game.landmarks, "Landmark already Exists")
-        self.game.add_landmark(landmark1)
+        self.game.add_landmark(landmark1.location, landmark1.clue, landmark1.answer)
         self.assertIn(landmark1, self.game.landmarks, "Landmark was not successfully added")
 
     def test_add_landmark(self):
-        landmark1 = "ABC"
-        landmark2 = "DEF"
+        landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
+        landmark2 = LandmarkFactory().get_landmark("JKL", "MNO", "PQR")
         self.assertNotIn(landmark1, self.game.landmarks, "Landmark already Exists")
-        self.game.add_landmark(landmark1)
+        self.game.add_landmark(landmark1.location, landmark1.clue, landmark1.answer)
         self.assertIn(landmark1, self.game.landmarks, "Landmark1 was not successfully added")
-        self.game.add_landmark(landmark2)
+        self.game.add_landmark(landmark2.location, landmark2.clue, landmark2.answer)
         self.assertIn(landmark2, self.game.landmarks, "Landmark2 was not sucessfully added")
-        self.assertEqual((self.game.landmark[0], self.game.landmarks[1]), (landmark1, landmark2), "Adding not indexing properly")
+        self.assertEqual((self.game.landmarks[0], self.game.landmarks[1]), (landmark1, landmark2), "Adding not indexing properly")
 
 
 class landmarkDummy:

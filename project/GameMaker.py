@@ -1,11 +1,13 @@
 import unittest
-from abc import ABC
+from abc import ABC, abstractmethod
 
 
 class UserABC(ABC):
+    @abstractmethod
     def login(self, username, password):
         pass
 
+    @abstractmethod
     def is_admin(self):
         pass
 

@@ -1,27 +1,30 @@
 import unittest
-from abc import ABC
+from abc import ABC, abstractmethod
 from GameMaker import UserABC
 
 
 class TeamI(ABC):
+    @abstractmethod
     def login(self, password):
         pass
 
+    @abstractmethod
     def changeName(self, name):
         pass
 
+    @abstractmethod
     def changePassword(self, password):
         pass
 
+    @abstractmethod
     def answer_question(self, answer):
         pass
 
+    @abstractmethod
     def get_status(self):
         pass
 
-    def get_clue(self):
-        pass
-
+    @abstractmethod
     def get_username(self):
         pass
 
@@ -52,11 +55,21 @@ class TeamFactory:
         def get_status(self):
             return ""
 
-        def get_clue(self):
-            return ""
-
         def get_username(self):
             return self.username
+
+        def is_admin(self):
+            return False
+
+
+class TestGetters(unittest.TestCase):
+    def setUp(self):
+        self.username = "TeamA"
+        self.password = "2123"
+        self.team = TeamFactory().getTeam(self.username, self.password)
+
+    def test_get_username(self):
+        self.assertEqual(self.username, self.team.get_username(), "Returned username incorrect")
 
 
 class TestInit(unittest.TestCase):
@@ -70,6 +83,7 @@ class TestGetAnswer(unittest.TestCase):
     def test_get_answer(self):
         self.team = TeamFactory().getTeam("TeamA", "2123")
         self.assertEqual("TeamA", self.team.get_username(), "getter does not work")
+
 
 class TestTeam(unittest.TestCase):
     def setUp(self):
@@ -104,6 +118,7 @@ if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestInit))
     suite.addTest(unittest.makeSuite(TestGetAnswer))
+    suite.addTest(unittest.makeSuite(TestGetters))
     suite.addTest(unittest.makeSuite(TestTeam))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
