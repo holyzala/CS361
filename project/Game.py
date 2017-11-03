@@ -17,7 +17,7 @@ class GameInterface(ABC):
         pass
 
     @abstractmethod
-    def modify_team(self, oldname, name=None, password=None):
+    def modify_team(self, oldname, newname=None, newpassword=None):
         pass
 
     @abstractmethod

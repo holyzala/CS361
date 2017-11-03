@@ -106,22 +106,32 @@ def create(self, args):
 
 
 def perform_team_edit(self, args):
+    name_index = None
+    pass_index = None
     try:
-        if args[2] == "name" and len(args) < 5:
-            if self.game.modify_team(args[1], args[3]):
-                return "Team name changed"
+        name_index = args.index('name', 2)
+    except ValueError:
+        pass
+
+    try:
+        pass_index = args.index('password', 2)
+    except ValueError:
+        pass
+
+    try:
+        if name_index:
+            name = args[name_index + 1]
+            password = None
+            if pass_index:
+                password = args[pass_index + 1]
+            if self.game.modify_team(oldname=args[1], newname=name, newpassword=password):
+                return "Team changed"
             else:
                 return "Team new name already exists"
-        elif args[2] == "password":
-            if self.game.modify_team(args[1], args[3]):
-                return "Team password changed"
-        elif args[2] == "name" and args[4] == "password":
-            if self.game.modify_team(args[1], args[3], args[5]):
-                return "Team name and password changed"
-            else:
-                return "Team new name already exists"
-        else:
-            return "Invalid command, check 2nd argument"
+        if pass_index:
+            if self.game.modify_team(oldname=args[1], newpassword=args[pass_index + 1]):
+                return "Team changed"
+        return "No Changes"
     except IndexError:
         return "Invalid Parameters"
 
@@ -219,58 +229,52 @@ class TestEditTeams(unittest.TestCase):
 
     def test_team_edit_name_logged_in(self):
         self.assertEqual("Login successful", self.cli.command("login Team1 239103"), "Valid login failed")
-        self.assertEqual("Team name changed", self.cli.command("editteam Team1 name ILikeCheese"),
+        self.assertEqual("Team changed", self.cli.command("editteam Team1 name ILikeCheese"),
                          "Failed to change username")
 
     def test_team_edit_password_logged_in(self):
         self.assertEqual("Login successful", self.cli.command("login Team1 239103"), "Valid login failed")
-        self.assertEqual("Team password changed", self.cli.command("editteam Team1 password ThisIsSecure")
-                         , "Failed to change pass")
+        self.assertEqual("Team changed", self.cli.command("editteam Team1 password ThisIsSecure"),
+                         "Failed to change pass")
 
     def test_team_edit_name_and_password_logged_in(self):
         self.assertEqual("Login successful", self.cli.command("login Team1 239103"), "Valid login failed")
-        self.assertEqual("Team name and password changed",
-                         self.cli.command("editteam Team1 name ILikeCheese password ThisIsSecure")
-                         , "Failed to change pass")
+        self.assertEqual("Team changed", self.cli.command("editteam Team1 name ILikeCheese password ThisIsSecure"),
+                         "Failed to change pass")
 
     def test_team_edit_name_not_logged_in(self):
-        self.assertEqual("Have to be logged in to Edit team",
-                         self.cli.command("editteam Team1 name ILikeCheese"), "no team is logged in")
+        self.assertEqual("Have to be logged in to Edit team", self.cli.command("editteam Team1 name ILikeCheese"),
+                         "no team is logged in")
 
     def test_team_edit_password_not_logged_in(self):
-        self.assertEqual("Have to be logged in to Edit team",
-                         self.cli.command("editteam Team1 password ThisIsSecure"), "no team is logged in")
+        self.assertEqual("Have to be logged in to Edit team", self.cli.command("editteam Team1 password ThisIsSecure"),
+                         "no team is logged in")
 
     def test_team_edit_other_team_name(self):
         self.assertEqual("Login successful", self.cli.command("login Team1 239103"), "Valid login failed")
-        self.assertEqual("Edit self only!", self.cli.command("editteam Team2 password ThisIsSecure")
-                         , "Only edit self")
+        self.assertEqual("Edit self only!", self.cli.command("editteam Team2 password ThisIsSecure"), "Only edit self")
 
     def test_team_edit_name_but_there_is_a_team_with_same_name(self):
         self.assertEqual("Login successful", self.cli.command("login Team1 239103"), "Valid login failed")
-        self.assertEqual("Team new name already exists", self.cli.command("editteam Team1 name Team2")
-                         , "Only edit self")
+        self.assertEqual("Team new name already exists", self.cli.command("editteam Team1 name Team2"),
+                         "Only edit self")
     def test_team_edit_name_but_there_is_a_team_with_same_name_v2(self):
         self.assertEqual("Login successful", self.cli.command("login Team1 239103"), "Valid login failed")
         self.assertEqual("Team new name already exists",
-                         self.cli.command("editteam Team1 name Team2 password ThisIsSecure")
-                         , "Only edit self")
+                         self.cli.command("editteam Team1 name Team2 password ThisIsSecure"), "Only edit self")
 
     def test_gm_edit_team_name(self):
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
-        self.assertEqual("Team name changed", self.cli.command("editteam Team1 name ILikeCheese")
-                         , "Failed to change name")
+        self.assertEqual("Team changed", self.cli.command("editteam Team1 name ILikeCheese"), "Failed to change name")
 
     def test_gm_edit_team_pass(self):
         self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
-        self.assertEqual("Team password changed", self.cli.command("editteam Team1 password ThisIsSecure")
-                         , "Failed to change pass")
+        self.assertEqual("Team changed", self.cli.command("editteam Team1 password ThisIsSecure"),
+                         "Failed to change pass")
 
     def test_team_edit_bad_args(self):
         self.assertEqual("Login successful", self.cli.command("login Team1 239103"), "Valid login failed")
-        self.assertEqual("Invalid Parameters",
-                         self.cli.command("editteam Team1")
-                         , "check for bad input")
+        self.assertEqual("No Changes", self.cli.command("editteam Team1"), "check for bad input")
 
 class TestAddTeam(unittest.TestCase):
     def setUp(self):
@@ -287,8 +291,7 @@ class TestAddTeam(unittest.TestCase):
 
     def test_add_team_duplicate(self):
         self.assertEqual("Team added", self.cli.command("addteam Team1 1234"), "Failed to add team")
-        self.assertEqual("Failed to add team", self.cli.command("addteam Team1 1234"),
-                         "can not have duplicate teams")
+        self.assertEqual("Failed to add team", self.cli.command("addteam Team1 1234"), "can not have duplicate teams")
 
     def test_add_team_bad_args(self):
         self.assertEqual("Invalid parameters", self.cli.command("addteam"), "Invalid parameters")
