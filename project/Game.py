@@ -17,7 +17,7 @@ class GameInterface(ABC):
         pass
 
     @abstractmethod
-    def modify_team(self, oldname, name=None, password=None):
+    def modify_team(self, oldname, newname=None, newpassword=None):
         pass
 
     @abstractmethod
@@ -90,10 +90,13 @@ class Game(GameInterface):
 
     def modify_team(self, oldname, newname=None, newpassword=None):
         try:
-            if newname:
-                self.teams[oldname].changeName(newname)
+            if newname in self.teams:
+                return False
             if newpassword:
                 self.teams[oldname].changePassword(newpassword)
+            if newname:
+                self.teams[oldname].changeName(newname)
+                self.teams[newname] = self.teams.pop(oldname)
             return True
         except KeyError:
             return False
@@ -241,9 +244,16 @@ class TestModifyTeam(unittest.TestCase):
 
     def test_modify_team_name(self):
         self.assertTrue(self.game.modify_team("Team1", newname="Team2", newpassword=None), "Team name was not modified")
+        self.assertIn("Team2", self.game.teams, "Key was not updated")
 
     def test_modify_team_password(self):
         self.assertTrue(self.game.modify_team("Team1", newname=None, newpassword="5678"), "password was not modified")
+        self.assertIn("Team1", self.game.teams, "Key should not be updated")
+
+    def test_modify_team_name_and_password(self):
+        self.assertTrue(self.game.modify_team("Team1", newname="Team103", newpassword="5678"),
+                        "name and password was not modified")
+        self.assertIn("Team103", self.game.teams, "Key was not updated")
 
     def test_modify_team_does_not_exist(self):
         self.game.teams.clear()
