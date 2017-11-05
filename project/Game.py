@@ -140,7 +140,12 @@ class Game(GameInterface):
         return True
 
     def get_status(self, team):
-        return ""
+        currenttimecalc = (team.clueTime + datetime.timedelta(hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second))
+        totaltime = datetime.timedelta(hours=0,minutes=0,seconds=0)
+        for t in team.timelog:
+            totaltime+=t
+        return('Points:'+str(team.points)+';You Are On Landmark:'+str(team.currentLandmark)+';Current Time:'+ str(currenttimecalc) +';Time Taken For Landmarks:'+str(totaltime))
+
 
 
 def make_game(*args, **kwargs):
@@ -345,7 +350,7 @@ class landmarkDummy:
     answer = "three disks"
     location = "uwm library"
     points = 150
-    timer = datetime.time(0,0,15)
+    timer = datetime.timedelta(hours=0,minutes=0,seconds=15)
     timepenelty = 20
     answerpenalty = 10
 
@@ -353,8 +358,8 @@ class landmarkDummy:
 class teamDummy:
     points = 100
     currentLandmark = 1
-    timelog = [datetime.time(0,20,15),datetime.time(0,35,25)]
-    clueTime = datetime.time(0,0,0)
+    timelog = [datetime.timedelta(hours=0,minutes=20,seconds=15),datetime.timedelta(hours=0,minutes=35,seconds=25)]
+    clueTime = datetime.timedelta(hours=0,minutes=0,seconds=0)
     password = "password"
 
 
@@ -368,17 +373,17 @@ class Test_Game_Team(unittest.TestCase):
         self.game.landmarks=[l1,l2,l3]
         self.game.penaltyTime = 20
         self.game.penaltyValue = 10
-        self.game.timer = datetime.time(00,00,15)
+        self.game.timer = datetime.timedelta(hours = 0, minutes = 0, seconds = 15)
 
     def test_get_status(self):
-        self.team.clueTime = datetime.time(5,30,50)
-        currenttimecalc = (str(datetime.datetime.now().hour-self.team.clueTime.hour)+":"+str(datetime.datetime.now().minute-self.team.clueTime.minute)+":"+str(datetime.datetime.now().second-self.team.clueTime.second))
-        self.assertEqual(self.game.get_status(self.team), 'Points:100;You Are On Landmark:2;Current Time:'+currenttimecalc+';Time Taken For Landmarks:00:55:40)', 'get_status did not print the proper stats!')
+        self.team.clueTime = datetime.timedelta(hours=5,minutes=30,seconds=50)
+        currenttimecalc = (self.team.clueTime + datetime.timedelta(hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second))
+        self.assertEqual(self.game.get_status(self.team), 'Points:100;You Are On Landmark:1;Current Time:'+str(currenttimecalc)+';Time Taken For Landmarks:0:55:40', 'get_status did not print the proper stats!')
 
         #The final assert of adding correct time to timelog may not work properly because though the test takes milliseconds,
         #  it may go over the second threshold
     def test_quit_question(self):
-        self.team.clueTime = datetime.datetime.now()
+        self.team.clueTime = datetime.timedelta(hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second)
         self.assertTrue(self.game.quit_question(self.team,"password"),"Quit Question Returned False After Correct Password!")
         self.assertEqual(self.team.points,100,"Points Changed after Giving Up!")
         self.assertEqual(self.team.currentLandmark,2,"Landmark Index Did Not Properly Incriment")
@@ -386,14 +391,14 @@ class Test_Game_Team(unittest.TestCase):
         self.assertEqual(self.team.timelog[2],self.team.clueTime,"Time Log Did Not Recieve The Correct Time") #this may not work correctly
 
     def test_quit_question_incorrectpass(self):
-        self.team.clueTime = datetime.datetime.now()
+        self.team.clueTime = datetime.timedelta(hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second)
         self.assertFalse(self.game.quit_question(self.team,"incorrectpasswerd"),"Quit Question Returned True After Incorrect Password!")
         self.assertEqual(self.team.points,100,"Points Changed after Failing Give Up!")
         self.assertEqual(self.team.currentLandmark,1,"Landmark Index Increased after Failed Password")
         self.assertEqual(len(self.team.timelog),1,"Time log logged a new entry after failied password")
 
     def test_answer_question_correct_no_time(self):
-        self.team.clueTime = datetime.datetime.now()
+        self.team.clueTime = datetime.timedelta(hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second)
         self.assertTrue(self.game.answer_question(self.team,"three disks"),"Correct Answer Returned False!")
         self.assertEqual(self.team.points,250,"Points did not increment correctly")
         self.assertEqual(self.team.currentLandmark,2,"Landmark Index Did not Properly increment")
@@ -401,7 +406,7 @@ class Test_Game_Team(unittest.TestCase):
         self.assertEqual(self.team.timelog[2],self.team.clueTime,"Time Log Did Not Save The Correct Time") #This may not work properly
 
     def test_answer_question_incorrect_no_time(self):
-        self.team.clueTime = datetime.datetime.now()
+        self.team.clueTime = datetime.timedelta(hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second)
         self.assertFalse(self.game.answer_question(self.team,"trash fire"),"Incorrect Answer Returned True!")
         self.assertEqual(self.team.points,100,"Points did not increment correctly")
         self.assertEqual(self.team.currentLandmark,1,"Landmark Index Did not Properly increment")
@@ -416,22 +421,22 @@ class Test_Game_Team(unittest.TestCase):
         # IT IS RECCOMENDED TO HAVE THESE TESTS BE LAST IN THE SUITE
 
     def test_answer_question_time_penalty(self):
-        self.team.clueTime = datetime.datetime.now()
+        self.team.clueTime = datetime.timedelta(hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second)
         time.sleep(16)
         self.assertTrue(self.game.answer_question(self.team,"three disks"),"Returned False after Correct Answer!")
         self.assertEqual(self.team.points,230,"Points did not increment correctly")
         self.assertEqual(self.team.currentLandmark,2,"Landmark Index Did not Properly increment")
         self.assertEqual(len(self.team.timelog),3,"Time Log Did Not recieve a new entry")
-        self.assertEqual(self.team.timelog[2],self.team.clueTime+datetime.time(00,00,16),"Time Log Did Not Save The Correct Time") #This may not work properly
+        self.assertEqual(self.team.timelog[2],self.team.clueTime+datetime.timedelta(hours=0,minutes=00,seconds=16),"Time Log Did Not Save The Correct Time") #This may not work properly
 
     def test_answer_question_time_penalty2(self):
-        self.team.clueTime = datetime.datetime.now()
+        self.team.clueTime = datetime.timedelta(hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second)
         time.sleep(31)
         self.assertTrue(self.game.answer_question(self.team,"three disks"), "Returned False After Correct Answer!")
         self.assertEqual(self.team.points,210,"Points did not increment correctly")
         self.assertEqual(self.team.currentLandmark,2,"Landmark Index Did not Properly increment")
         self.assertEqual(len(self.team.timelog),3,"Time Log Did Not recieve a new entry")
-        self.assertEqual(self.team.timelog[2],self.team.clueTime+datetime.time(00,00,31),"Time Log Did Not Save The Correct Time") #This may not work properly
+        self.assertEqual(self.team.timelog[2],self.team.clueTime+datetime.timedelta(hours=0,minutes=0,seconds=31),"Time Log Did Not Save The Correct Time") #This may not work properly
 
     def test_answer_question_time_complex(self):
         self.team.clueTime = datetime.datetime.now()
@@ -444,7 +449,7 @@ class Test_Game_Team(unittest.TestCase):
         self.assertEqual(self.team.points,220,"Points did not increment correctly")
         self.assertEqual(self.team.currentLandmark,2,"Landmark Index Did not Properly increment")
         self.assertEqual(len(self.team.timelog),3,"Time Log Did Not recieve a new entry")
-        self.assertEqual(self.timelog[2],self.team.clueTime+datetime.time(00,00,18),"Time Log Did Not Save The Correct Time") #This may not work properly
+        self.assertEqual(self.timelog[2],self.team.clueTime+datetime.timedelta(hours=0,minutes=0,seconds=18),"Time Log Did Not Save The Correct Time") #This may not work properly
 
 
 if __name__ == "__main__":
