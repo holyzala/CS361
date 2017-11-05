@@ -5,7 +5,7 @@ from GameMaker import UserABC
 
 class TeamI(ABC):
     @abstractmethod
-    def login(self, password):
+    def login(self, username, password):
         pass
 
     @abstractmethod
@@ -17,11 +17,11 @@ class TeamI(ABC):
         pass
 
     @abstractmethod
-    def answer_question(self, answer):
+    def answer_question(self, answer, cur_time):
         pass
 
     @abstractmethod
-    def get_status(self):
+    def get_status(self, cur_time):
         pass
 
     @abstractmethod
@@ -57,14 +57,14 @@ class TeamFactory:
             self.password = password
 
         def login(self, username, password):
-            if username == self.username and password == self.password:
-                return self
-            return None
+            if username is not self.username or password is not self.password:
+                return None
+            return self
 
-        def answer_question(self, answer):
+        def answer_question(self, answer, cur_time):
             return ""
 
-        def get_status(self):
+        def get_status(self, cur_time):
             return ""
 
         def get_username(self):
