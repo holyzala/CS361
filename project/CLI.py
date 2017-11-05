@@ -152,8 +152,13 @@ def edit_team(self, args):
         return "Have to be logged in to Edit team"
 
 
+def get_clue(self, args):
+    return ""
+
+
 commands = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
-            "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark}
+            "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
+            "getclue": get_clue}
 
 class CLI:
     def __init__(self, commands):
@@ -425,6 +430,39 @@ class TestRemoveLandmark(unittest.TestCase):
         self.assertEqual("Invalid parameters", self.cli.command("removelandmark"), "Invalid parameters")
 
 
+class TestGetClue(unittest.TestCase):
+    def setUp(self):
+        self.cli = CLI(commands)
+        self.cli = CLI(commands)
+        self.assertEqual("Login successful", self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
+        self.assertEqual("Team added", self.cli.command("addteam Team1 1526"), "setup failed")
+        self.assertEqual("Added landmark",
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         "Failed to add landmark")
+        self.assertEqual("Added landmark",
+                         self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"'),
+                         "Failed to add landmark")
+
+    def test_admin(self):
+        self.assertEqual("Team not logged in", self.cli.command("getclue"), "Clue returned for admin")
+
+    def test_no_login(self):
+        self.assertEqual("Logged out", self.cli.command("logout"), "Failed to log out")
+        self.assertEqual("Team not logged in", self.cli.command("getclue"), "Clue returned for no one")
+
+    def test_correctly(self):
+        self.assertEqual("Logged out", self.cli.command("logout"), "Failed to log out")
+        self.assertEqual("Login successful", self.cli.command("login Team1 1526"), "Failed to log in team")
+        self.assertEqual("Gift given by the French", self.cli.command("getclue"), "Wrong clue returned")
+
+    def test_after_answer(self):
+        self.assertEqual("Logged out", self.cli.command("logout"), "Failed to log out")
+        self.assertEqual("Login successful", self.cli.command("login Team1 1526"), "Failed to log in team")
+        self.assertEqual("Correct", self.cli.command("answer 'Statue of Liberty'"), "Answer didn't work")
+        self.assertEqual("Place we purchase coffee from", self.cli.command("getclue"), "Wrong clue returned")
+
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestGMLogin))
@@ -436,6 +474,7 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(TestStartGame))
     suite.addTest(unittest.makeSuite(TestAddLandmark))
     suite.addTest(unittest.makeSuite(TestRemoveLandmark))
+    suite.addTest(unittest.makeSuite(TestGetClue))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
     print(res)

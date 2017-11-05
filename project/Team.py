@@ -46,6 +46,7 @@ class TeamFactory:
             self.username = username
             self.password = password
             self.points = 0
+            self.current_landmark = 0
 
         def __eq__(self, other):
             return self.username == other.username

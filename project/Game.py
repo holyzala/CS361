@@ -60,6 +60,10 @@ class GameInterface(ABC):
     def quit_question(self,team,password):
         pass
 
+    @abstractmethod
+    def get_clue(self, team):
+        pass
+
 
 class Game(GameInterface):
     def __init__(self):
@@ -142,6 +146,9 @@ class Game(GameInterface):
     def get_status(self, team):
         return ""
 
+    def get_clue(self, team):
+        return ""
+
 
 def make_game(*args, **kwargs):
     """This function should only ever return classes that implement GameInterface"""
@@ -156,9 +163,12 @@ class GameFactory:
         return self.maker(*args, **kwargs)
 
 
+TEST_FACTORY = GameFactory(make_game).create_game
+
+
 class TestAddTeam(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
         self.game.started = False
 
     def test_add_team(self):
@@ -175,7 +185,7 @@ class TestAddTeam(unittest.TestCase):
 
 class TestRemoveTeam(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
         self.game.started = False
         self.game.teams["Team1"] = TeamFactory().getTeam("Team1", "1232")
 
@@ -197,7 +207,7 @@ class TestRemoveTeam(unittest.TestCase):
 
 class TestStartGame(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
         self.game.started = False
 
     def test_start_game(self):
@@ -207,7 +217,7 @@ class TestStartGame(unittest.TestCase):
 
 class TestAddLandmark(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
         self.game.started = False
 
     def test_add_landmark(self):
@@ -228,7 +238,7 @@ class TestAddLandmark(unittest.TestCase):
 
 class TestEditLandmarkClue(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
 
     def test_edit_clue(self):
         self.game.landmarks = ["Chicago", "Madison"]
@@ -239,7 +249,7 @@ class TestEditLandmarkClue(unittest.TestCase):
 
 class TestModifyTeam(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
         self.game.teams["Team1"] = TeamFactory().getTeam("Team1", "1234")
 
     def test_modify_team_name(self):
@@ -262,7 +272,7 @@ class TestModifyTeam(unittest.TestCase):
 
 class TestEndGame(unittest.TestCase):
     def setUp(self):
-       self.game = GameFactory(make_game).create_game()
+       self.game = TEST_FACTORY()
 
     def test_end_game_command(self):
         self.game.started = True
@@ -280,7 +290,7 @@ class TestEndGame(unittest.TestCase):
 
 class TestDeleteLandmarks(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
         self.game.started = False
 
     def test_delete_landmark(self):
@@ -320,7 +330,7 @@ class TestDeleteLandmarks(unittest.TestCase):
 
 class TestAddLandmark2(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
 
     def test_add_landmark(self):
         landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
@@ -447,6 +457,36 @@ class Test_Game_Team(unittest.TestCase):
         self.assertEqual(self.timelog[2],self.team.clueTime+datetime.time(00,00,18),"Time Log Did Not Save The Correct Time") #This may not work properly
 
 
+class TestGetClue(unittest.TestCase):
+    def setUp(self):
+        self.game = TEST_FACTORY()
+        self.game.teams['abc'] = TeamFactory().getTeam('abc', 'def')
+        self.game.teams['ghi'] = TeamFactory().getTeam('ghi', 'jkl')
+        self.game.landmarks.append(LandmarkFactory().get_landmark('landmark1', 'clue1', 'answer1'))
+        self.game.landmarks.append(LandmarkFactory().get_landmark('landmark2', 'clue2', 'answer2'))
+        self.game.landmarks.append(LandmarkFactory().get_landmark('landmark3', 'clue3', 'answer3'))
+
+    def test_game_not_started(self):
+        self.assertEqual("Game not started yet", self.game.get_clue(self.game.teams['abc']),
+                         "Got clue before game started")
+        self.assertEqual(0, self.game.teams['abc'].points, "Points assigned")
+        self.assertEqual(0, self.game.teams['abc'].current_landmark, "Current landmark changed")
+
+    def test_game_ready(self):
+        self.game.started = True
+        self.assertEqual("clue1", self.game.get_clue(self.game.teams['abc']), "Got the wrong clue")
+        self.assertEqual(0, self.game.teams['abc'].points, "Points assigned")
+        self.assertEqual(0, self.game.teams['abc'].current_landmark, "Current landmark changed")
+
+    def test_different_landmark(self):
+        self.game.started = True
+        self.game.teams['abc'].current_landmark = 1
+        self.game.teams['abc'].points = 100
+        self.assertEqual("clue1", self.game.get_clue(self.game.teams['abc']), "Got the wrong clue")
+        self.assertEqual(100, self.game.teams['abc'].points, "Pooints assigned")
+        self.assertEqual(1, self.game.teams['abc'].current_landmark, "Current landmark changed")
+
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestDeleteLandmarks))
@@ -458,6 +498,7 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(TestAddLandmark2))
     suite.addTest(unittest.makeSuite(TestEditLandmarkClue))
     suite.addTest(unittest.makeSuite(TestEndGame))
+    suite.addTest(unittest.makeSuite(TestGetClue))
     suite.addTest(unittest.makeSuite(Test_Game_Team))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
