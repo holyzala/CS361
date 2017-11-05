@@ -122,23 +122,25 @@ class Game(GameInterface):
         self.landmarks = [x.replace(oldlandmark, newlandmark) for x in self.landmarks]
 
     def set_point_penalty(self, points):
-        try:
-            points = int(points)
-        except ValueError:
-            return False
-            self.penaltyValue = points
-        else:
-            return True
+        if not self.started:
+            try:
+                points = int(points)
+            except ValueError:
+                return False
+            else:
+                self.penaltyValue = points
+                return True
         return False
 
     def set_time_penalty(self, time):
-        try:
-            time = int(time)
-        except ValueError:
-            return False
-            self.penaltyTime = time
-        else:
-            return True
+        if not self.started:
+            try:
+                time = int(time)
+            except ValueError:
+                return False
+            else:
+                self.penaltyTime = time
+                return True
         return False
 
     def start(self):
