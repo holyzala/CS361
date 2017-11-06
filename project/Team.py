@@ -33,7 +33,7 @@ class TeamI(ABC):
         pass
 
     @abstractmethod
-    def add_points(self, points):
+    def set_points(self, points):
         pass
 
     @abstractmethod
