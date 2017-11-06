@@ -37,7 +37,7 @@ class TeamI(ABC):
         pass
 
     @abstractmethod
-    def add_penalty(self, points):
+    def add_penalty(self):
         pass
 
     @abstractmethod
@@ -89,13 +89,8 @@ class TeamFactory:
                 return False
             return False
 
-        def add_penalty(self, points):
-            try:
-                self.penalty_count = int(points)
-                return True
-            except ValueError:
-                return False
-            return False
+        def add_penalty(self):
+            self.penalty_count += 1
 
         def clear_penalty(self):
             self.penalty_count = 0
