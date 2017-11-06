@@ -36,6 +36,12 @@ class TeamI(ABC):
     def add_points(self, points):
         pass
 
+    @abstractmethod
+    def add_penalty(self, penalty):
+        pass
+
+    def clear_penalty(self):
+        pass
 
 class TeamFactory:
     def getTeam(self, username, password):
@@ -46,6 +52,7 @@ class TeamFactory:
             self.username = username
             self.password = password
             self.points = 0
+            self.penalty_count = 0
 
         def __eq__(self, other):
             return self.username == other.username
@@ -74,16 +81,32 @@ class TeamFactory:
             return self.points
 
         def set_points(self, points):
-            if self.points + points < 0:
-                self.points = 0
+            try:
+                points = int(points)
+            except ValueError:
+                return False
             else:
                 self.points += points
+                return True
+            return False
+
+        def add_penalty(self, penalty):
+            try:
+                penalty = int(penalty)
+            except ValueError:
+                return False
+            else:
+                self.penalty_count += penalty
+                return True
+            return False
+
+        def clear_penalty(self):
+            self.penalty_count = 0
 
         def is_admin(self):
             return False
 
-        def add_points(self, points):
-            pass
+
 
 
 class TestGetters(unittest.TestCase):
@@ -161,6 +184,31 @@ class TestEditTeam(unittest.TestCase):
         self.team.changePassword("random")
         self.assertEquals(self.team.password, "random", "password was not changed")
 
+class TestAddCurrentPenalty(unittest.TestCase):
+    def setUp(self):
+        self.team = TeamFactory().getTeam("Team2", "password123")
+
+    def test_add_pos_points(self):
+        penaltyValue = 1
+        self.assertTrue(self.team.add_penalty(penaltyValue), "Incorrect Penalty Value")
+
+    def test_add_neg_points(self):
+        penaltyValue = -1
+        self.assertFalse(self.team.add_penalty(penaltyValue), "Penalty points are being given neg values")
+
+    def test_add_str_points(self):
+        penaltyValue = "ABC"
+        self.assertFalse(self.team.add_penalty(penaltyValue), "Penalty is allowing string input")
+
+class TestClearTeamPenalty(unittest.TestCase):
+    def setUp(self):
+        self.team = TeamFactory().getTeam("Team2", "password123")
+
+    def test_set_to_zero(self):
+        self.team.penalty_count = 1
+        self.assertNotEqual(0, self.team.penalty_count)
+        self.team.clear_penalty()
+        self.assertEqual(0, self.team.penalty_count, "Penalty not resetting to 0")
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

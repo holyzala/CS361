@@ -153,7 +153,15 @@ class Game(GameInterface):
         return True
 
     def answer_question(self, team, answer):
-        return True
+        if self.team.currentLandmark.answer is not answer:
+            self.team.add_penalty()
+            return False
+        else:
+            pointsToAdd = self.team.currentLandmark.pointValue -\
+                          (self.penaltyValue * self.team.penalty_count) - self.penaltyTime
+            self.team.add_points(pointsToAdd)
+            self.team.clear_penalty()
+            return True
 
     def get_status(self, team):
         return ""
