@@ -64,9 +64,9 @@ class TeamFactory:
             self.password = password
 
         def login(self, username, password):
-            if username == self.username and password == self.password:
-                return self
-            return None
+            if username != self.username or password != self.password:
+                return None
+            return self
 
         def answer_question(self, answer):
             return ""
