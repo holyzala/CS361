@@ -154,7 +154,7 @@ class Game(GameInterface):
 
     def answer_question(self, team, answer):
         if self.team.currentLandmark.answer is not answer:
-            self.team.add_penalty()
+            self.team.add_penalty(1)
             return False
         else:
             pointsToAdd = self.team.currentLandmark.pointValue -\
