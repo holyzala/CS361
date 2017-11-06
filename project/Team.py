@@ -37,9 +37,10 @@ class TeamI(ABC):
         pass
 
     @abstractmethod
-    def add_penalty(self, penalty):
+    def add_penalty(self, value):
         pass
 
+    @abstractmethod
     def clear_penalty(self):
         pass
 
@@ -82,22 +83,18 @@ class TeamFactory:
 
         def set_points(self, points):
             try:
-                points = int(points)
+                self.points = int(points)
+                return True
             except ValueError:
                 return False
-            else:
-                self.points += points
-                return True
             return False
 
-        def add_penalty(self, penalty):
+        def add_penalty(self, points):
             try:
-                penalty = int(penalty)
+                self.penalty_count = int(points)
+                return True
             except ValueError:
                 return False
-            else:
-                self.penalty_count += penalty
-                return True
             return False
 
         def clear_penalty(self):
@@ -216,6 +213,10 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(TestGetters))
     suite.addTest(unittest.makeSuite(TestTeamLogin))
     suite.addTest(unittest.makeSuite(TestEditTeam))
+    suite.addTest(unittest.makeSuite(TestSetPoints))
+    suite.addTest(unittest.makeSuite(TestGetPoints))
+    suite.addTest(unittest.makeSuite(TestAddCurrentPenalty))
+    suite.addTest(unittest.makeSuite(TestClearTeamPenalty))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
     print(res)
