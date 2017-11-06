@@ -37,7 +37,7 @@ class TeamI(ABC):
         pass
 
     @abstractmethod
-    def add_penalty(self, value):
+    def add_penalty(self, points):
         pass
 
     @abstractmethod
