@@ -31,7 +31,7 @@ def login(self, args):
     if self.current_user:
         return sc.existing_login
     try:
-        self.current_user = self.gm.login(args[1], args[2])
+        self.current_user = self.game_maker.login(args[1], args[2])
         if self.current_user:
             return sc.login_success
         if self.game:
@@ -140,8 +140,7 @@ def edit_team(self, args):
                 password = args[pass_index + 1]
             if self.game.modify_team(oldname=args[1], newname=name, newpassword=password):
                 return "Team changed"
-            else:
-                return "Team new name already exists"
+            return "Team new name already exists"
         if pass_index:
             if self.game.modify_team(oldname=args[1], newpassword=args[pass_index + 1]):
                 return "Team changed"
@@ -156,14 +155,14 @@ def get_clue(self, _):
     return self.game.get_clue(self.current_user)
 
 
-commands = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
+COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
             "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
             "getclue": get_clue}
 
 
 class CLI:
     def __init__(self, command_dict):
-        self.gm = GMFactory().get_gm()
+        self.game_maker = GMFactory().get_gm()
         self.commands = command_dict
         self.current_user = None
         self.game = None
@@ -180,7 +179,7 @@ class CLI:
 
 class TestGMLogin(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI(commands)
+        self.cli = CLI(COMMANDS)
 
     def test_login_success(self):
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
@@ -197,7 +196,7 @@ class TestGMLogin(unittest.TestCase):
 
 class TestTeamExistsLogin(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI(commands)
+        self.cli = CLI(COMMANDS)
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Valid login failed")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
         self.assertEqual(sc.team_add, self.cli.command("addteam teamName teamPassword"), "Failed to add Team")
@@ -215,7 +214,7 @@ class TestTeamExistsLogin(unittest.TestCase):
 
 class TestTeamNotExistsLogin(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI(commands)
+        self.cli = CLI(COMMANDS)
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Valid login failed")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
         self.assertEqual(sc.logout, self.cli.command("logout"), "Failed to log out")
@@ -226,7 +225,7 @@ class TestTeamNotExistsLogin(unittest.TestCase):
 
 class TestEditTeams(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI(commands)
+        self.cli = CLI(COMMANDS)
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
         self.assertEqual(sc.team_add, self.cli.command("addteam Team1 239103"))
@@ -287,7 +286,7 @@ class TestEditTeams(unittest.TestCase):
 
 class TestAddTeam(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI(commands)
+        self.cli = CLI(COMMANDS)
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
 
@@ -308,7 +307,7 @@ class TestAddTeam(unittest.TestCase):
 
 class TestRemoveTeam(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI(commands)
+        self.cli = CLI(COMMANDS)
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
         self.assertEqual(sc.team_add, self.cli.command("addteam Team1 1526"), "setup failed")
@@ -336,7 +335,7 @@ class TestRemoveTeam(unittest.TestCase):
 
 class TestStartGame(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI(commands)
+        self.cli = CLI(COMMANDS)
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
         self.assertEqual(sc.team_add, self.cli.command("addteam Team1 1526"), "setup failed")
@@ -358,7 +357,7 @@ class TestStartGame(unittest.TestCase):
 
 class TestCreate(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI(commands)
+        self.cli = CLI(COMMANDS)
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
 
     def test_create_is_gm(self):
@@ -372,7 +371,7 @@ class TestCreate(unittest.TestCase):
 
 class TestAddLandmark(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI(commands)
+        self.cli = CLI(COMMANDS)
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to Create Game")
 
@@ -401,7 +400,7 @@ class TestAddLandmark(unittest.TestCase):
 
 class TestRemoveLandmark(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI(commands)
+        self.cli = CLI(COMMANDS)
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
         self.assertEqual(sc.team_add, self.cli.command("addteam Team1 1526"), "setup failed")
@@ -434,8 +433,8 @@ class TestRemoveLandmark(unittest.TestCase):
 
 class TestGetClue(unittest.TestCase):
     def setUp(self):
-        self.cli = CLI(commands)
-        self.cli = CLI(commands)
+        self.cli = CLI(COMMANDS)
+        self.cli = CLI(COMMANDS)
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
         self.assertEqual(sc.team_add, self.cli.command("addteam Team1 1526"), "setup failed")
