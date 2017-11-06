@@ -44,6 +44,7 @@ class TeamI(ABC):
     def clear_penalty(self):
         pass
 
+
 class TeamFactory:
     def getTeam(self, username, password):
         return self.Team(username, password)
@@ -53,6 +54,7 @@ class TeamFactory:
             self.username = username
             self.password = password
             self.points = 0
+            self.current_landmark = 0
             self.penalty_count = 0
 
         def __eq__(self, other):
@@ -99,8 +101,6 @@ class TeamFactory:
             return False
 
 
-
-
 class TestGetters(unittest.TestCase):
     def setUp(self):
         self.username = "TeamA"
@@ -117,6 +117,7 @@ class TestInit(unittest.TestCase):
         self.assertEqual("TeamA", self.team.username, "username value improperly set")
         self.assertEqual("2123", self.team.password, "password value improperly set")
 
+
 class TestGetPoints(unittest.TestCase):
     def setUp(self):
         self.team = TeamFactory().getTeam("Team 1", "1234")
@@ -124,6 +125,7 @@ class TestGetPoints(unittest.TestCase):
     def test_get_points(self):
         self.team.points = 100
         self.assertEqual(100, self.team.get_points(), "Points are not setting properly")
+
 
 class TestSetPoints(unittest.TestCase):
     def setUp(self):
@@ -148,6 +150,7 @@ class TestSetPoints(unittest.TestCase):
         self.assertEquals(100, self.team.points, "Failed to add 100 points properly")
         self.team.set_points(-15)
         self.assertEquals(85, self.team.points, "Failed to remove 15 points properly")
+
 
 class TestTeamLogin(unittest.TestCase):
     def setUp(self):
@@ -176,6 +179,7 @@ class TestEditTeam(unittest.TestCase):
         self.team.changePassword("random")
         self.assertEquals(self.team.password, "random", "password was not changed")
 
+
 class TestAddCurrentPenalty(unittest.TestCase):
     def setUp(self):
         self.team = TeamFactory().getTeam("Team2", "password123")
@@ -192,6 +196,7 @@ class TestAddCurrentPenalty(unittest.TestCase):
         penaltyValue = "ABC"
         self.assertFalse(self.team.add_penalty(penaltyValue), "Penalty is allowing string input")
 
+
 class TestClearTeamPenalty(unittest.TestCase):
     def setUp(self):
         self.team = TeamFactory().getTeam("Team2", "password123")
@@ -201,6 +206,7 @@ class TestClearTeamPenalty(unittest.TestCase):
         self.assertNotEqual(0, self.team.penalty_count)
         self.team.clear_penalty()
         self.assertEqual(0, self.team.penalty_count, "Penalty not resetting to 0")
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
