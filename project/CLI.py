@@ -150,7 +150,7 @@ def edit_team(self, args):
         return sc.invalid_param
 
 
-def get_clue(self, args):
+def get_clue(self, _):
     if not self.current_user or self.current_user.is_admin():
         return "Team not logged in"
     return self.game.get_clue(self.current_user)
