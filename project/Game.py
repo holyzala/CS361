@@ -154,8 +154,8 @@ class Game(GameInterface):
             return False
         else:
             pointsToAdd = (self.game.landmarks[team.currentLandmark].pointValue -
-                          (self.penaltyValue * self.team.penalty_count) - self.penaltyTime)
-            self.team.set_points(pointsToAdd)
+                          (self.penaltyValue * team.penalty_count) - self.penaltyTime)
+            team.set_points(pointsToAdd)
             self.team.clear_penalty()
             return True
 
