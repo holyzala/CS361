@@ -122,10 +122,22 @@ class Game(GameInterface):
         self.landmarks = [x.replace(oldlandmark, newlandmark) for x in self.landmarks]
 
     def set_point_penalty(self, points):
-        self.points = points
+        if not self.started:
+            try:
+                self.penaltyValue = int(points)
+                return True
+            except ValueError:
+                return False
+        return False
 
     def set_time_penalty(self, time):
-        pass
+        if not self.started:
+            try:
+                self.penaltyTime = int(time)
+                return True
+            except ValueError:
+                return False
+        return False
 
     def start(self):
         self.started = True
@@ -137,7 +149,15 @@ class Game(GameInterface):
         return True
 
     def answer_question(self, team, answer):
-        return True
+        if self.game.landmarks[team.currentLandmark].answer is not answer:
+            self.team.penalty_count += 1
+            return False
+        else:
+            pointsToAdd = (self.game.landmarks[team.currentLandmark].pointValue -
+                          (self.penaltyValue * self.team.penalty_count) - self.penaltyTime)
+            self.team.set_points(pointsToAdd)
+            self.team.clear_penalty()
+            return True
 
     def get_status(self, team):
         return ""
@@ -155,6 +175,52 @@ class GameFactory:
     def create_game(self, *args, **kwargs):
         return self.maker(*args, **kwargs)
 
+
+class TestSetPenaltyValue(unittest.TestCase):
+    def setUp(self):
+        self.game = GameFactory(make_game).create_game()
+        self.game.started = False
+
+    def test_set_penalty_positive(self):
+        pointValue = 10
+        self.assertTrue(self.game.set_point_penalty(pointValue), "Point value not setting correctly")
+        self.assertEquals(10, self.game.penaltyValue, "Penalty Value not setting correctly")
+
+    def test_set_penalty_negative(self):
+        pointValue = -10
+        self.assertFalse(self.game.set_point_penalty(pointValue), "Set Point allowing negative values")
+
+    def test_set_penalty_nonNumber(self):
+        pointValue = "ABC"
+        self.assertFalse(self.game.set_point_penalty(pointValue), "Set Point allowing string values")
+
+    def test_set_penalty_during_game(self):
+        pointValue = 10
+        self.game.started = True
+        self.assertFalse(self.game.set_point_penalty(pointValue), "Allowing setting penalty during game")
+
+class TestSetPenaltyTime(unittest.TestCase):
+    def setUp(self):
+        self.game = GameFactory(make_game).create_game()
+        self.game.started = False
+
+    def test_set_penalty_time_positive(self):
+        pointValue = 10
+        self.assertTrue(self.game.set_time_penalty(pointValue), "Time value not setting correctly")
+        self.asserttEquals(10, self.game.penaltyValue, "Time value not setting correctly")
+
+    def test_set_penalty_time_negative(self):
+        pointValue = -10
+        self.assertFalse(self.game.set_time_penalty(pointValue), "Set Time allowing negative values")
+
+    def test_set_penalty_time_nonNumber(self):
+        pointValue = "ABC"
+        self.assertFalse(self.game.set_time_penalty(pointValue), "Set Time allowing string values")
+
+    def test_set_penalty_game_started(self):
+        pointValue = 10
+        self.game.started = True
+        self.assertFalse(self.game.set_time_penalty(pointValue), "Allowing time penalty setting during game")
 
 class TestAddTeam(unittest.TestCase):
     def setUp(self):
@@ -449,6 +515,8 @@ class Test_Game_Team(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestSetPenaltyValue))
+    suite.addTest(unittest.makeSuite(TestSetPenaltyTime))
     suite.addTest(unittest.makeSuite(TestDeleteLandmarks))
     suite.addTest(unittest.makeSuite(TestModifyTeam))
     suite.addTest(unittest.makeSuite(TestAddTeam))
