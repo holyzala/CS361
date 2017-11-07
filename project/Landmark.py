@@ -21,8 +21,12 @@ class LandmarkI(ABC):
 
 
 class LandmarkFactory:
-    def get_landmark(self, location, clue, answer):
-        return self.Landmark(location, clue, answer)
+    def get_landmark(self, location: object, clue: object, answer: object) -> object:
+      """
+
+      :rtype: object
+      """
+      return self.Landmark(location, clue, answer)
 
     class Landmark(LandmarkI):
         def __init__(self, location, clue, answer):
@@ -42,6 +46,15 @@ class LandmarkFactory:
 
         def get_answer(self):
             return self.answer
+
+        def changeLocation(self, location):
+            self.location = location
+
+        def changeClue(self, clue):
+            self.clue = clue
+
+        def changeAnswer(self, answer):
+            self.answer = answer
 
         def __eq__(self, other):
             return self.location == other.location
