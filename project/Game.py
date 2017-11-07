@@ -106,19 +106,19 @@ class Game(GameInterface):
         except KeyError:
             return False
 
-    def add_landmark(self, location, clue, answer):
+    def add_landmark(self, clue, question, answer):
         if not self.started:
-            landmarkToBeAdded = LandmarkFactory().get_landmark(location, clue, answer)
+            landmarkToBeAdded = LandmarkFactory().get_landmark(clue, question, answer)
             if landmarkToBeAdded in self.landmarks:
                 return False
             self.landmarks.append(landmarkToBeAdded)
             return True
         return False
 
-    def remove_landmark(self, location):
+    def remove_landmark(self, clue):
         if not self.started:
             for landmark in self.landmarks:
-                if landmark.location == location:
+                if landmark.clue == clue:
                     self.landmarks.remove(landmark)
                     return True
         return False
@@ -476,9 +476,9 @@ class TestAddLandmark2(unittest.TestCase):
         landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
         landmark2 = LandmarkFactory().get_landmark("JKL", "MNO", "PQR")
         self.assertNotIn(landmark1, self.game.landmarks, "Landmark already Exists")
-        self.game.add_landmark(landmark1.location, landmark1.clue, landmark1.answer)
+        self.game.add_landmark(landmark1.clue, landmark1.question, landmark1.answer)
         self.assertIn(landmark1, self.game.landmarks, "Landmark1 was not successfully added")
-        self.game.add_landmark(landmark2.location, landmark2.clue, landmark2.answer)
+        self.game.add_landmark(landmark2.clue, landmark2.question, landmark2.answer)
         self.assertIn(landmark2, self.game.landmarks, "Landmark2 was not sucessfully added")
         self.assertEqual((self.game.landmarks[0], self.game.landmarks[1]), (landmark1, landmark2), "Adding not indexing properly")
 
@@ -500,7 +500,7 @@ class teamDummy:
     timelog = [datetime.time(0,20,15),datetime.time(0,35,25)]
     clueTime = datetime.time(0,0,0)
     password = "password"
-
+    
 
 class Test_Game_Team(unittest.TestCase):
     def setUp(self):
@@ -596,9 +596,9 @@ class TestGetClue(unittest.TestCase):
         self.game = TEST_FACTORY()
         self.game.teams['abc'] = TeamFactory().getTeam('abc', 'def')
         self.game.teams['ghi'] = TeamFactory().getTeam('ghi', 'jkl')
-        self.game.landmarks.append(LandmarkFactory().get_landmark('landmark1', 'clue1', 'answer1'))
-        self.game.landmarks.append(LandmarkFactory().get_landmark('landmark2', 'clue2', 'answer2'))
-        self.game.landmarks.append(LandmarkFactory().get_landmark('landmark3', 'clue3', 'answer3'))
+        self.game.landmarks.append(LandmarkFactory().get_landmark('clue1', 'question1', 'answer1'))
+        self.game.landmarks.append(LandmarkFactory().get_landmark('clue2', 'question2', 'answer2'))
+        self.game.landmarks.append(LandmarkFactory().get_landmark('clue3', 'question3', 'answer3'))
 
     def test_game_not_started(self):
         self.assertEqual("Game not started yet", self.game.get_clue(self.game.teams['abc']),

@@ -8,7 +8,7 @@ class LandmarkI(ABC):
         pass
 
     @abstractmethod
-    def get_location(self):
+    def get_question(self):
         pass
 
     @abstractmethod
@@ -19,19 +19,28 @@ class LandmarkI(ABC):
     def get_answer(self):
         pass
 
+    @abstractmethod
+    def set_question(self):
+        pass
+
+    @abstractmethod
+    def set_clue(self):
+        pass
+
+    @abstractmethod
+    def set_answer(self):
+        pass
+
 
 class LandmarkFactory:
-    def get_landmark(self, location, clue, answer):
-        return self.Landmark(location, clue, answer)
+    def get_landmark(self, clue, question, answer):
+        return self.Landmark(clue, question, answer)
 
     class Landmark(LandmarkI):
-        def __init__(self, location, clue, answer):
-            self.location = location
+        def __init__(self, clue, question, answer):
+            self.question = question
             self.clue = clue
             self.answer = answer
-
-        def get_location(self):
-            return self.location
 
         def get_clue(self):
             return self.clue
@@ -39,39 +48,73 @@ class LandmarkFactory:
         def get_answer(self):
             return self.answer
 
+        def get_question(self):
+            return self.question
+
+        def set_clue(self, clue):
+            self.clue = clue
+
+        def set_answer(self, answer):
+            self.answer = answer
+
+        def set_question(self, question):
+            self.question = question
+
         def __eq__(self, other):
-            return self.location == other.location
+            return self.clue == other.clue
 
 
 class TestInit(unittest.TestCase):
     def test_init(self):
-        self.landmark = LandmarkFactory().get_landmark("New York", "Gift given by the French", "Statue of Liberty")
-        self.assertEqual("New York", self.landmark.location, "Failed to set location properly")
-        self.assertEqual("Gift given by the French", self.landmark.clue, "Failed to set clue properly")
-        self.assertEqual("Statue of Liberty", self.landmark.answer, "Failed to answer location properly")
+        self.landmark = LandmarkFactory().get_landmark("What does the plaque say?", "Gift given by the French in New York?",
+                                                       "Give me your tired, your poor, your huddled masses yearing to breathe free")
+        self.assertEqual("Gift given by the French in New York?", self.landmark.question, "Failed to set question properly")
+        self.assertEqual("What does the plaque say?", self.landmark.clue, "Failed to set clue properly")
+        self.assertEqual("Give me your tired, your poor, your huddled masses yearing to breathe free",
+                         self.landmark.answer, "Failed to answer properly")
 
 
 class TestGetters(unittest.TestCase):
     def setUp(self):
-        self.location = "New York"
-        self.clue = "Gift given by the French"
-        self.answer = "Statue of Liberty"
-        self.landmark = LandmarkFactory().get_landmark(self.location, self.clue, self.answer)
+        self.landmark = LandmarkFactory().get_landmark("What does the plaque say?",
+                                                       "Gift given by the French in New York?",
+                                                       "Give me your tired, your poor, your huddled masses yearing to breathe free")
 
-    def test_get_location(self):
-        self.assertEqual(self.location, self.landmark.get_location(), "Wrong location returned returned")
+    def test_get_question(self):
+        self.assertEqual(self.landmark.question, self.landmark.get_question(), "Wrong question returned")
 
     def test_get_clue(self):
-        self.assertEqual(self.clue, self.landmark.get_clue(), "Wrong clue returned")
+        self.assertEqual(self.landmark.clue, self.landmark.get_clue(), "Wrong clue returned")
 
     def test_get_answer(self):
-        self.assertEqual(self.answer, self.landmark.get_answer(), "Wrong answer returned")
+        self.assertEqual(self.landmark.answer, self.landmark.get_answer(), "Wrong answer returned")
+
+
+class TestSetters(unittest.TestCase):
+    def setUp(self):
+        self.landmark = LandmarkFactory().get_landmark("What does the plaque say?",
+                                                       "Gift given by the French in New York?",
+                                                       "Give me your tired, your poor, your huddled masses yearing to breathe free")
+
+    def test_set_question(self):
+        self.landmark.set_question("blah?")
+        self.assertEqual("blah?", self.landmark.question, "question set improperly")
+
+    def test_set_clue(self):
+        self.landmark.set_clue("blah?")
+        self.assertEqual("blah?", self.landmark.clue, "clue set improperly")
+
+    def test_set_answer(self):
+        self.landmark.set_answer("blah?")
+        self.assertEqual("blah?", self.landmark.answer, "answer set improperly")
+
 
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestInit))
     suite.addTest(unittest.makeSuite(TestGetters))
+    suite.addTest(unittest.makeSuite(TestSetters))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
     print(res)
