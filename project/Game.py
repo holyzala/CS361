@@ -123,15 +123,17 @@ class Game(GameInterface):
         return False
 
     def modify_landmark(self, oldlocation, newlocation=None, clue=None, answer=None):
-      x = self.landmarks.index(oldlocation)
       try:
-        for oldlocation in self.landmarks:
-          if clue:
-            self.landmarks[x].changeClue(clue)
-          if answer:
-            self.landmarks[x].changeAnswer(answer)
-          if newlocation:
-            self.landmarks[x].changeLocation(newlocation)
+        for ol in self.landmarks:
+          if ol.location == oldlocation:
+            if clue:
+              ol.changeClue(clue)
+            if answer:
+              ol.changeAnswer(answer)
+            if newlocation:
+              ol.changeLocation(newlocation)
+        return True
+
       except KeyError:
         return False
 
