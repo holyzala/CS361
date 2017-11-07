@@ -207,8 +207,11 @@ class Game(GameInterface):
         totaltime = datetime.timedelta(days=0, hours=0,minutes=0,seconds=0)
         for t in currentTeam.timelog:
             totaltime+=t
-        return('Points:'+str(currentTeam.points)+';You Are On Landmark:'+str(currentTeam.currentLandmark)+';Current Landmark Elapsed Time:'+ str(currenttimecalc) +';Time Taken For Landmarks:'+str(totaltime))
-
+        if currentTeam.currentLandmark <= len(self.landmarks):
+            return('Points:'+str(currentTeam.points)+';You Are On Landmark:'+str(currentTeam.currentLandmark)+';Current Landmark Elapsed Time:'+ str(currenttimecalc) +';Time Taken For Landmarks:'+str(totaltime))
+        else:
+            return('Final Points: ' + str(currentTeam.points))
+        
     def get_clue(self, team):
         if not self.started:
             return "Game not started yet"
