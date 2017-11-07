@@ -94,6 +94,8 @@ class Game(GameInterface):
 
     def modify_team(self, oldname, newname=None, newpassword=None):
         try:
+            if not oldname in self.teams:
+                return False
             if newname in self.teams:
                 return False
             if newpassword:

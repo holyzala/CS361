@@ -85,6 +85,8 @@ class TeamFactory:
 
         def set_points(self, points):
             try:
+                if(int(points) < 0):
+                    self.points = 0
                 self.points = int(points)
                 return True
             except ValueError:
