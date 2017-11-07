@@ -124,14 +124,14 @@ class Game(GameInterface):
 
     def modify_landmark(self, oldclue, clue=None, question=None, answer=None):
       try:
-        for ol in self.landmarks:
-          if ol.clue == oldclue:
+        for x in self.landmarks:
+          if x.clue == oldclue:
             if question:
-              ol.set_question(question)
+              x.set_question(question)
             if answer:
-              ol.set_answer(answer)
+              x.set_answer(answer)
             if clue:
-              ol.set_clue(clue)
+              x.set_clue(clue)
         return True
 
       except KeyError:

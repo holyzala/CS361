@@ -373,7 +373,7 @@ class TestEndGame(unittest.TestCase):
       self.cli = CLI(COMMANDS)
       self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
       self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
-        
+
     def test_end_game_is_gm(self):
       self.assertEqual(sc.game_ended, self.cli.command("end"), "Failed to end game")
 
