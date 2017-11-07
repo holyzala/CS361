@@ -588,6 +588,37 @@ class Test_Game_Team(unittest.TestCase):
         self.assertEqual(len(self.team.timelog),3,"Time Log Did Not recieve a new entry")
         self.assertEqual(self.team.timelog[2],datetime.timedelta(days=0,hours=0,minutes=1,seconds=45),"Time Log did not Save The Correct Time")
         self.assertEqual(self.team.clueTime,now,"Clue Time Did Not Update!")
+        self.assertEqual(self.timelog[2],self.team.clueTime+datetime.time(00,00,18),"Time Log Did Not Save The Correct Time") #This may not work properly
+
+
+class TestGetClue(unittest.TestCase):
+    def setUp(self):
+        self.game = TEST_FACTORY()
+        self.game.teams['abc'] = TeamFactory().getTeam('abc', 'def')
+        self.game.teams['ghi'] = TeamFactory().getTeam('ghi', 'jkl')
+        self.game.landmarks.append(LandmarkFactory().get_landmark('clue1', 'question1', 'answer1'))
+        self.game.landmarks.append(LandmarkFactory().get_landmark('clue2', 'question2', 'answer2'))
+        self.game.landmarks.append(LandmarkFactory().get_landmark('clue3', 'question3', 'answer3'))
+
+    def test_game_not_started(self):
+        self.assertEqual("Game not started yet", self.game.get_clue(self.game.teams['abc']),
+                         "Got clue before game started")
+        self.assertEqual(0, self.game.teams['abc'].points, "Points assigned")
+        self.assertEqual(0, self.game.teams['abc'].current_landmark, "Current landmark changed")
+
+    def test_game_ready(self):
+        self.game.started = True
+        self.assertEqual("clue1", self.game.get_clue(self.game.teams['abc']), "Got the wrong clue")
+        self.assertEqual(0, self.game.teams['abc'].points, "Points assigned")
+        self.assertEqual(0, self.game.teams['abc'].current_landmark, "Current landmark changed")
+
+    def test_different_landmark(self):
+        self.game.started = True
+        self.game.teams['abc'].current_landmark = 1
+        self.game.teams['abc'].points = 100
+        self.assertEqual("clue2", self.game.get_clue(self.game.teams['abc']), "Got the wrong clue")
+        self.assertEqual(100, self.game.teams['abc'].points, "Pooints assigned")
+        self.assertEqual(1, self.game.teams['abc'].current_landmark, "Current landmark changed")
 
     def get_status_negative_time(self):
         self.team.clueTime = datetime.timedelta(days=2,hours=5,minutes=30,seconds=50)
