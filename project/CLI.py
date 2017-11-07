@@ -456,7 +456,7 @@ class TestGetClue(unittest.TestCase):
         self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
         self.assertEqual(sc.logout, self.cli.command("logout"), "Failed to log out")
         self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Failed to log in team")
-        self.assertEqual("Gift given by the French", self.cli.command("getclue"), "Wrong clue returned")
+        self.assertEqual("New York", self.cli.command("getclue"), "Wrong clue returned")
 
     def test_after_answer(self):
         self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
