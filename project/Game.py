@@ -71,8 +71,9 @@ class Game(GameInterface):
         self.landmarks = []
         self.started = False
         self.ended = False
-        self.penaltyValue = 0
+        self.penaltyValue = 20
         self.penaltyTime = 0
+        self.landmarkPoints = 100
 
     def add_team(self, name, password):
         if not self.started:
@@ -150,25 +151,42 @@ class Game(GameInterface):
         self.ended = True
 
     def quit_question(self, team, password):
-        return True
+        if not self.started:
+            return "Game has not started, can't skip question"
+        if password is not team.password:
+                return "Invalid Credentials to Quit Question"
+        if team.currentLandmark < len(self.landmarks):
+            team.currentLandmark += 1
+            return "Question has been skipped"
+        else:
+            return "Question can not be skipped"
 
     def answer_question(self, team, answer):
-        if self.landmarks[team.currentLandmark].answer is not answer:
-            team.add_penalty()
+        if not self.started:
             return False
-        else:
-            pointsToAdd = (self.game.landmarks[team.currentLandmark].pointValue -
-                          (self.penaltyValue * team.penalty_count) - self.penaltyTime)
-            team.set_points(pointsToAdd)
-            self.team.clear_penalty()
-            return True
+        if self.landmarks[team.currentLandmark].answer is not answer:
+           team.add_penalty()
+           return False
+        elif team.currentLandmark <= len(self.landmarks):
+           pointsToAdd = (self.landmarkPoints - (self.penaltyValue * team.penalty_count) - self.penaltyTime)
+           team.set_points(pointsToAdd)
+           self.team.clear_penalty()
+           team.currentLandmark += 1
+           return True
 
     def get_status(self, team):
-        return ""
+        if not self.started:
+            return "Game not started yet"
+        if self.team.currentLandmark <= len(self.landmarks):
+            return print("Current Score: %i, Current Penalties: %i, Current Landmark: %s\n",
+                      team.get_points(), team.penalty_count, self.game.landmarks[team.currentLandmark].get_location())
+        elif self.team.currentLandmark > len(self.landmarks):
+            return print("Final Score: %i\n", team.get_points())
+
 
     def get_clue(self, team):
         if not self.started:
-            return "Game not started yet"
+             return "Game not started yet"
         return self.landmarks[team.current_landmark].get_clue()
 
 
@@ -187,6 +205,52 @@ class GameFactory:
 
 TEST_FACTORY = GameFactory(make_game).create_game
 
+class TestQuitQuestion(unittest.TestCase):
+    def setUp(self):
+        self.game = TEST_FACTORY()
+        self.started = True
+        self.game.teams["Team1"] = TeamFactory().getTeam("Team1", "1232")
+        self.team.currentLandmark = 0
+
+    def test_within_landmark_index(self):
+        self.assertEqual("Question has been skipped", self.game.quit_question("Team1", "1232"))
+        self.assertEqual(1, self.team.currentLandmark)
+
+    def test_out_of_bounds(self):
+        self.currentLandmark = len(self.landmarks) + 1
+        self.assertEqual("Question can not be skipped", self.game.quit_question("Team1", "1232"))
+
+    def test_invalid_password(self):
+        self.assertEqual("Invalid Credentials to Quit Question", self.game.quit_question("Team1", "1234"))
+
+    def test_invalid_username(self):
+        self.assertEqual("Invalid Credentials to Quit Question", self.game.quit_question("Team2", "1232"))
+
+    def test_game_is_started(self):
+        self.started = False
+        self.assertEqual("Game has not started, can't skip question", self.game.quit_question("Team1, 1232"))
+
+class TestGetStatus(unittest.TestCase):
+    def setUp(self):
+        self.game = TEST_FACTORY()
+        self.started = True
+        self.ended = False
+        self.game.teams["Team1"] = TeamFactory().getTeam("Team1", "1232")
+        self.team.points = 100
+        self.team.penalty_count = 2
+        self.game.landmarks[self.team.currentLandmark].question = "Read the Plaque"
+
+    def test_display_stats_during_game(self):
+        self.assertEquals("Current Score: 100, Current Penalties: 2, Current Question: Read the Plaque",
+                          self.game.get_status)
+
+    def test_display_stats_end_game(self):
+        self.ended = True
+        self.assertEquals("Final Score: 100", self.game.get_status)
+
+    def test_display_game_not_started(self):
+        self.started = False
+        self.assertEquals("Game not started yet", self.game.get_status)
 
 class TestSetPenaltyValue(unittest.TestCase):
     def setUp(self):

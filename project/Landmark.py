@@ -41,10 +41,6 @@ class LandmarkFactory:
             self.question = question
             self.clue = clue
             self.answer = answer
-            self.pointValue = 100
-
-        def submit_answer(self, answer):
-            pass
 
         def get_clue(self):
             return self.clue

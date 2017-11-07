@@ -73,6 +73,25 @@ def remove_team(self, args):
         return sc.team_remove
     return sc.team_remove_fail
 
+@need_admin
+def set_point_penalty(self, args):
+    try:
+        setpoints = self.game.set_point_penalty(args[1])
+    except IndexError:
+        return sc.invalid_param
+    if setpoints:
+        return sc.set_point_penalty
+    return sc.set_point_penalty_fail
+
+@need_admin
+def set_time_penalty(self, args):
+    try:
+        settime = self.game.set_time_penalty(args[1])
+    except IndexError:
+        return sc.invalid_param
+    if settime:
+        return sc.set_time_penalty
+    return sc.set_time_penalty_fail
 
 @need_admin
 def add_landmark(self, args):
