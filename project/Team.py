@@ -71,12 +71,6 @@ class TeamFactory:
                 return None
             return self
 
-        def answer_question(self, answer):
-            return ""
-
-        def get_status(self):
-            return ""
-
         def get_username(self):
             return self.username
 
