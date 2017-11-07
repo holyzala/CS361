@@ -150,38 +150,42 @@ class Game(GameInterface):
     def end(self):
         self.ended = True
 
-    def quit_question(self, team, password):
+    def quit_question(self, username, password):
         if not self.started:
             return "Game has not started, can't skip question"
-        if password is not team.password:
-                return "Invalid Credentials to Quit Question"
-        if team.currentLandmark < len(self.landmarks):
-            team.currentLandmark += 1
+        currentTeam = self.teams[username]
+        if password is not currentTeam.get_password():
+            return "Invalid Credentials to Quit Question"
+        if currentTeam.currentLandmark < len(self.landmarks):
+            currentTeam.currentLandmark += 1
             return "Question has been skipped"
         else:
             return "Question can not be skipped"
 
-    def answer_question(self, team, answer):
+    def answer_question(self, username, answer):
         if not self.started:
             return False
-        if self.landmarks[team.currentLandmark].answer is not answer:
-           team.add_penalty()
-           return False
-        elif team.currentLandmark <= len(self.landmarks):
-           pointsToAdd = (self.landmarkPoints - (self.penaltyValue * team.penalty_count) - self.penaltyTime)
-           team.set_points(pointsToAdd)
-           self.team.clear_penalty()
-           team.currentLandmark += 1
-           return True
+        currentTeam = self.teams[username]
+        if self.landmarks[currentTeam.currentLandmark].answer is not answer:
+            currentTeam.add_penalty()
+            return False
+        elif currentTeam.currentLandmark <= len(self.landmarks):
+            pointsToAdd = (self.landmarkPoints - (self.penaltyValue * currentTeam.penalty_count) - self.penaltyTime)
+            currentTeam.set_points(pointsToAdd)
+            self.team.clear_penalty()
+            currentTeam.currentLandmark += 1
+            return True
 
-    def get_status(self, team):
+    def get_status(self, username):
         if not self.started:
             return "Game not started yet"
-        if self.team.currentLandmark <= len(self.landmarks):
+        currentTeam = self.teams[username]
+        if currentTeam.currentLandmark <= len(self.landmarks):
             return print("Current Score: %i, Current Penalties: %i, Current Landmark: %s\n",
-                      team.get_points(), team.penalty_count, self.game.landmarks[team.currentLandmark].get_location())
+                         currentTeam.get_points(), currentTeam.penalty_count,
+                         self.game.landmarks[currentTeam.currentLandmark].get_location())
         elif self.team.currentLandmark > len(self.landmarks):
-            return print("Final Score: %i\n", team.get_points())
+            return print("Final Score: %i\n", currentTeam.get_points())
 
 
     def get_clue(self, team):
