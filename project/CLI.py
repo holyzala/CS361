@@ -95,6 +95,10 @@ def remove_landmark(self, args):
         return sc.landmark_remove
     return sc.landmark_remove_fail
 
+#@need_admin
+#def edit_landmark(self, args):
+
+
 
 @need_admin
 def start(self, _):
@@ -105,6 +109,16 @@ def start(self, _):
     if self.game.started:
         return sc.game_started
     return "Failed to start Game"
+
+@need_admin
+def end(self, _):
+  try:
+    self.game.end()
+  except IndexError:
+    return sc.invalid_param
+  if self.game.ended:
+    return sc.game_ended
+  return "Failed to end game"
 
 
 @need_admin
@@ -156,7 +170,7 @@ def get_clue(self, _):
 
 
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
-            "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
+            "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
             "getclue": get_clue}
 
 
@@ -354,6 +368,22 @@ class TestStartGame(unittest.TestCase):
     def test_start_team_bad_args(self):
         self.assertEqual(sc.invalid_param, self.cli.command(""), sc.invalid_param)
 
+class TestEndGame(unittest.TestCase):
+    def setUp(self):
+      self.cli = CLI(COMMANDS)
+      self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+      self.assertEqual("Game Created", self.cli.command("create"), "Failed to create game")
+
+    def test_end_game_is_gm(self):
+      self.assertEqual(sc.game_ended, self.cli.command("end"), "Failed to end game")
+
+    def test_end_game_is_not_gm(self):
+      self.assertEqual(sc.logout, self.cli.command("logout"), "Failed to logout")
+      self.assertEqual(sc.permission_denied, self.cli.command("end"), "Only game maker can end a game")
+
+    def test_end_game_bad_args(self):
+        self.assertEqual(sc.invalid_param, self.cli.command(""), sc.invalid_param)
+
 
 class TestCreate(unittest.TestCase):
     def setUp(self):
@@ -475,6 +505,7 @@ if __name__ == "__main__":
     SUITE.addTest(unittest.makeSuite(TestAddTeam))
     SUITE.addTest(unittest.makeSuite(TestRemoveTeam))
     SUITE.addTest(unittest.makeSuite(TestStartGame))
+    SUITE.addTest(unittest.makeSuite(TestEndGame))
     SUITE.addTest(unittest.makeSuite(TestAddLandmark))
     SUITE.addTest(unittest.makeSuite(TestRemoveLandmark))
     SUITE.addTest(unittest.makeSuite(TestGetClue))
