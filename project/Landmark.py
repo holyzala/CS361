@@ -65,7 +65,7 @@ class LandmarkFactory:
             self.question = question
 
         def __eq__(self, other):
-            return self.location == other.location
+            return self.clue == other.clue
 
 
 class TestInit(unittest.TestCase):
