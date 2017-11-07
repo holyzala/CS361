@@ -33,7 +33,15 @@ class TeamI(ABC):
         pass
 
     @abstractmethod
-    def add_points(self, points):
+    def set_points(self, points):
+        pass
+
+    @abstractmethod
+    def add_penalty(self):
+        pass
+
+    @abstractmethod
+    def clear_penalty(self):
         pass
 
 
@@ -46,6 +54,8 @@ class TeamFactory:
             self.username = username
             self.password = password
             self.points = 0
+            self.current_landmark = 0
+            self.penalty_count = 0
 
         def __eq__(self, other):
             return self.username == other.username
@@ -57,9 +67,9 @@ class TeamFactory:
             self.password = password
 
         def login(self, username, password):
-            if username == self.username and password == self.password:
-                return self
-            return None
+            if username != self.username or password != self.password:
+                return None
+            return self
 
         def answer_question(self, answer):
             return ""
@@ -74,16 +84,21 @@ class TeamFactory:
             return self.points
 
         def set_points(self, points):
-            if self.points + points < 0:
-                self.points = 0
-            else:
-                self.points += points
+            try:
+                self.points = int(points)
+                return True
+            except ValueError:
+                return False
+            return False
+
+        def add_penalty(self):
+            self.penalty_count += 1
+
+        def clear_penalty(self):
+            self.penalty_count = 0
 
         def is_admin(self):
             return False
-
-        def add_points(self, points):
-            pass
 
 
 class TestGetters(unittest.TestCase):
@@ -102,6 +117,7 @@ class TestInit(unittest.TestCase):
         self.assertEqual("TeamA", self.team.username, "username value improperly set")
         self.assertEqual("2123", self.team.password, "password value improperly set")
 
+
 class TestGetPoints(unittest.TestCase):
     def setUp(self):
         self.team = TeamFactory().getTeam("Team 1", "1234")
@@ -109,6 +125,7 @@ class TestGetPoints(unittest.TestCase):
     def test_get_points(self):
         self.team.points = 100
         self.assertEqual(100, self.team.get_points(), "Points are not setting properly")
+
 
 class TestSetPoints(unittest.TestCase):
     def setUp(self):
@@ -133,6 +150,7 @@ class TestSetPoints(unittest.TestCase):
         self.assertEquals(100, self.team.points, "Failed to add 100 points properly")
         self.team.set_points(-15)
         self.assertEquals(85, self.team.points, "Failed to remove 15 points properly")
+
 
 class TestTeamLogin(unittest.TestCase):
     def setUp(self):
@@ -162,12 +180,44 @@ class TestEditTeam(unittest.TestCase):
         self.assertEquals(self.team.password, "random", "password was not changed")
 
 
+class TestAddCurrentPenalty(unittest.TestCase):
+    def setUp(self):
+        self.team = TeamFactory().getTeam("Team2", "password123")
+
+    def test_add_pos_points(self):
+        penaltyValue = 1
+        self.assertTrue(self.team.add_penalty(penaltyValue), "Incorrect Penalty Value")
+
+    def test_add_neg_points(self):
+        penaltyValue = -1
+        self.assertFalse(self.team.add_penalty(penaltyValue), "Penalty points are being given neg values")
+
+    def test_add_str_points(self):
+        penaltyValue = "ABC"
+        self.assertFalse(self.team.add_penalty(penaltyValue), "Penalty is allowing string input")
+
+
+class TestClearTeamPenalty(unittest.TestCase):
+    def setUp(self):
+        self.team = TeamFactory().getTeam("Team2", "password123")
+
+    def test_set_to_zero(self):
+        self.team.penalty_count = 1
+        self.assertNotEqual(0, self.team.penalty_count)
+        self.team.clear_penalty()
+        self.assertEqual(0, self.team.penalty_count, "Penalty not resetting to 0")
+
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestInit))
     suite.addTest(unittest.makeSuite(TestGetters))
     suite.addTest(unittest.makeSuite(TestTeamLogin))
     suite.addTest(unittest.makeSuite(TestEditTeam))
+    suite.addTest(unittest.makeSuite(TestSetPoints))
+    suite.addTest(unittest.makeSuite(TestGetPoints))
+    suite.addTest(unittest.makeSuite(TestAddCurrentPenalty))
+    suite.addTest(unittest.makeSuite(TestClearTeamPenalty))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
     print(res)

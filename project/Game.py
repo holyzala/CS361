@@ -60,6 +60,10 @@ class GameInterface(ABC):
     def quit_question(self,dtn,team,password):
         pass
 
+    @abstractmethod
+    def get_clue(self, team):
+        pass
+
 
 class Game(GameInterface):
     def __init__(self):
@@ -122,10 +126,22 @@ class Game(GameInterface):
         self.landmarks = [x.replace(oldlandmark, newlandmark) for x in self.landmarks]
 
     def set_point_penalty(self, points):
-        self.points = points
+        if not self.started:
+            try:
+                self.penaltyValue = int(points)
+                return True
+            except ValueError:
+                return False
+        return False
 
     def set_time_penalty(self, time):
-        pass
+        if not self.started:
+            try:
+                self.penaltyTime = int(time)
+                return True
+            except ValueError:
+                return False
+        return False
 
     def start(self):
         self.started = True
@@ -163,6 +179,7 @@ class Game(GameInterface):
             team.penaltyCount=0
             return True
 
+
     def get_status(self, dtn, team):
         currenttimecalc = (dtn-team.clueTime)
         totaltime = datetime.timedelta(days=0, hours=0,minutes=0,seconds=0)
@@ -170,6 +187,23 @@ class Game(GameInterface):
             totaltime+=t
         return('Points:'+str(team.points)+';You Are On Landmark:'+str(team.currentLandmark)+';Current Time:'+ str(currenttimecalc) +';Time Taken For Landmarks:'+str(totaltime))
 
+    def answer_question(self, team, answer):
+        if self.landmarks[team.currentLandmark].answer is not answer:
+            team.add_penalty()
+            return False
+        else:
+            pointsToAdd = (self.game.landmarks[team.currentLandmark].pointValue -
+                          (self.penaltyValue * team.penalty_count) - self.penaltyTime)
+            team.set_points(pointsToAdd)
+            self.team.clear_penalty()
+            return True
+
+
+
+    def get_clue(self, team):
+        if not self.started:
+            return "Game not started yet"
+        return self.landmarks[team.current_landmark].get_clue()
 
 
 def make_game(*args, **kwargs):
@@ -185,9 +219,60 @@ class GameFactory:
         return self.maker(*args, **kwargs)
 
 
+TEST_FACTORY = GameFactory(make_game).create_game
+
+
+class TestSetPenaltyValue(unittest.TestCase):
+    def setUp(self):
+        self.game = TEST_FACTORY()
+        self.game.started = False
+
+    def test_set_penalty_positive(self):
+        pointValue = 10
+        self.assertTrue(self.game.set_point_penalty(pointValue), "Point value not setting correctly")
+        self.assertEquals(10, self.game.penaltyValue, "Penalty Value not setting correctly")
+
+    def test_set_penalty_negative(self):
+        pointValue = -10
+        self.assertFalse(self.game.set_point_penalty(pointValue), "Set Point allowing negative values")
+
+    def test_set_penalty_nonNumber(self):
+        pointValue = "ABC"
+        self.assertFalse(self.game.set_point_penalty(pointValue), "Set Point allowing string values")
+
+    def test_set_penalty_during_game(self):
+        pointValue = 10
+        self.game.started = True
+        self.assertFalse(self.game.set_point_penalty(pointValue), "Allowing setting penalty during game")
+
+
+class TestSetPenaltyTime(unittest.TestCase):
+    def setUp(self):
+        self.game = TEST_FACTORY()
+        self.game.started = False
+
+    def test_set_penalty_time_positive(self):
+        pointValue = 10
+        self.assertTrue(self.game.set_time_penalty(pointValue), "Time value not setting correctly")
+        self.assertEqual(10, self.game.penaltyValue, "Time value not setting correctly")
+
+    def test_set_penalty_time_negative(self):
+        pointValue = -10
+        self.assertFalse(self.game.set_time_penalty(pointValue), "Set Time allowing negative values")
+
+    def test_set_penalty_time_nonNumber(self):
+        pointValue = "ABC"
+        self.assertFalse(self.game.set_time_penalty(pointValue), "Set Time allowing string values")
+
+    def test_set_penalty_game_started(self):
+        pointValue = 10
+        self.game.started = True
+        self.assertFalse(self.game.set_time_penalty(pointValue), "Allowing time penalty setting during game")
+
+
 class TestAddTeam(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
         self.game.started = False
 
     def test_add_team(self):
@@ -204,7 +289,7 @@ class TestAddTeam(unittest.TestCase):
 
 class TestRemoveTeam(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
         self.game.started = False
         self.game.teams["Team1"] = TeamFactory().getTeam("Team1", "1232")
 
@@ -226,7 +311,7 @@ class TestRemoveTeam(unittest.TestCase):
 
 class TestStartGame(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
         self.game.started = False
 
     def test_start_game(self):
@@ -236,7 +321,7 @@ class TestStartGame(unittest.TestCase):
 
 class TestAddLandmark(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
         self.game.started = False
 
     def test_add_landmark(self):
@@ -257,7 +342,7 @@ class TestAddLandmark(unittest.TestCase):
 
 class TestEditLandmarkClue(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
 
     def test_edit_clue(self):
         self.game.landmarks = ["Chicago", "Madison"]
@@ -268,7 +353,7 @@ class TestEditLandmarkClue(unittest.TestCase):
 
 class TestModifyTeam(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
         self.game.teams["Team1"] = TeamFactory().getTeam("Team1", "1234")
 
     def test_modify_team_name(self):
@@ -291,7 +376,7 @@ class TestModifyTeam(unittest.TestCase):
 
 class TestEndGame(unittest.TestCase):
     def setUp(self):
-       self.game = GameFactory(make_game).create_game()
+       self.game = TEST_FACTORY()
 
     def test_end_game_command(self):
         self.game.started = True
@@ -309,7 +394,7 @@ class TestEndGame(unittest.TestCase):
 
 class TestDeleteLandmarks(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
         self.game.started = False
 
     def test_delete_landmark(self):
@@ -349,7 +434,7 @@ class TestDeleteLandmarks(unittest.TestCase):
 
 class TestAddLandmark2(unittest.TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = TEST_FACTORY()
 
     def test_add_landmark(self):
         landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
@@ -525,8 +610,40 @@ class Test_Game_Team(unittest.TestCase):
         self.game.quit_question(now,self.team,"password")
         self.assertEqual(self.timelog[2],datetime.timedelta(days=0,hours=0,minutes=0,seconds=0),"Time Log did not Save The Correct Time")
 
+class TestGetClue(unittest.TestCase):
+    def setUp(self):
+        self.game = TEST_FACTORY()
+        self.game.teams['abc'] = TeamFactory().getTeam('abc', 'def')
+        self.game.teams['ghi'] = TeamFactory().getTeam('ghi', 'jkl')
+        self.game.landmarks.append(LandmarkFactory().get_landmark('landmark1', 'clue1', 'answer1'))
+        self.game.landmarks.append(LandmarkFactory().get_landmark('landmark2', 'clue2', 'answer2'))
+        self.game.landmarks.append(LandmarkFactory().get_landmark('landmark3', 'clue3', 'answer3'))
+
+    def test_game_not_started(self):
+        self.assertEqual("Game not started yet", self.game.get_clue(self.game.teams['abc']),
+                         "Got clue before game started")
+        self.assertEqual(0, self.game.teams['abc'].points, "Points assigned")
+        self.assertEqual(0, self.game.teams['abc'].current_landmark, "Current landmark changed")
+
+    def test_game_ready(self):
+        self.game.started = True
+        self.assertEqual("clue1", self.game.get_clue(self.game.teams['abc']), "Got the wrong clue")
+        self.assertEqual(0, self.game.teams['abc'].points, "Points assigned")
+        self.assertEqual(0, self.game.teams['abc'].current_landmark, "Current landmark changed")
+
+    def test_different_landmark(self):
+        self.game.started = True
+        self.game.teams['abc'].current_landmark = 1
+        self.game.teams['abc'].points = 100
+        self.assertEqual("clue2", self.game.get_clue(self.game.teams['abc']), "Got the wrong clue")
+        self.assertEqual(100, self.game.teams['abc'].points, "Pooints assigned")
+        self.assertEqual(1, self.game.teams['abc'].current_landmark, "Current landmark changed")
+
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestSetPenaltyValue))
+    suite.addTest(unittest.makeSuite(TestSetPenaltyTime))
     suite.addTest(unittest.makeSuite(TestDeleteLandmarks))
     suite.addTest(unittest.makeSuite(TestModifyTeam))
     suite.addTest(unittest.makeSuite(TestAddTeam))
@@ -536,6 +653,7 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(TestAddLandmark2))
     suite.addTest(unittest.makeSuite(TestEditLandmarkClue))
     suite.addTest(unittest.makeSuite(TestEndGame))
+    suite.addTest(unittest.makeSuite(TestGetClue))
     suite.addTest(unittest.makeSuite(Test_Game_Team))
     runner = unittest.TextTestRunner()
     res = runner.run(suite)
