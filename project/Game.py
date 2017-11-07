@@ -124,8 +124,20 @@ class Game(GameInterface):
                     return True
         return False
 
-    def modify_landmark(self, oldlandmark, newlandmark):
-        self.landmarks = [x.replace(oldlandmark, newlandmark) for x in self.landmarks]
+    def modify_landmark(self, oldclue, clue=None, question=None, answer=None):
+      try:
+        for x in self.landmarks:
+          if x.clue == oldclue:
+            if question:
+              x.set_question(question)
+            if answer:
+              x.set_answer(answer)
+            if clue:
+              x.set_clue(clue)
+        return True
+
+      except KeyError:
+        return False
 
     def set_point_penalty(self, points):
         if not self.started:
@@ -327,16 +339,28 @@ class TestAddLandmark(unittest.TestCase):
         self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
                          "Cannot add duplicate landmarks")
 
-
-class TestEditLandmarkClue(unittest.TestCase):
+class TestModifyLandmark(unittest.TestCase):
     def setUp(self):
         self.game = TEST_FACTORY()
+        self.game.landmarks.append(LandmarkFactory().get_landmark("Chicago", "Where the Bears play", "Soldier Field"))
+
+    def test_edit_question(self):
+        self.assertTrue(self.game.modify_landmark("Chicago", question="Where the UFC fights are"), "Landmark question was not modified")
+
+    def test_edit_answer(self):
+        self.assertTrue(self.game.modify_landmark("Chicago", answer="The United Center"), "Landmark answer was not modified")
 
     def test_edit_clue(self):
-        self.game.landmarks = ["Chicago", "Madison"]
-        self.assertTrue(self.game.landmarks, "List is empty")
-        self.game.modify_landmark("Chicago", "Vegas")
-        self.assertIn("Vegas", self.game.landmarks, "Landmark edited incorrectly")
+        self.assertTrue(self.game.modify_landmark("Chicago", clue="Chiccago"), "Landmark clue was not modified")
+
+    def test_edit_question_and_answer(self):
+        self.assertTrue(self.game.modify_landmark("Chicago", question="Tallest Building", answer="Sears Tower"), "Landmark question and answer not modified")
+
+    def test_edit_question_and_clue(self):
+        self.assertTrue(self.game.modify_landmark("Chicago", question="Tallest Building", clue="Chicaago"), "Landmark question and clue not modified")
+
+    def test_edit_clue_and_answer(self):
+      self.assertTrue(self.game.modify_landmark("Chicago", clue="CChicago", answer="Sears Tower"),"Landmark question and clue not modified")
 
 
 class TestModifyTeam(unittest.TestCase):
@@ -365,20 +389,12 @@ class TestModifyTeam(unittest.TestCase):
 class TestEndGame(unittest.TestCase):
     def setUp(self):
        self.game = TEST_FACTORY()
+       self.game.started = True
 
     def test_end_game_command(self):
-        self.game.started = True
         self.assertTrue(self.game.started, "Game in progress")
         self.game.end()
         self.assertTrue(self.game.ended, "Game Has Ended")
-
-    # how does this test work? Not understanding setting "Final cue sloved" to a landmark list
-    def test_completed_game(self):
-        self.game.landmarks = "Final Clue solved"
-        self.assertEqual(self.game.landmarks, "Final Clue solved", "Final clue has been solved, the game is over")
-        self.game.end()
-        self.assertTrue(self.game.ended, "Game Has Ended")
-
 
 class TestDeleteLandmarks(unittest.TestCase):
     def setUp(self):
@@ -650,7 +666,7 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(TestStartGame))
     suite.addTest(unittest.makeSuite(TestAddLandmark))
     suite.addTest(unittest.makeSuite(TestAddLandmark2))
-    suite.addTest(unittest.makeSuite(TestEditLandmarkClue))
+    suite.addTest(unittest.makeSuite(TestModifyLandmark))
     suite.addTest(unittest.makeSuite(TestEndGame))
     suite.addTest(unittest.makeSuite(TestGetClue))
     suite.addTest(unittest.makeSuite(Test_Game_Team))
