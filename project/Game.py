@@ -163,42 +163,51 @@ class Game(GameInterface):
     def end(self):
         self.ended = True
 
-    def quit_question(self, now , team, password):
-        if(team.password==password):
-            team.currentLandmark+=1
-            if(now<team.clueTime):
-                team.timelog.append(datetime.timedelta(days=0,hours=0,minutes=0,seconds=0))
+    def quit_question(self, now , username, password):
+        if not self.started:
+            return False
+        currentTeam = self.teams[username]
+        if currentTeam.get_password() is password:
+            currentTeam.currentLandmark+=1
+            if(now < currentTeam.clueTime):
+                currentTeam.timelog.append(datetime.timedelta(days=0,hours=0,minutes=0,seconds=0))
             else:
-                team.timelog.append(now-team.clueTime)
-            team.clueTime=now
-            team.penaltyCount = 0
+                currentTeam.timelog.append(now-currentTeam.clueTime)
+                currentTeam.clueTime=now
+                currentTeam.clearPenalty()
             return True
         return False
 
-    def answer_question(self, now, team, answer):
-        lm = self.landmarks[team.currentLandmark]
-        if(lm.answer!=answer):
-            team.penaltyCount+=self.penaltyValue
+    def answer_question(self, now, username, answer):
+        if not self.started:
+            return False
+        currentTeam = self.teams[username]
+        lm = self.landmarks[currentTeam.currentLandmark]
+        if lm.answer is not answer:
+            currentTeam.penaltyCount += self.penaltyValue
             return False
         else:
-            if(now<team.clueTime):
-                team.timelog.append(datetime.timedelta(days=0,hours=0,minutes=0,seconds=0))
+            if(now < currentTeam.clueTime):
+                currentTeam.timelog.append(datetime.timedelta(days=0,hours=0,minutes=0,seconds=0))
             else:
-                team.timelog.append(now-team.clueTime)
-            team.currentLandmark+=1
-            team.penaltyCount+=(int(((now-team.clueTime)/self.timer))*self.penaltyTime)
-            if (team.penaltyCount<=self.landmarkPoints):
-                team.points+=(self.landmarkPoints-team.penaltyCount)
-            team.clueTime=now
-            team.penaltyCount=0
+                currentTeam.timelog.append(now-currentTeam.clueTime)
+                currentTeam.currentLandmark+=1
+                currentTeam.penaltyCount+=(int(((now-currentTeam.clueTime)/self.timer))*self.penaltyTime)
+            if (currentTeam.penaltyCount<=self.landmarkPoints):
+                currentTeam.points+=(self.landmarkPoints-currentTeam.penaltyCount)
+                currentTeam.clueTime=now
+                currentTeam.penaltyCount=0
             return True
 
-    def get_status(self, now, team):
-        currenttimecalc = (now-team.clueTime)
+    def get_status(self, now, username):
+        if not self.started:
+            return "Game has not started"
+        currentTeam = self.teams[username]
+        currenttimecalc = (now-currentTeam.clueTime)
         totaltime = datetime.timedelta(days=0, hours=0,minutes=0,seconds=0)
-        for t in team.timelog:
+        for t in currentTeam.timelog:
             totaltime+=t
-        return('Points:'+str(team.points)+';You Are On Landmark:'+str(team.currentLandmark)+';Current Landmark Elapsed Time:'+ str(currenttimecalc) +';Time Taken For Landmarks:'+str(totaltime))
+        return('Points:'+str(currentTeam.points)+';You Are On Landmark:'+str(currentTeam.currentLandmark)+';Current Landmark Elapsed Time:'+ str(currenttimecalc) +';Time Taken For Landmarks:'+str(totaltime))
 
     def get_clue(self, team):
         if not self.started:
