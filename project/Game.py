@@ -153,7 +153,7 @@ class Game(GameInterface):
     def quit_question(self, team, password):
         if not self.started:
             return "Game has not started, can't skip question"
-        if team is not self.team.username or password is not self.team.password:
+        if password is not team.password:
                 return "Invalid Credentials to Quit Question"
         if team.currentLandmark < len(self.landmarks):
             team.currentLandmark += 1
