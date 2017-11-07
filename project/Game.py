@@ -122,16 +122,16 @@ class Game(GameInterface):
                     return True
         return False
 
-    def modify_landmark(self, oldlocation, newlocation=None, clue=None, answer=None):
+    def modify_landmark(self, oldclue, clue=None, question=None, answer=None):
       try:
         for ol in self.landmarks:
-          if ol.location == oldlocation:
-            if clue:
-              ol.changeClue(clue)
+          if ol.clue == oldclue:
+            if question:
+              ol.set_question(question)
             if answer:
-              ol.changeAnswer(answer)
-            if newlocation:
-              ol.changeLocation(newlocation)
+              ol.set_answer(answer)
+            if clue:
+              ol.set_clue(clue)
         return True
 
       except KeyError:
@@ -322,20 +322,25 @@ class TestModifyLandmark(unittest.TestCase):
         self.game = TEST_FACTORY()
         self.game.landmarks.append(LandmarkFactory().get_landmark("Chicago", "Where the Bears play", "Soldier Field"))
 
-    def test_edit_clue(self):
-        self.assertTrue(self.game.modify_landmark("Chicago", clue="Where the UFC fights are"), "Landmark clue was not modified")
+    def test_edit_question(self):
+        self.assertTrue(self.game.modify_landmark("Chicago", question="Where the UFC fights are"), "Landmark question was not modified")
 
     def test_edit_answer(self):
         self.assertTrue(self.game.modify_landmark("Chicago", answer="The United Center"), "Landmark answer was not modified")
 
-    def test_edit_location(self):
-        self.assertTrue(self.game.modify_landmark("Chicago", newlocation="Chiccago"), "Landmark location was not modified")
+    def test_edit_clue(self):
+        self.assertTrue(self.game.modify_landmark("Chicago", clue="Chiccago"), "Landmark clue was not modified")
+
+    def test_edit_question_and_answer(self):
+        self.assertTrue(self.game.modify_landmark("Chicago", question="Tallest Building", answer="Sears Tower"), "Landmark question and answer not modified")
+
+    def test_edit_question_and_clue(self):
+        self.assertTrue(self.game.modify_landmark("Chicago", question="Tallest Building", clue="Chicaago"), "Landmark question and clue not modified")
 
     def test_edit_clue_and_answer(self):
-        self.assertTrue(self.game.modify_landmark("Chicago", clue="Tallest Building", answer="Sears Tower"), "Landmark clue and answer not modified")
+      self.assertTrue(self.game.modify_landmark("Chicago", clue="CChicago", answer="Sears Tower"),"Landmark question and clue not modified")
 
-    def test_edit_clue_and_location(self):
-        self.assertTrue(self.game.modify_landmark("Chicago", clue="Tallest Building", location="Sears Tower"), "Landmark clue and answer not modified")
+
 class TestModifyTeam(unittest.TestCase):
     def setUp(self):
         self.game = TEST_FACTORY()
@@ -447,7 +452,7 @@ class teamDummy:
     timelog = [datetime.time(0,20,15),datetime.time(0,35,25)]
     clueTime = datetime.time(0,0,0)
     password = "password"
-    
+
 
 class Test_Game_Team(unittest.TestCase):
     def setUp(self):
