@@ -27,7 +27,11 @@ class TeamI(ABC):
     @abstractmethod
     def get_username(self):
         pass
-
+    
+    @abstractmethod
+    def get_password(self):
+        pass
+    
     @abstractmethod
     def get_points(self):
         pass
@@ -80,6 +84,9 @@ class TeamFactory:
         def get_username(self):
             return self.username
 
+        def get_password(self):
+            return self.password
+        
         def get_points(self):
             return self.points
 
