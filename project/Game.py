@@ -331,7 +331,11 @@ class TestModifyLandmark(unittest.TestCase):
     def test_edit_location(self):
         self.assertTrue(self.game.modify_landmark("Chicago", newlocation="Chiccago"), "Landmark location was not modified")
 
+    def test_edit_clue_and_answer(self):
+        self.assertTrue(self.game.modify_landmark("Chicago", clue="Tallest Building", answer="Sears Tower"), "Landmark clue and answer not modified")
 
+    def test_edit_clue_and_location(self):
+        self.assertTrue(self.game.modify_landmark("Chicago", clue="Tallest Building", location="Sears Tower"), "Landmark clue and answer not modified")
 class TestModifyTeam(unittest.TestCase):
     def setUp(self):
         self.game = TEST_FACTORY()
