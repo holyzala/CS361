@@ -153,7 +153,7 @@ class Game(GameInterface):
         return True
 
     def answer_question(self, team, answer):
-        if self.game.landmarks[team.currentLandmark].answer is not answer:
+        if self.landmarks[team.currentLandmark].answer is not answer:
             team.add_penalty()
             return False
         else:
@@ -167,7 +167,9 @@ class Game(GameInterface):
         return ""
 
     def get_clue(self, team):
-        return ""
+        if not self.started:
+            return "Game not started yet"
+        return self.landmarks[team.current_landmark].get_clue()
 
 
 def make_game(*args, **kwargs):
@@ -209,6 +211,7 @@ class TestSetPenaltyValue(unittest.TestCase):
         self.game.started = True
         self.assertFalse(self.game.set_point_penalty(pointValue), "Allowing setting penalty during game")
 
+
 class TestSetPenaltyTime(unittest.TestCase):
     def setUp(self):
         self.game = TEST_FACTORY()
@@ -217,7 +220,7 @@ class TestSetPenaltyTime(unittest.TestCase):
     def test_set_penalty_time_positive(self):
         pointValue = 10
         self.assertTrue(self.game.set_time_penalty(pointValue), "Time value not setting correctly")
-        self.asserttEquals(10, self.game.penaltyValue, "Time value not setting correctly")
+        self.assertEqual(10, self.game.penaltyValue, "Time value not setting correctly")
 
     def test_set_penalty_time_negative(self):
         pointValue = -10
@@ -549,7 +552,7 @@ class TestGetClue(unittest.TestCase):
         self.game.started = True
         self.game.teams['abc'].current_landmark = 1
         self.game.teams['abc'].points = 100
-        self.assertEqual("clue1", self.game.get_clue(self.game.teams['abc']), "Got the wrong clue")
+        self.assertEqual("clue2", self.game.get_clue(self.game.teams['abc']), "Got the wrong clue")
         self.assertEqual(100, self.game.teams['abc'].points, "Pooints assigned")
         self.assertEqual(1, self.game.teams['abc'].current_landmark, "Current landmark changed")
 
