@@ -167,7 +167,7 @@ class Game(GameInterface):
         if not self.started:
             return False
         currentTeam = self.teams[username]
-        if currentTeam.password is password:
+        if currentTeam.get_password() is password:
             currentTeam.currentLandmark+=1
             if(now < currentTeam.clueTime):
                 currentTeam.timelog.append(datetime.timedelta(days=0,hours=0,minutes=0,seconds=0))
