@@ -548,9 +548,9 @@ class TestGetClue(unittest.TestCase):
         self.game = TEST_FACTORY()
         self.game.teams['abc'] = TeamFactory().getTeam('abc', 'def')
         self.game.teams['ghi'] = TeamFactory().getTeam('ghi', 'jkl')
-        self.game.landmarks.append(LandmarkFactory().get_landmark('landmark1', 'clue1', 'answer1'))
-        self.game.landmarks.append(LandmarkFactory().get_landmark('landmark2', 'clue2', 'answer2'))
-        self.game.landmarks.append(LandmarkFactory().get_landmark('landmark3', 'clue3', 'answer3'))
+        self.game.landmarks.append(LandmarkFactory().get_landmark('clue1', 'question1', 'answer1'))
+        self.game.landmarks.append(LandmarkFactory().get_landmark('clue2', 'question2', 'answer2'))
+        self.game.landmarks.append(LandmarkFactory().get_landmark('clue3', 'question3', 'answer3'))
 
     def test_game_not_started(self):
         self.assertEqual("Game not started yet", self.game.get_clue(self.game.teams['abc']),
