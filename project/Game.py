@@ -436,7 +436,7 @@ class teamDummy:
     timelog = [datetime.time(0,20,15),datetime.time(0,35,25)]
     clueTime = datetime.time(0,0,0)
     password = "password"
-
+    
 
 class Test_Game_Team(unittest.TestCase):
     def setUp(self):
