@@ -505,6 +505,7 @@ if __name__ == "__main__":
     SUITE.addTest(unittest.makeSuite(TestAddTeam))
     SUITE.addTest(unittest.makeSuite(TestRemoveTeam))
     SUITE.addTest(unittest.makeSuite(TestStartGame))
+    SUITE.addTest(unittest.makeSuite(TestEndGame))
     SUITE.addTest(unittest.makeSuite(TestAddLandmark))
     SUITE.addTest(unittest.makeSuite(TestRemoveLandmark))
     SUITE.addTest(unittest.makeSuite(TestGetClue))
