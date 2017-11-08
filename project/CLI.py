@@ -131,34 +131,35 @@ def create(self, _):
 
 @need_admin
 def edit_landmark(self, args):
+    oldclue_index = args[1]
     clue_index = None
     question_index = None
     answer_index = None
     try:
-        clue_index = args.index('clue', 3)
+        clue_index = args.index('clue', 2)
     except ValueError:
         pass
-
     try:
-        question_index = args.index('question', 3)
+        question_index = args.index('question', 2)
     except ValueError:
         pass
-
     try:
-        answer_index = args.index('answer', 3)
+        answer_index = args.index('answer', 2)
     except ValueError:
         pass
 
     try:
         if clue_index:
-            clue = args[clue_index + 1]
-            question = None
-            answer = None
-            if question_index:
-              question = args[question_index + 1]
+          clue = args[clue_index + 1]
+          if question_index:
+            question = args[question_index + 1]
             if answer_index:
               answer = args[answer_index + 1]
-            if self.game.modify_landmark(oldclue=args[1], clue=clue, question=question, answer=answer):
+              if self.game.modify_landmark(oldclue=oldclue_index, clue=clue, question=question, answer=answer):
+                return "Landmark Edited Successfully"
+            if self.game.modify_landmark(oldclue=oldclue_index, clue=clue, question=question):
+              return "Landmark Edited Successfully"
+          if self.game.modify_landmark(oldclue=oldclue_index, clue=clue):
               return "Landmark Edited Successfully"
     except IndexError:
       return sc.invalid_param
@@ -501,10 +502,14 @@ class TestEditLandmark(unittest.TestCase):
         self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"'), sc.landmark_add_fail)
 
     def test_edit_landmark_is_gm(self):
-        self.assertEqual(sc.edit_landmark_success, self.cli.command('editlandmark "UWM" "Where the Beastie Boys were going without sleep" "Brooklyn"'), sc.edit_landmark_fail)
+        self.assertEqual(sc.edit_landmark_success, self.cli.command('editlandmark "UWM" clue "New York" question "Where the Beastie Boys were going without sleep" answer "Brooklyn"'), sc.edit_landmark_fail)
+
     def test_edit_landmark_is_not_gm(self):
         self.assertEqual(sc.logout, self.cli.command("logout"), "Failed to logout")
-        self.assertEqual(sc.permission_denied, self.cli.command('editlandmark "UWM" "Where the Beastie Boys were going without sleep" "Brooklyn"'))
+        self.assertEqual(sc.permission_denied, self.cli.command('editlandmark "UWM" clue "New York" question "Where the Beastie Boys were going without sleep" answer "Brooklyn"'))
+
+    def test_edit_landmark_clue_only(self):
+        self.assertEqual(sc.edit_landmark_success, self.cli.command('editlandmark "UWM" clue "New York"'), sc.edit_landmark_fail)
 
 class TestGetClue(unittest.TestCase):
     def setUp(self):
