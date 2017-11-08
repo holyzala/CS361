@@ -482,6 +482,7 @@ class teamDummy:
         self.password = "password"
         self.penaltyCount = 0
 
+
 class Test_Game_Team(unittest.TestCase):
     def setUp(self):
         self.team = teamDummy()
