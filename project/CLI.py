@@ -161,6 +161,21 @@ def edit_landmark(self, args):
               return "Landmark Edited Successfully"
           if self.game.modify_landmark(oldclue=oldclue_index, clue=clue):
               return "Landmark Edited Successfully"
+
+        if question_index:
+          question = args[question_index + 1]
+          if answer_index:
+            answer = args[answer_index + 1]
+            if self.game.modify_landmark(oldclue=oldclue_index, question=question, answer=answer):
+              return "Landmark Edited Successfully"
+          if self.game.modify_landmark(oldclue=oldclue_index, question=question):
+            return "Landmark Edited Successfully"
+
+        if answer_index:
+          answer = args[answer_index + 1]
+          if self.game.modify_landmark(oldclue=oldclue_index, answer=answer):
+            return "Landmark Edited Successfully"
+
     except IndexError:
       return sc.invalid_param
 
@@ -510,6 +525,24 @@ class TestEditLandmark(unittest.TestCase):
 
     def test_edit_landmark_clue_only(self):
         self.assertEqual(sc.edit_landmark_success, self.cli.command('editlandmark "UWM" clue "New York"'), sc.edit_landmark_fail)
+
+    def test_edit_landmark_question_only(self):
+        self.assertEqual(sc.edit_landmark_success, self.cli.command('editlandmark "UWM" question "Where the Beastie Boys were going without sleep"'), sc.edit_landmark_fail)
+
+    def test_edit_landmark_answer_only(self):
+        self.assertEqual(sc.edit_landmark_success, self.cli.command('editlandmark "UWM" answer "Brooklyn"'), sc.edit_landmark_fail)
+
+    def test_edit_landmark_clue_and_answer_only(self):
+        self.assertEqual(sc.edit_landmark_success, self.cli.command('editlandmark "UWM" clue "New York" answer "Brooklyn"'), sc.edit_landmark_fail)
+
+    def test_edit_landmark_clue_and_question_only(self):
+        self.assertEqual(sc.edit_landmark_success, self.cli.command('editlandmark "UWM" clue "New York" question "Where the Beastie Boys were going without sleep"'), sc.edit_landmark_fail)
+
+    def test_edit_landmark_question_and_answer_only(self):
+        self.assertEqual(sc.edit_landmark_success, self.cli.command('editlandmark "UWM" question "Where the Beastie Boys were going without sleep" answer "Brooklyn"'), sc.edit_landmark_fail)
+
+    def test_edit_landmark_bad_args(self):
+        self.assertEqual(sc.invalid_param, self.cli.command("editlandmark"), sc.invalid_param)
 
 class TestGetClue(unittest.TestCase):
     def setUp(self):
