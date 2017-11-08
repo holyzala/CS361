@@ -5,7 +5,7 @@ from GameMaker import UserABC
 
 class TeamI(ABC):
     @abstractmethod
-    def login(self, password):
+    def login(self, username, password):
         pass
 
     @abstractmethod
@@ -27,11 +27,11 @@ class TeamI(ABC):
     @abstractmethod
     def get_username(self):
         pass
-    
+
     @abstractmethod
     def get_password(self):
         pass
-    
+
     @abstractmethod
     def get_points(self):
         pass
@@ -41,7 +41,7 @@ class TeamI(ABC):
         pass
 
     @abstractmethod
-    def add_penalty(self):
+    def add_penalty(self, penalty):
         pass
 
     @abstractmethod
@@ -86,22 +86,25 @@ class TeamFactory:
 
         def get_password(self):
             return self.password
-        
+
         def get_points(self):
             return self.points
 
         def set_points(self, points):
             try:
-                if(int(points) < 0):
-                    self.points = 0
-                self.points = int(points)
+                self.points = max(0, int(points))
                 return True
             except ValueError:
                 return False
-            return False
 
-        def add_penalty(self):
-            self.penalty_count += 1
+        def add_penalty(self, penalty=1):
+            try:
+                if int(penalty) <= 0:
+                    return False
+                self.penalty_count += int(penalty)
+                return True
+            except ValueError:
+                return False
 
         def clear_penalty(self):
             self.penalty_count = 0
@@ -142,23 +145,23 @@ class TestSetPoints(unittest.TestCase):
 
     def test_add_once_positive(self):
         self.team.set_points(100)
-        self.assertEquals(100, self.team.points, "Failed to add 100 points properly")
+        self.assertEqual(100, self.team.points, "Failed to set 100 points properly")
 
     def test_add_cumulative_positive(self):
         self.team.set_points(100)
-        self.assertEquals(100, self.team.points, "Failed to add 100 points properly")
+        self.assertEqual(100, self.team.points, "Failed to set 100 points properly")
         self.team.set_points(15)
-        self.assertEquals(115, self.team.points, "Failed to add 15 to 100 points properly")
+        self.assertEqual(15, self.team.points, "Failed to set 15 points properly")
 
     def test_add_once_negative(self):
         self.team.set_points(-15)
-        self.assertEquals(0, self.team.points, "Cannot drop below the 0 threshold")
+        self.assertEqual(0, self.team.points, "Cannot drop below the 0 threshold")
 
     def test_add_cumulative_posandneg(self):
         self.team.set_points(100)
-        self.assertEquals(100, self.team.points, "Failed to add 100 points properly")
+        self.assertEqual(100, self.team.points, "Failed to set 100 points properly")
         self.team.set_points(-15)
-        self.assertEquals(85, self.team.points, "Failed to remove 15 points properly")
+        self.assertEqual(0, self.team.points, "Failed to set 15 points properly")
 
 
 class TestTeamLogin(unittest.TestCase):
@@ -168,7 +171,7 @@ class TestTeamLogin(unittest.TestCase):
     def test_team_login_success(self):
         user = self.team.login("team1", "password123")
         self.assertEqual(self.team, user, "Different user returned")
-        self.assertEquals(self.team.username, user.username)
+        self.assertEqual(self.team.username, user.username)
         self.assertFalse(user.is_admin())
 
     def test_team_login_fail(self):
@@ -186,7 +189,7 @@ class TestEditTeam(unittest.TestCase):
 
     def test_change_password(self):
         self.team.changePassword("random")
-        self.assertEquals(self.team.password, "random", "password was not changed")
+        self.assertEqual(self.team.password, "random", "password was not changed")
 
 
 class TestAddCurrentPenalty(unittest.TestCase):
@@ -194,16 +197,13 @@ class TestAddCurrentPenalty(unittest.TestCase):
         self.team = TeamFactory().getTeam("Team2", "password123")
 
     def test_add_pos_points(self):
-        penaltyValue = 1
-        self.assertTrue(self.team.add_penalty(penaltyValue), "Incorrect Penalty Value")
+        self.assertTrue(self.team.add_penalty(1), "Incorrect Penalty Value")
 
     def test_add_neg_points(self):
-        penaltyValue = -1
-        self.assertFalse(self.team.add_penalty(penaltyValue), "Penalty points are being given neg values")
+        self.assertFalse(self.team.add_penalty(-1), "Penalty points are being given neg values")
 
     def test_add_str_points(self):
-        penaltyValue = "ABC"
-        self.assertFalse(self.team.add_penalty(penaltyValue), "Penalty is allowing string input")
+        self.assertFalse(self.team.add_penalty("ABC"), "Penalty is allowing string input")
 
 
 class TestClearTeamPenalty(unittest.TestCase):
@@ -218,17 +218,18 @@ class TestClearTeamPenalty(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestInit))
-    suite.addTest(unittest.makeSuite(TestGetters))
-    suite.addTest(unittest.makeSuite(TestTeamLogin))
-    suite.addTest(unittest.makeSuite(TestEditTeam))
-    suite.addTest(unittest.makeSuite(TestSetPoints))
-    suite.addTest(unittest.makeSuite(TestGetPoints))
-    suite.addTest(unittest.makeSuite(TestAddCurrentPenalty))
-    suite.addTest(unittest.makeSuite(TestClearTeamPenalty))
-    runner = unittest.TextTestRunner()
-    res = runner.run(suite)
-    print(res)
+    SUITE = unittest.TestSuite()
+    SUITE.addTest(unittest.makeSuite(TestInit))
+    SUITE.addTest(unittest.makeSuite(TestGetters))
+    SUITE.addTest(unittest.makeSuite(TestTeamLogin))
+    SUITE.addTest(unittest.makeSuite(TestEditTeam))
+    SUITE.addTest(unittest.makeSuite(TestSetPoints))
+    SUITE.addTest(unittest.makeSuite(TestGetPoints))
+    SUITE.addTest(unittest.makeSuite(TestAddCurrentPenalty))
+    SUITE.addTest(unittest.makeSuite(TestClearTeamPenalty))
+    RUNNER = unittest.TextTestRunner()
+    RES = RUNNER.run(SUITE)
+    print(RES)
     print("*" * 20)
-    for i in res.failures: print(i[1])
+    for i in RES.failures:
+        print(i[1])
