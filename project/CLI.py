@@ -95,8 +95,6 @@ def remove_landmark(self, args):
         return sc.landmark_remove
     return sc.landmark_remove_fail
 
-#@need_admin
-#def edit_landmark(self, args):
 
 
 
@@ -131,6 +129,39 @@ def create(self, _):
         return "Game Created"
     return "Game Failed"
 
+@need_admin
+def edit_landmark(self, args):
+    clue_index = None
+    question_index = None
+    answer_index = None
+    try:
+        clue_index = args.index('clue', 3)
+    except ValueError:
+        pass
+
+    try:
+        question_index = args.index('question', 3)
+    except ValueError:
+        pass
+
+    try:
+        answer_index = args.index('answer', 3)
+    except ValueError:
+        pass
+
+    try:
+        if clue_index:
+            clue = args[clue_index + 1]
+            question = None
+            answer = None
+            if question_index:
+              question = args[question_index + 1]
+            if answer_index:
+              answer = args[answer_index + 1]
+            if self.game.modify_landmark(oldclue=args[1], clue=clue, question=question, answer=answer):
+              return "Landmark Edited Successfully"
+    except IndexError:
+      return sc.invalid_param
 
 @need_self
 def edit_team(self, args):
@@ -171,7 +202,7 @@ def get_clue(self, _):
 
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
             "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
-            "getclue": get_clue}
+            "getclue": get_clue, "editlandmark": edit_landmark}
 
 
 class CLI:
@@ -460,6 +491,20 @@ class TestRemoveLandmark(unittest.TestCase):
     def test_remove_landmark_bad_args(self):
         self.assertEqual(sc.invalid_param, self.cli.command("removelandmark"), sc.invalid_param)
 
+class TestEditLandmark(unittest.TestCase):
+    def setUp(self):
+        self.cli = CLI(COMMANDS)
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual(sc.game_create, self.cli.command("create"), "Failed to create game")
+        self.assertEqual(sc.team_add, self.cli.command("addteam Team1 1526"), "setup failed")
+        self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'), sc.landmark_add_fail)
+        self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"'), sc.landmark_add_fail)
+
+    def test_edit_landmark_is_gm(self):
+        self.assertEqual(sc.edit_landmark_success, self.cli.command('editlandmark "UWM" "Where the Beastie Boys were going without sleep" "Brooklyn"'), sc.edit_landmark_fail)
+    def test_edit_landmark_is_not_gm(self):
+        self.assertEqual(sc.logout, self.cli.command("logout"), "Failed to logout")
+        self.assertEqual(sc.permission_denied, self.cli.command('editlandmark "UWM" "Where the Beastie Boys were going without sleep" "Brooklyn"'))
 
 class TestGetClue(unittest.TestCase):
     def setUp(self):
@@ -508,6 +553,7 @@ if __name__ == "__main__":
     SUITE.addTest(unittest.makeSuite(TestEndGame))
     SUITE.addTest(unittest.makeSuite(TestAddLandmark))
     SUITE.addTest(unittest.makeSuite(TestRemoveLandmark))
+    SUITE.addTest(unittest.makeSuite(TestEditLandmark))
     SUITE.addTest(unittest.makeSuite(TestGetClue))
     RUNNER = unittest.TextTestRunner()
     RES = RUNNER.run(SUITE)
