@@ -209,16 +209,33 @@ def edit_team(self, args):
     except IndexError:
         return sc.invalid_param
 
-
+@need_self
 def get_clue(self, _):
     if not self.current_user or self.current_user.is_admin():
         return "Team not logged in"
     return self.game.get_clue(self.current_user)
 
+@need_self
+def answer_question(self,args):
+
+@need_self
+def quit_question(self,args):
+    if self.game is None:
+        return sc.no_game_running
+    if len(args)<3
+        return "Proper Format quitquestion <username> <password>"
+    if args[1] in self.game.teams:
+        if self.game.teams[args[1]].password == args[3]:
+            self.game.quit_question(username)
+        else:
+
+    else:
+        return "Username Unrecognized"
+def get_stats(self,args)
 
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
             "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
-            "getclue": get_clue, "editlandmark": edit_landmark}
+            "getclue": get_clue, "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question,"getstats":get_stats}
 
 
 class CLI:
@@ -577,6 +594,27 @@ class TestGetClue(unittest.TestCase):
         self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Failed to log in team")
         self.assertEqual("Correct", self.cli.command("answer 'Statue of Liberty'"), "Answer didn't work")
         self.assertEqual("Place we purchase coffee from", self.cli.command("getclue"), "Wrong clue returned")
+
+class test_quit_question(unittest.TestCase):
+    def setUp(self):
+        self.cli = CLI(COMMANDS)
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual(sc.game_create, self.cli.command("create"), "Failed to create game")
+        self.assertEqual(sc.team_add, self.cli.command("addteam Team1 1526"), "setup failed")
+        self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'), sc.landmark_add_fail)
+        self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"'), sc.landmark_add_fail)
+        self.assertEqual(sc.logout,self.cli.command("logout"),"lougout message not correct")
+    def test_no_login(self):
+        self.
+    def test_no_game(self):
+
+    def test_admin(self):
+
+    def test_incorrect_pass(self):
+
+    def test_incorrect_user(self):
+    
+    def test_quit(self):
 
 
 if __name__ == "__main__":
