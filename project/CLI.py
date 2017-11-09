@@ -1,5 +1,6 @@
 import unittest
 import shlex
+import datetime
 import StringConst as sc
 
 from Game import GameFactory, make_game
@@ -215,23 +216,40 @@ def get_clue(self, _):
         return "Team not logged in"
     return self.game.get_clue(self.current_user)
 
-@need_self
 def answer_question(self,args):
+    pass
 
-@need_self
 def quit_question(self,args):
-    if self.game is None:
+    if self.game is None or self.game.ended is True:
         return sc.no_game_running
-    if len(args)<3
-        return "Proper Format quitquestion <username> <password>"
+    if self.current_user is None:
+        return sc.permission_denied
+    if self.current_user.is_admin():
+        return "You're Not Playing!"
+    if (len(args)<3):
+        return "Proper Format giveup <username> <password>"
     if args[1] in self.game.teams:
-        if self.game.teams[args[1]].password == args[3]:
-            self.game.quit_question(username)
+        now = datetime.timedelta(days=datetime.datetime.now().day,hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second)
+        if(self.game.teams[args[1]].password == args[2]):
+            self.game.quit_question(now,args[1],args[2])
+            return "Question Quit, Your Next Question: \n" + self.game.landmarks[self.game.teams[args[1]].current_landmark].question
         else:
-
+            return "Username and Password May Have Been Incorrect"    
     else:
-        return "Username Unrecognized"
-def get_stats(self,args)
+        return "Unrecognized Username"
+
+def get_stats(self,args):
+    if self.game.started==False or self.game.ended == True:
+        return sc.no_game_running
+    now = datetime.timedelta(days=datetime.datetime.now().day,hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second)
+    if self.current_user is None:
+        return sc.permission_denied
+    if len(args)< 1:
+        return "Proper Format get_stats <username>"
+    if self.current_user.username == args[1] or self.current_user.is_admin():
+        return self.game.get_status(now,args[1])
+    else:
+        return "You cannot see another users stats"
 
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
             "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
@@ -603,22 +621,89 @@ class test_quit_question(unittest.TestCase):
         self.assertEqual(sc.team_add, self.cli.command("addteam Team1 1526"), "setup failed")
         self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'), sc.landmark_add_fail)
         self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"'), sc.landmark_add_fail)
+        self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
         self.assertEqual(sc.logout,self.cli.command("logout"),"lougout message not correct")
-    def test_no_login(self):
-        self.
+    
     def test_no_game(self):
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual(sc.game_ended,self.cli.command("end"),"Incorrect Message when ending game")
+        self.assertEqual(sc.logout,self.cli.command("logout"),"lougout message not correct")
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual(sc.no_game_running, self.cli.command("giveup Team1 1526"),"Allowed giveup with no game")
+
+    def test_no_login(self):
+        self.assertEqual(sc.permission_denied, self.cli.command("giveup Team1 1526"),"No error message when quitting with no login")
 
     def test_admin(self):
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual("You're Not Playing!",self.cli.command("giveup gamemaker 1234"), "Gamemaker might have just given up, oh no")
 
     def test_incorrect_pass(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("Username and Password May Have Been Incorrect", self.cli.command("giveup Team1 15s6"),"Incorrect Message when giving up with wrong password")
 
     def test_incorrect_user(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("Unrecognized Username", self.cli.command("giveup Teamp 1526"),"Incorrect Message when giving up with wrong password")
     
     def test_quit(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("Question Quit, Your Next Question: \n" + self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark].question, self.cli.command("giveup Team1 1526"),"Could not quit question with proper login")
+    
+    def test_quit_bad_args(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("Proper Format giveup <username> <password>",self.cli.command("giveup teamp"),"Not enough args did not show correct message")
 
+class test_get_status(unittest.TestCase):
+    def setUp(self):
+        self.cli = CLI(COMMANDS)
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual(sc.game_create, self.cli.command("create"), "Failed to create game")
+        self.assertEqual(sc.team_add, self.cli.command("addteam Team1 1526"), "setup failed")
+        self.assertEqual(sc.team_add, self.cli.command("addteam Team2 1526"), "setup failed")
+        self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'), sc.landmark_add_fail)
+        self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"'), sc.landmark_add_fail)
+        self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
+        self.assertEqual(sc.logout,self.cli.command("logout"),"lougout message not correct")
+     
+    def test_no_login(self):
+        self.assertEqual(sc.permission_denied,self.cli.command("getstats Team1"),"Get Stats wroked with noone logged in")
+   
+    def test_no_game(self):
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual(sc.game_ended,self.cli.command("end"),"Incorrect Message when ending game")
+        self.assertEqual(sc.logout,self.cli.command("logout"),"lougout message not correct")
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual(sc.no_game_running,self.cli.command("getstats Team1"),"Get Stats wroked with noone logged in")
+    
+    def test_admin(self):
+        tt = datetime.timedelta(days=0,hours=0,minutes=0,seconds=0)
+        now = datetime.timedelta(days=datetime.datetime.now().day,hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second)
+        for t in self.cli.game.teams["Team1"].timelog:
+            tt+= t
+        currenttimecalc = (now - self.cli.game.teams["Team1"].clueTime)
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
+        self.assertEqual(stat_str.format(self.cli.game.teams["Team1"].points, self.cli.game.teams["Team1"].current_landmark, currenttimecalc, tt),self.cli.command("getstats Team1"),"Admin Couldn't user get stats")
+   
+    def test_user(self):
+        tt = datetime.timedelta(days=0,hours=0,minutes=0,seconds=0)
+        now = datetime.timedelta(days=datetime.datetime.now().day,hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second)
+        for t in self.cli.game.teams["Team1"].timelog:
+            tt += t
+        currenttimecalc = (now - self.cli.game.teams["Team1"].clueTime)
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
+        self.assertEqual(stat_str.format(self.cli.game.teams["Team1"].points, self.cli.game.teams["Team1"].current_landmark, currenttimecalc, tt),self.cli.command("getstats Team1"),"Admin Couldn't user get stats")
+   
+    def test_not_user(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team2 1526"), "Login message not correct")
+        self.assertEqual("You cannot see another users stats",self.cli.command("getstats Team1"),"Get Stats wroked with noone logged in")
 
 if __name__ == "__main__":
     SUITE = unittest.TestSuite()
+    SUITE.addTest(unittest.makeSuite(test_get_status))
+    SUITE.addTest(unittest.makeSuite(test_quit_question))
     SUITE.addTest(unittest.makeSuite(TestGMLogin))
     SUITE.addTest(unittest.makeSuite(TestTeamExistsLogin))
     SUITE.addTest(unittest.makeSuite(TestTeamNotExistsLogin))

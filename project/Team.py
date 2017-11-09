@@ -1,4 +1,5 @@
 import unittest
+import datetime
 from abc import ABC, abstractmethod
 from GameMaker import UserABC
 
@@ -60,6 +61,8 @@ class TeamFactory:
             self.points = 0
             self.current_landmark = 0
             self.penalty_count = 0
+            self.timelog = []
+            self.clueTime = datetime.timedelta(days=0,hours=0,minutes=0,seconds=0)
 
         def __eq__(self, other):
             return self.username == other.username
