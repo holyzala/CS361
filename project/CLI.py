@@ -55,6 +55,8 @@ def logout(self, _):
 @need_admin
 def add_team(self, args):
     try:
+        if self.game is None:
+            return sc.team_add_fail
         added = self.game.add_team(args[1], args[2])
     except IndexError:
         return sc.invalid_param
@@ -77,6 +79,8 @@ def remove_team(self, args):
 @need_admin
 def add_landmark(self, args):
     try:
+        if self.game is None:
+            return sc.landmark_add_fail
         added = self.game.add_landmark(args[1], args[2], args[3])
     except IndexError:
         return sc.invalid_param
@@ -94,8 +98,6 @@ def remove_landmark(self, args):
     if removed:
         return sc.landmark_remove
     return sc.landmark_remove_fail
-
-
 
 
 @need_admin
@@ -362,6 +364,10 @@ class TestAddTeam(unittest.TestCase):
         self.assertEqual(sc.team_add, self.cli.command("addteam Team1 1234"), sc.team_add_fail)
         self.assertEqual(sc.team_add_fail, self.cli.command("addteam Team1 1234"), "can not have duplicate teams")
 
+    def test_add_team_before_game_created(self):
+        self.cli.game = None
+        self.assertEqual(sc.team_add_fail, self.cli.command("addteam Team1 1234"), "add team only after game is created")
+
     def test_add_team_bad_args(self):
         self.assertEqual(sc.invalid_param, self.cli.command("addteam"), sc.invalid_param)
 
@@ -470,6 +476,12 @@ class TestAddLandmark(unittest.TestCase):
         self.assertEqual(sc.landmark_add_fail,
                          self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
                          "no duplicate landmarks")
+
+    def test_add_landmark_before_game_created(self):
+        self.cli.game = None
+        self.assertEqual(sc.landmark_add_fail,
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         "add landmark only after game is created")
 
     def test_add_landmark_bad_args(self):
         self.assertEqual(sc.invalid_param, self.cli.command("addlandmark"), sc.invalid_param)
