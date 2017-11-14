@@ -62,7 +62,8 @@ class TeamFactory:
             self.current_landmark = 0
             self.penalty_count = 0
             self.timelog = []
-            self.clueTime = datetime.timedelta(days=0,hours=0,minutes=0,seconds=0)
+            #self.clueTime = datetime.timedelta(days=0,hours=0,minutes=0,seconds=0)
+            self.clueTime = None
 
         def __eq__(self, other):
             return self.username == other.username
