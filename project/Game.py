@@ -494,9 +494,8 @@ class teamDummy:
     def get_password(self):
         return self.password
 
-    def clearPenalty(self):
+    def clear_penalty(self):
         self.penaltyCount = 0
-
 
 
 class Test_Game_Team(unittest.TestCase):

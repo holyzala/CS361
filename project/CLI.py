@@ -368,12 +368,12 @@ class TestEditTeams(unittest.TestCase):
         self.assertEqual(sc.permission_denied, self.cli.command("editteam Team2 password ThisIsSecure"),
                          "Only edit self")
 
-    def test_team_edit_name_but_there_is_a_team_with_same_name(self):
+    def test_team_edit_name_but_there_is_a_team_with_same_new_name(self):
         self.assertEqual(sc.login_success, self.cli.command("login Team1 239103"), "Valid login failed")
         self.assertEqual(sc.team_exist, self.cli.command("editteam Team1 name Team2"),
-                         "Only edit self")
+                         "Name is already taken")
 
-    def test_team_edit_name_but_there_is_a_team_with_same_name_v2(self):
+    def test_team_edit_name_but_there_is_a_team_with_same_new_name_v2(self):
         self.assertEqual(sc.login_success, self.cli.command("login Team1 239103"), "Valid login failed")
         self.assertEqual(sc.team_exist,
                          self.cli.command("editteam Team1 name Team2 password ThisIsSecure"), "Only edit self")
@@ -699,8 +699,8 @@ class test_quit_question(unittest.TestCase):
 
     def test_quit(self):
         self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
-        self.assertEqual("Question Quit, Your Next Question: \n" + self.cli.game.landmarks[
-            self.cli.game.teams["Team1"].current_landmark].question, self.cli.command("giveup Team1 1526"),
+        self.assertEqual(self.cli.command("giveup Team1 1526"), "Question Quit, Your Next Question: \n" + self.cli.game.landmarks[
+            self.cli.game.teams["Team1"].current_landmark].question,
                          "Could not quit question with proper login")
 
     def test_quit_bad_args(self):
