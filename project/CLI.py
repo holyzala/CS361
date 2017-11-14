@@ -213,7 +213,7 @@ def edit_team(self, args):
 @need_self
 def get_clue(self, _):
     if not self.current_user or self.current_user.is_admin():
-        return "Team not logged in"
+        return sc.permission_denied
     return self.game.get_clue(self.current_user)
 
 def answer_question(self,args):
@@ -241,16 +241,33 @@ def quit_question(self,args):
 def get_stats(self,args):
     if self.game.started==False or self.game.ended == True:
         return sc.no_game_running
-    now = datetime.timedelta(days=datetime.datetime.now().day,hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second)
     if self.current_user is None:
         return sc.permission_denied
     if len(args)< 1:
         return "Proper Format get_stats <username>"
+    now = datetime.timedelta(days=datetime.datetime.now().day,hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second)
     if self.current_user.username == args[1] or self.current_user.is_admin():
         return self.game.get_status(now,args[1])
     else:
         return "You cannot see another users stats"
 
+def answer_question(self,args):
+    if self.game.started==False or self.game.ended == True:
+        return sc.no_game_running
+    if self.current_user is None:
+        return sc.permission_denied
+    if self.current_user.is_admin():
+        return "You're Not Playing!"
+    ans_str=args[2].lower()
+    now = datetime.timedelta(days=datetime.datetime.now().day,hours=datetime.datetime.now().hour,minutes=datetime.datetime.now().minute,seconds=datetime.datetime.now().second)
+    if(self.game.answer_question(now,self.current_user.username,ans_str) is True and len(self.game.landmarks) < self.game.teams[self.current_user.username].current_landmark):
+        return "That is Correct! The Next Question is: \n" +self.game.landmarks[self.game.teams[self.current_user.username].current_landmark].question
+    elif(self.game.answer_question(now,self.current_user.username,ans_str) is True and len(self.game.landmarks) == self.game.teams[self.current_user.username].current_landmark):
+        return "That is Correct! There are no more landmarks!"
+    elif(self.game.answer_question(now,self.current_user.username,ans_str) is True and len(self.game.landmarks) > self.game.teams[self.current_user.username].current_landmark):
+        return "There are no more landmarks!"
+    else:
+        return "Incorrect Answer! The Question Was: \n" + self.game.landmarks[self.game.teams[self.current_user.username].current_landmark].question
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
             "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
             "getclue": get_clue, "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question,"getstats":get_stats}
@@ -648,7 +665,7 @@ class test_quit_question(unittest.TestCase):
     
     def test_quit(self):
         self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
-        self.assertEqual("Question Quit, Your Next Question: \n" + self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark].question, self.cli.command("giveup Team1 1526"),"Could not quit question with proper login")
+        self.assertEqual("Question Quit, Your Next Question: \n" + self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question, self.cli.command("giveup Team1 1526"),"Could not quit question with proper login")
     
     def test_quit_bad_args(self):
         self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
@@ -684,7 +701,7 @@ class test_get_status(unittest.TestCase):
         currenttimecalc = (now - self.cli.game.teams["Team1"].clueTime)
         self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
         stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
-        self.assertEqual(stat_str.format(self.cli.game.teams["Team1"].points, self.cli.game.teams["Team1"].current_landmark, currenttimecalc, tt),self.cli.command("getstats Team1"),"Admin Couldn't user get stats")
+        self.assertEqual(stat_str.format(self.cli.game.teams["Team1"].points, self.cli.game.teams["Team1"].current_landmark+1, currenttimecalc, tt),self.cli.command("getstats Team1"),"Admin Couldn't user get stats")
    
     def test_user(self):
         tt = datetime.timedelta(days=0,hours=0,minutes=0,seconds=0)
@@ -694,16 +711,94 @@ class test_get_status(unittest.TestCase):
         currenttimecalc = (now - self.cli.game.teams["Team1"].clueTime)
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
         stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
-        self.assertEqual(stat_str.format(self.cli.game.teams["Team1"].points, self.cli.game.teams["Team1"].current_landmark, currenttimecalc, tt),self.cli.command("getstats Team1"),"Admin Couldn't user get stats")
+        self.assertEqual(stat_str.format(self.cli.game.teams["Team1"].points, self.cli.game.teams["Team1"].current_landmark+1, currenttimecalc, tt),self.cli.command("getstats Team1"),"Admin Couldn't user get stats")
    
     def test_not_user(self):
         self.assertEqual(sc.login_success, self.cli.command("login Team2 1526"), "Login message not correct")
         self.assertEqual("You cannot see another users stats",self.cli.command("getstats Team1"),"Get Stats wroked with noone logged in")
+    def test_bad_args(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("Invalid parameters",self.cli.command("getstats"),"CLI took improper args")
+
+class test_answer_question(unittest.TestCase):
+    def setUp(self):
+        self.cli = CLI(COMMANDS)
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual(sc.game_create, self.cli.command("create"), "Failed to create game")
+        self.assertEqual(sc.team_add, self.cli.command("addteam Team1 1526"), "setup failed")
+        self.assertEqual(sc.team_add, self.cli.command("addteam Team2 1526"), "setup failed")
+        self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'), sc.landmark_add_fail)
+        self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"'), sc.landmark_add_fail)
+        self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "Last Mark" "The Last Answer" "Last"'), sc.landmark_add_fail)
+        self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
+        self.assertEqual(sc.logout,self.cli.command("logout"),"lougout message not correct")
+    
+    def test_no_game(self):
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual(sc.game_ended,self.cli.command("end"),"Incorrect Message when ending game")
+        self.assertEqual(sc.logout,self.cli.command("logout"),"lougout message not correct")
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual(sc.no_game_running,self.cli.command("answer 'Statue of Liberty'"),"allowed answer with no game running")
+    
+    def test_no_login(self):
+        self.assertEqual(sc.permission_denied,self.cli.command("answer 'Statue of Liberty'"),"allowed answer with no game running")
+    
+    def test_admin(self):
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual("You're Not Playing!",self.cli.command("answer 'Statue of Liberty'"), "Gamemaker just answered his own question!")
+    
+    def test_bad_args(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("Invalid parameters",self.cli.command("answer"),"CLI took improper args")
+    
+    def test_answer_incorrect(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("Incorrect Answer! The Question Was: \n" + self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark].question,self.cli.command("answer 'this is so very wrong'"),"Incorrect answer did not print correct response")
+    
+    def test_answer_correct(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer 'Statue of Liberty'"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+
+    def test_answer_correcttwice(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer 'Statue of Liberty'"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer Grind"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+    
+    def test_answer_last_question(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer 'Statue of Liberty'"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer Grind"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+        self.assertEqual("That is Correct! There are no more landmarks!",self.cli.command("answer 'Last'"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+    
+    def test_answer_pass_last_question(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer 'Statue of Liberty'"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer Grind"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+        self.assertEqual("That is Correct! There are no more landmarks!",self.cli.command("answer Last"),"Correct answer did not print correct response")
+        self.assertEqual("There are no more landmarks!",self.cli.command("answer 'Last'"),"Correct answer did not print correct response") 
+
+    def test_answer_right_wrong_right(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer 'Statue of Liberty'"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+        self.assertEqual("Incorrect Answer! The Question Was: \n" + self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark].question,self.cli.command("answer 'this is so very wrong'"),"Incorrect answer did not print correct response")
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer 'Grind'"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+    
+    def test_answer_team1_team2(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer 'Statue of Liberty'"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+        self.assertEqual(sc.login_success, self.cli.command("login Team2 1526"), "Login message not correct")
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer 'Statue of Liberty'"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+
+    def test_answer_correctteam1_incorrectteam2(self):
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer 'Statue of Liberty'"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer 'Grind'"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
+        self.assertEqual(sc.login_success, self.cli.command("login Team2 1526"), "Login message not correct")
+        self.assertEqual("Incorrect Answer! The Question Was: \n" + self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark].question,self.cli.command("answer 'this is so very wrong'"),"Incorrect answer did not print correct response")
+        self.assertEqual("That is Correct! The Next Question is: \n" +self.cli.game.landmarks[self.cli.game.teams["Team1"].current_landmark+1].question,self.cli.command("answer 'Statue of Liberty'"),"Correct answer did not print correct response") #current landmark will be automaticlly updated after call this test may not need +1 to current landmark
 
 if __name__ == "__main__":
     SUITE = unittest.TestSuite()
-    SUITE.addTest(unittest.makeSuite(test_get_status))
-    SUITE.addTest(unittest.makeSuite(test_quit_question))
     SUITE.addTest(unittest.makeSuite(TestGMLogin))
     SUITE.addTest(unittest.makeSuite(TestTeamExistsLogin))
     SUITE.addTest(unittest.makeSuite(TestTeamNotExistsLogin))
@@ -716,6 +811,9 @@ if __name__ == "__main__":
     SUITE.addTest(unittest.makeSuite(TestRemoveLandmark))
     SUITE.addTest(unittest.makeSuite(TestEditLandmark))
     SUITE.addTest(unittest.makeSuite(TestGetClue))
+    SUITE.addTest(unittest.makeSuite(test_get_status))
+    SUITE.addTest(unittest.makeSuite(test_quit_question))
+    SUITE.addTest(unittest.makeSuite(test_answer_question))
     RUNNER = unittest.TextTestRunner()
     RES = RUNNER.run(SUITE)
     print(RES)
