@@ -157,6 +157,10 @@ class Game(GameInterface):
             return False
 
     def start(self):
+        now = datetime.timedelta(days=datetime.datetime.now().day, hours=datetime.datetime.now().hour,
+                                 minutes=datetime.datetime.now().minute, seconds=datetime.datetime.now().second)
+        for team in self.teams:
+            team.clueTime = now
         self.started = True
 
     def end(self):
