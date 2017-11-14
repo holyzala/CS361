@@ -157,6 +157,11 @@ class Game(GameInterface):
             return False
 
     def start(self):
+        dt = datetime.datetime.now()
+        now = datetime.timedelta(days=dt.day, hours=dt.hour,
+                                 minutes=dt.minute, seconds=dt.second)
+        for team in self.teams:
+            self.teams[team].clueTime = now
         self.started = True
 
     def end(self):
@@ -497,8 +502,9 @@ class teamDummy:
     def get_password(self):
         return self.password
 
-    def clearPenalty(self):
-        self.penalty_count = 0
+    def clear_penalty(self):
+        self.penaltyCount = 0
+
 
 
 class Test_Game_Team(unittest.TestCase):
