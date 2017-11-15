@@ -1,4 +1,5 @@
 import unittest
+from datetime import timedelta
 from abc import ABC, abstractmethod
 from GameMaker import UserABC
 
@@ -6,14 +7,6 @@ from GameMaker import UserABC
 class TeamI(ABC):
     @abstractmethod
     def login(self, username, password):
-        pass
-
-    @abstractmethod
-    def answer_question(self, answer):
-        pass
-
-    @abstractmethod
-    def get_status(self):
         pass
 
     @abstractmethod
@@ -41,6 +34,12 @@ class TeamI(ABC):
         pass
 
 
+class TimeDeltaList(list):
+    def append(self, delta):
+        zero = timedelta()
+        super(TimeDeltaList, self).append(max(zero, delta))
+
+
 class TeamFactory:
     def get_team(self, username, password):
         return self.Team(username, password)
@@ -52,7 +51,7 @@ class TeamFactory:
             self.__points = 0
             self.current_landmark = 0
             self.penalty_count = 0
-            self.time_log = []
+            self.time_log = TimeDeltaList()
             self.clue_time = None
 
         def __eq__(self, other):
@@ -62,12 +61,6 @@ class TeamFactory:
             if username != self.username or password != self.__password:
                 return None
             return self
-
-        def answer_question(self, answer):
-            return ""
-
-        def get_status(self):
-            return ""
 
         @property
         def points(self):

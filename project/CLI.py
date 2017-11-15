@@ -3,6 +3,7 @@ import shlex
 import datetime
 import StringConst as sc
 
+from Errors import Errors
 from Game import GameFactory, make_game
 from GameMaker import GMFactory
 
@@ -225,22 +226,21 @@ def get_clue(self, _):
 
 
 def quit_question(self, args):
-    if self.game is None or self.game.ended is True:
-        return sc.no_game_running
-    if self.current_user is None:
+    if len(args) < 3:
+        return "Proper Format giveup <username> <password>"
+    if not self.current_user or args[1] != self.current_user.username:
         return sc.permission_denied
     if self.current_user.is_admin():
         return "You're Not Playing!"
-    if len(args) < 3:
-        return "Proper Format giveup <username> <password>"
-    if args[1] in self.game.teams:
-        now = datetime.timedelta(days=datetime.datetime.now().day, hours=datetime.datetime.now().hour,
-                                 minutes=datetime.datetime.now().minute, seconds=datetime.datetime.now().second)
-        if self.game.quit_question(now, args[1], args[2]):
-            return "Question Quit, Your Next Question: \n{}".format(
-                self.game.landmarks[self.game.teams[args[1]].current_landmark].question)
-        return "Username and Password May Have Been Incorrect"
-    return "Unrecognized Username"
+    time_now = datetime.datetime.now()
+    now = datetime.timedelta(days=time_now.day, hours=time_now.hour, minutes=time_now.minute, seconds=time_now.second)
+    rtn = self.game.quit_question(now, self.current_user, args[2])
+    if rtn == Errors.INVALID_LOGIN:
+        return sc.permission_denied
+    elif rtn == Errors.NO_GAME:
+        return sc.no_game_running
+    return "Question Quit, Your Next Question: \n{}".format(
+        self.game.landmarks[self.game.teams[args[1]].current_landmark].question)
 
 
 def get_stats(self, args):
@@ -263,12 +263,11 @@ def answer_question(self,args):
         return sc.permission_denied
     if self.current_user.is_admin():
         return "You're Not Playing!"
-    ans_str = args[1].lower()
     datetime_now = datetime.datetime.now()
     now = datetime.timedelta(days=datetime_now.day, hours=datetime_now.hour, minutes=datetime_now.minute,
                              seconds=datetime_now.second)
-    correct_answer = self.game.answer_question(now, self.current_user.username, ans_str)
-    if correct_answer:
+    correct_answer = self.game.answer_question(now, self.current_user, args[1])
+    if correct_answer == Errors.NO_ERROR:
         if len(self.game.landmarks) > self.current_user.current_landmark:
             return "That is Correct! The Next Question is: \n{}".format(
                 self.game.landmarks[self.current_user.current_landmark].question)
@@ -689,7 +688,7 @@ class test_quit_question(unittest.TestCase):
         self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
         self.assertEqual(sc.logout, self.cli.command("logout"), "lougout message not correct")
 
-    def test_no_game(self):
+    def test_game_ended(self):
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual(sc.game_ended, self.cli.command("end"), "Incorrect Message when ending game")
         self.assertEqual(sc.logout, self.cli.command("logout"), "lougout message not correct")
@@ -707,12 +706,12 @@ class test_quit_question(unittest.TestCase):
 
     def test_incorrect_pass(self):
         self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
-        self.assertEqual("Username and Password May Have Been Incorrect", self.cli.command("giveup Team1 15s6"),
+        self.assertEqual(sc.permission_denied, self.cli.command("giveup Team1 15s6"),
                          "Incorrect Message when giving up with wrong password")
 
     def test_incorrect_user(self):
         self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
-        self.assertEqual("Unrecognized Username", self.cli.command("giveup Teamp 1526"),
+        self.assertEqual(sc.permission_denied, self.cli.command("giveup Teamp 1526"),
                          "Incorrect Message when giving up with wrong password")
 
     def test_quit(self):
