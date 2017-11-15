@@ -49,7 +49,7 @@ class TestInit(unittest.TestCase):
     ANSWER = "Give me your tired, your poor, your huddled masses yearning to breathe free"
 
     def test_init(self):
-        # pylint: disable=protected-access
+        # pylint: disable=protected-access,no-member
         landmark = LandmarkFactory().get_landmark(self.CLUE, self.QUESTION, self.ANSWER)
         self.assertEqual(self.CLUE, landmark.clue, "Failed to set clue properly")
         self.assertEqual(self.QUESTION, landmark.question, "Failed to set question properly")
