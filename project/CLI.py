@@ -21,7 +21,7 @@ def need_self(func):
         try:
             if not args[0].current_user:
                 return sc.permission_denied
-            if not args[0].current_user.is_admin() and not args[0].current_user.get_username() == args[1][1]:
+            if not args[0].current_user.is_admin() and not args[0].current_user.username == args[1][1]:
                 return sc.permission_denied
         except IndexError:
             return sc.invalid_param
@@ -240,10 +240,9 @@ def quit_question(self, args):
     if args[1] in self.game.teams:
         now = datetime.timedelta(days=datetime.datetime.now().day, hours=datetime.datetime.now().hour,
                                  minutes=datetime.datetime.now().minute, seconds=datetime.datetime.now().second)
-        if self.game.teams[args[1]].password == args[2]:
-            self.game.quit_question(now, args[1], args[2])
-            return "Question Quit, Your Next Question: \n" + self.game.landmarks[
-                self.game.teams[args[1]].current_landmark].question
+        if self.game.quit_question(now, args[1], args[2]):
+            return "Question Quit, Your Next Question: \n{}".format(
+                self.game.landmarks[self.game.teams[args[1]].current_landmark].question)
         return "Username and Password May Have Been Incorrect"
     return "Unrecognized Username"
 
@@ -754,9 +753,9 @@ class test_get_status(unittest.TestCase):
         tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
         now = datetime.timedelta(days=datetime.datetime.now().day, hours=datetime.datetime.now().hour,
                                  minutes=datetime.datetime.now().minute, seconds=datetime.datetime.now().second)
-        for t in self.cli.game.teams["Team1"].timelog:
+        for t in self.cli.game.teams["Team1"].time_log:
             tt += t
-        currenttimecalc = (now - self.cli.game.teams["Team1"].clueTime)
+        currenttimecalc = (now - self.cli.game.teams["Team1"].clue_time)
         self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
         stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
         self.assertEqual(stat_str.format(self.cli.game.teams["Team1"].points, self.cli.game.teams["Team1"].current_landmark+1, currenttimecalc, tt),self.cli.command("getstats Team1"),"Admin Couldn't user get stats")
@@ -766,13 +765,15 @@ class test_get_status(unittest.TestCase):
         tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
         now = datetime.timedelta(days=datetime.datetime.now().day, hours=datetime.datetime.now().hour,
                                  minutes=datetime.datetime.now().minute, seconds=datetime.datetime.now().second)
-        for t in self.cli.game.teams["Team1"].timelog:
+        for t in self.cli.game.teams["Team1"].time_log:
             tt += t
-        currenttimecalc = (now - self.cli.game.teams["Team1"].clueTime)
+        current_time_calc = (now - self.cli.game.teams["Team1"].clue_time)
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
         stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
-        self.assertEqual(stat_str.format(self.cli.game.teams["Team1"].points, self.cli.game.teams["Team1"].current_landmark+1, currenttimecalc, tt),self.cli.command("getstats Team1"),"Admin Couldn't user get stats")
-   
+        self.assertEqual(
+            stat_str.format(self.cli.game.teams["Team1"].points, self.cli.game.teams["Team1"].current_landmark + 1,
+                            current_time_calc, tt), self.cli.command("getstats Team1"), "Admin Couldn't get user stats")
+
     def test_not_user(self):
         self.assertEqual(sc.login_success, self.cli.command("login Team2 1526"), "Login message not correct")
         self.assertEqual("You cannot see another users stats",self.cli.command("getstats Team1"),"Get Stats wroked with noone logged in")
