@@ -68,7 +68,7 @@ class Game(GameInterface):
         self.ended = False
         self.penaltyValue = 0
         self.penaltyTime = 0
-        self.timer = datetime.timedelta(seconds=0)
+        self.timer = None
         self.landmarkPoints = 0
 
     def add_team(self, name, password):
@@ -185,21 +185,23 @@ class Game(GameInterface):
     def answer_question(self, now, username, answer):
         if not self.started:
             return False
-        current_team = self.teams[username]
-        lm = self.landmarks[current_team.current_landmark]
-        if lm.answer != answer:
-            current_team.penalty_count += self.penaltyValue
+        currentTeam = self.teams[username]
+        lm = self.landmarks[currentTeam.current_landmark]
+        if lm.answer.lower() != answer:
+            currentTeam.penalty_count += self.penaltyValue
             return False
         else:
             if now < current_team.clueTime:
                 current_team.time_log.append(datetime.timedelta(days=0, hours=0, minutes=0, seconds=0))
             else:
-                current_team.time_log.append(now - current_team.clueTime)
+                current_team.time_log.append(now - current_team.clue_time)
                 current_team.current_landmark += 1
-                current_team.penalty_count += int(((now - current_team.clueTime) / self.timer)) * self.penaltyTime
+                current_team.penalty_count += int(((now - current_team.clue_time) / self.timer)) * self.penaltyTime
+                if (self.timer != None):
+                    current_team.penalty_count += int(((now - currentTeam.clue_time) / self.timer)) * self.penaltyTime
             if current_team.penalty_count <= self.landmarkPoints:
                 current_team.points += (self.landmarkPoints - current_team.penalty_count)
-            current_team.clueTime = now
+            current_team.clue_time = now
             current_team.penalty_count = 0
             return True
 
@@ -211,8 +213,8 @@ class Game(GameInterface):
             total_time += t
         if current_team.current_landmark <= len(self.landmarks):
             stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
-            return stat_str.format(current_team.points, current_team.current_landmark, current_time_calc, total_time)
-        return 'Final Points: ' + str(current_team.points)
+            return stat_str.format(current_team.points, current_team.current_landmark + 1, current_time_calc, total_time)
+        return 'Final Points: {}'.format(current_team.points)
 
     def get_clue(self, team):
         if not self.started:
@@ -495,12 +497,15 @@ class teamDummy:
         self.password = "password"
         self.penalty_count = 0
         self.username = "Dummy"
+    def clear_penalty(self):
+        self.penalty_count = 0
 
     def login(self, username, password):
         return self.username == username and self.password == password
 
     def clear_penalty(self):
         self.penalty_count = 0
+
 
 
 class Test_Game_Team(unittest.TestCase):
@@ -521,7 +526,7 @@ class Test_Game_Team(unittest.TestCase):
         self.team.clueTime = datetime.timedelta(hours=5, minutes=30, seconds=50)
         now = datetime.timedelta(hours=6, minutes=35, seconds=15)
         self.game.started = True
-        self.assertEqual(self.game.get_status(now, self.team.username), 'Points:100;You Are On Landmark:1;' +
+        self.assertEqual(self.game.get_status(now, self.team.username), 'Points:100;You Are On Landmark:2;' +
                          'Current Landmark Elapsed Time:1:04:25;Time Taken For Landmarks:0:55:40',
                          'get_status did not print the proper stats!')
 
