@@ -256,7 +256,7 @@ def get_stats(self, args):
     return "You cannot see another users stats"
 
 
-def answer_question(self,args):
+def answer_question(self, args):
     if not self.game.started or self.game.ended:
         return sc.no_game_running
     if not self.current_user:
