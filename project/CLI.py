@@ -257,8 +257,6 @@ def get_stats(self, args):
 
 
 def answer_question(self, args):
-    if not self.game.started or self.game.ended:
-        return sc.no_game_running
     if not self.current_user:
         return sc.permission_denied
     if self.current_user.is_admin():
@@ -270,6 +268,8 @@ def answer_question(self, args):
     if correct_answer == Errors.NO_ERROR:
         return "That is Correct! The Next Question is: \n{}".format(
             self.game.get_team_landmark(self.current_user).question)
+    elif correct_answer == Errors.NO_GAME:
+        return sc.no_game_running
     elif correct_answer == Errors.FINAL_ANSWER:
         return "That is Correct! There are no more landmarks!"
     elif correct_answer == Errors.LANDMARK_INDEX:
