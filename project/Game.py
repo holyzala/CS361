@@ -182,9 +182,7 @@ class Game(GameInterface):
         if self.started or self.ended:
             return Errors.CAN_ONLY_EDIT_ORDER_WHEN_GAME_IS_NEW
         try:
-            temp = self.__landmarks[index2]
-            self.__landmarks[index2] = self.__landmarks[index1]
-            self.__landmarks[index1] = temp
+            self.__landmarks.insert(index2, self.__landmarks.pop(index1))
         except IndexError:
             return Errors.LANDMARK_INDEX
         return Errors.NO_ERROR
@@ -419,8 +417,8 @@ class TestEditLandmarkOrder(unittest.TestCase):
 
     def test_swap_front_back(self):
         self.assertEqual(Errors.NO_ERROR, self.game.edit_landmark_order(0, 3), "should have succeeded swapping")
-        self.assertEqual("Milwaukee", self.game._Game__landmarks[0].clue, "Swapping failed")
-        self.assertEqual("Chicago", self.game._Game__landmarks[3].clue, "Swapping failed")
+        self.assertEqual("GreenBay", self.game._Game__landmarks[0].clue, "Order changed")
+        self.assertEqual("Chicago", self.game._Game__landmarks[3].clue, "Order changed")
 
     def test_swap_middle(self):
         self.assertEqual(Errors.NO_ERROR, self.game.edit_landmark_order(1, 2), "should have succeeded swapping")
@@ -443,7 +441,7 @@ class TestEditLandmarkOrder(unittest.TestCase):
         self.assertEqual(Errors.LANDMARK_INDEX, self.game.edit_landmark_order(-12, -1), "negative index!!")
 
     def test_swap_index_greater_than_length(self):
-        self.assertEqual(Errors.LANDMARK_INDEX, self.game.edit_landmark_order(4, 3), "negative index!!")
+        self.assertEqual(Errors.LANDMARK_INDEX, self.game.edit_landmark_order(4, 3), "Index out of range")
         self.assertEqual("Milwaukee", self.game._Game__landmarks[3].clue, "Swapping should not have occurred")
 
     def test_swap_from_empty_list(self):

@@ -630,7 +630,7 @@ class TestEditLandmarkOrder(unittest.TestCase):
                          "Failed to change landmark order")
 
     def test_swap_landmark_invalid_index_v2(self):
-        self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder 2 10"),
+        self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder 10 2"),
                          "Failed to change landmark order")
 
     def test_swap_cannot_convert_to_int(self):
