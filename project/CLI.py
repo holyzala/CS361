@@ -631,6 +631,11 @@ class TestEditLandmarkOrder(unittest.TestCase):
         self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder 2 10"),
                          "Failed to change landmark order")
 
+    def test_swap_landmark_after_game_starts(self):
+        self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
+        self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder 2 10"),
+                         "Failed to change landmark order")
+
     def test_swap_landmark_bad_args(self):
         self.assertEqual(sc.invalid_param, self.cli.command("editlandmarkorder"), sc.invalid_param)
 
