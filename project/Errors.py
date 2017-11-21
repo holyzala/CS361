@@ -7,3 +7,4 @@ class Errors(Enum):
     LANDMARK_INDEX = auto()
     WRONG_ANSWER = auto()
     INVALID_LOGIN = auto()
+    FINAL_ANSWER = auto()

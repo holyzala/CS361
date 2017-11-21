@@ -53,37 +53,72 @@ class GameInterface(ABC):
         pass
 
     @abstractmethod
-    def answer_question(self, now, username, answer):
+    def answer_question(self, now, team, answer):
         pass
 
     @abstractmethod
-    def quit_question(self, now, username, password):
+    def quit_question(self, now, team, password):
+        pass
+
+    @abstractmethod
+    def login(self, username, password):
+        pass
+
+    @abstractmethod
+    def get_team(self, username):
+        pass
+
+    @abstractmethod
+    def get_team_landmark(self, team):
         pass
 
 
 class Game(GameInterface):
     def __init__(self):
-        self.teams = {}
-        self.landmarks = []
-        self.started = False
-        self.ended = False
-        self.penaltyValue = 0
-        self.penaltyTime = 0
+        self.__teams = {}
+        self.__landmarks = []
+        self.__started = False
+        self.__ended = False
+        self.__penalty_value = 0
+        self.__penalty_time = 0
         self.timer = None
-        self.landmarkPoints = 0
+        self.landmark_points = 0
+
+    @property
+    def started(self):
+        return self.__started
+
+    @property
+    def ended(self):
+        return self.__ended
+
+    def login(self, username, password):
+        try:
+            return self.__teams[username].login(username, password)
+        except KeyError:
+            return None
+
+    def get_team(self, username):
+        try:
+            return self.__teams[username]
+        except KeyError:
+            return None
+
+    def get_team_landmark(self, team):
+        return self.__landmarks[team.current_landmark]
 
     def add_team(self, name, password):
         if not self.started:
-            if name in self.teams:
+            if name in self.__teams:
                 return False
-            self.teams[name] = TeamFactory().get_team(name, password)
+            self.__teams[name] = TeamFactory().get_team(name, password)
             return True
         return False
 
     def remove_team(self, name):
         if not self.started:
             try:
-                del self.teams[name]
+                del self.__teams[name]
             except KeyError:
                 return False
             else:
@@ -92,37 +127,37 @@ class Game(GameInterface):
 
     def modify_team(self, oldname, newname=None, newpassword=None):
         try:
-            if newname in self.teams:
+            if newname in self.__teams:
                 return False
             if newpassword:
-                self.teams[oldname].password = newpassword
+                self.__teams[oldname].password = newpassword
             if newname:
-                self.teams[oldname].username = newname
-                self.teams[newname] = self.teams.pop(oldname)
+                self.__teams[oldname].username = newname
+                self.__teams[newname] = self.__teams.pop(oldname)
             return True
         except KeyError:
             return False
 
     def add_landmark(self, clue, question, answer):
         if not self.started:
-            landmarkToBeAdded = LandmarkFactory().get_landmark(clue, question, answer)
-            if landmarkToBeAdded in self.landmarks:
+            landmark = LandmarkFactory().get_landmark(clue, question, answer)
+            if landmark in self.__landmarks:
                 return False
-            self.landmarks.append(landmarkToBeAdded)
+            self.__landmarks.append(landmark)
             return True
         return False
 
     def remove_landmark(self, clue):
         if not self.started:
-            for landmark in self.landmarks:
+            for landmark in self.__landmarks:
                 if landmark.clue == clue:
-                    self.landmarks.remove(landmark)
+                    self.__landmarks.remove(landmark)
                     return True
         return False
 
     def modify_landmark(self, oldclue, clue=None, question=None, answer=None):
         try:
-            for x in self.landmarks:
+            for x in self.__landmarks:
                 if x.clue == oldclue:
                     if question:
                         x.question = question
@@ -135,38 +170,40 @@ class Game(GameInterface):
         except KeyError:
             return False
 
+    @property
+    def penalty_value(self):
+        return self.__penalty_value
+
     def set_point_penalty(self, points):
         if self.started:
             return False
-        try:
-            if int(points) <= 0:
-                return False
-            self.penaltyValue = int(points)
-            return True
-        except ValueError:
+        if points <= 0:
             return False
+        self.__penalty_value = points
+        return True
+
+    @property
+    def penalty_time(self):
+        return self.__penalty_time
 
     def set_time_penalty(self, penalty):
         if self.started:
             return False
-        try:
-            if int(penalty) <= 0:
-                return False
-            self.penaltyValue = int(penalty)
-            return True
-        except ValueError:
+        if penalty <= 0:
             return False
+        self.__penalty_time = penalty
+        return True
 
     def start(self):
         dt = datetime.datetime.now()
         now = datetime.timedelta(days=dt.day, hours=dt.hour,
                                  minutes=dt.minute, seconds=dt.second)
-        for team in self.teams:
-            self.teams[team].clue_time = now
-        self.started = True
+        for team in self.__teams:
+            self.__teams[team].clue_time = now
+        self.__started = True
 
     def end(self):
-        self.ended = True
+        self.__ended = True
 
     def quit_question(self, now, team, password):
         if not self.started or self.ended:
@@ -183,37 +220,34 @@ class Game(GameInterface):
         if not self.started or self.ended:
             return Errors.NO_GAME
         try:
-            lm = self.landmarks[team.current_landmark]
+            lm = self.__landmarks[team.current_landmark]
         except IndexError:
             return Errors.LANDMARK_INDEX
         if not lm.check_answer(answer):
-            team.penalty_count += self.penaltyValue
+            team.penalty_count += self.penalty_value
             return Errors.WRONG_ANSWER
         else:
             team.time_log.append(now - team.clue_time)
             team.current_landmark += 1
             if self.timer:
-                team.penalty_count += int(((now - team.clue_time) / self.timer)) * self.penaltyTime
-            team.points += max(0, self.landmarkPoints - team.penalty_count)
+                team.penalty_count += int(((now - team.clue_time) / self.timer)) * self.penalty_time
+            team.points += max(0, self.landmark_points - team.penalty_count)
             team.clue_time = now
             team.penalty_count = 0
+            if len(self.__landmarks) == team.current_landmark:
+                return Errors.FINAL_ANSWER
             return Errors.NO_ERROR
 
     def get_status(self, now, username):
-        current_team = self.teams[username]
+        current_team = self.__teams[username]
         current_time_calc = (now - current_team.clue_time)
         total_time = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
         for t in current_team.time_log:
             total_time += t
-        if current_team.current_landmark <= len(self.landmarks):
+        if current_team.current_landmark <= len(self.__landmarks):
             stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
-            return stat_str.format(current_team.points, current_team.current_landmark + 1, current_time_calc, total_time)
+            return stat_str.format(current_team.points, current_team.current_landmark+1, current_time_calc, total_time)
         return 'Final Points: {}'.format(current_team.points)
-
-    def get_clue(self, team):
-        if not self.started:
-            return "Game not started yet"
-        return self.landmarks[team.current_landmark].clue
 
 
 def make_game(*args, **kwargs):
@@ -233,56 +267,51 @@ TEST_FACTORY = GameFactory(make_game).create_game
 
 
 class TestSetPenaltyValue(unittest.TestCase):
+    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game.started = False
+        self.game._Game__started = False
 
     def test_set_penalty_positive(self):
-        pointValue = 10
-        self.assertTrue(self.game.set_point_penalty(pointValue), "Point value not setting correctly")
-        self.assertEqual(10, self.game.penaltyValue, "Penalty Value not setting correctly")
+        point_value = 10
+        self.assertTrue(self.game.set_point_penalty(point_value), "Point value not setting correctly")
+        self.assertEqual(10, self.game._Game__penalty_value, "Penalty Value not setting correctly")
 
     def test_set_penalty_negative(self):
-        pointValue = -10
-        self.assertFalse(self.game.set_point_penalty(pointValue), "Set Point allowing negative values")
-
-    def test_set_penalty_nonNumber(self):
-        pointValue = "ABC"
-        self.assertFalse(self.game.set_point_penalty(pointValue), "Set Point allowing string values")
+        point_value = -10
+        self.assertFalse(self.game.set_point_penalty(point_value), "Set Point allowing negative values")
 
     def test_set_penalty_during_game(self):
-        pointValue = 10
-        self.game.started = True
-        self.assertFalse(self.game.set_point_penalty(pointValue), "Allowing setting penalty during game")
+        point_value = 10
+        self.game._Game__started = True
+        self.assertFalse(self.game.set_point_penalty(point_value), "Allowing setting penalty during game")
 
 
 class TestSetPenaltyTime(unittest.TestCase):
+    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game.started = False
+        self.game._Game__started = False
 
     def test_set_penalty_time_positive(self):
-        pointValue = 10
-        self.assertTrue(self.game.set_time_penalty(pointValue), "Time value not setting correctly")
-        self.assertEqual(pointValue, self.game.penaltyValue, "Time value not setting correctly")
+        point_value = 10
+        self.assertTrue(self.game.set_time_penalty(point_value), "Time value not setting correctly")
+        self.assertEqual(point_value, self.game._Game__penalty_time, "Time value not setting correctly")
 
     def test_set_penalty_time_negative(self):
         self.assertFalse(self.game.set_time_penalty(-10), "Set Time allowing negative values")
 
-    def test_set_penalty_time_nonNumber(self):
-        pointValue = "ABC"
-        self.assertFalse(self.game.set_time_penalty(pointValue), "Set Time allowing string values")
-
     def test_set_penalty_game_started(self):
-        pointValue = 10
-        self.game.started = True
-        self.assertFalse(self.game.set_time_penalty(pointValue), "Allowing time penalty setting during game")
+        point_value = 10
+        self.game._Game__started = True
+        self.assertFalse(self.game.set_time_penalty(point_value), "Allowing time penalty setting during game")
 
 
 class TestAddTeam(unittest.TestCase):
+    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game.started = False
+        self.game._Game__started = False
 
     def test_add_team(self):
         self.assertTrue(self.game.add_team("Team1", "1232"), "Did not add team")
@@ -292,15 +321,16 @@ class TestAddTeam(unittest.TestCase):
         self.assertFalse(self.game.add_team("Team1", "1232"), "duplicate teams!")
 
     def test_add_team_after_Game_started(self):
-        self.game.started = True
+        self.game._Game__started = True
         self.assertFalse(self.game.add_team("Team1", "1232"), "should not add teams once Game starts")
 
 
 class TestRemoveTeam(unittest.TestCase):
+    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game.started = False
-        self.game.teams["Team1"] = TeamFactory().get_team("Team1", "1232")
+        self.game._Game__started = False
+        self.game._Game__teams["Team1"] = TeamFactory().get_team("Team1", "1232")
 
     def test_remove_team(self):
         self.assertTrue(self.game.remove_team("Team1"), "Failed to remove team")
@@ -310,49 +340,53 @@ class TestRemoveTeam(unittest.TestCase):
         self.assertFalse(self.game.remove_team("Team1"), "Team does not exist")
 
     def test_remove_team_from_empty_team_list(self):
-        self.game.teams.clear()
+        self.game._Game__teams.clear()
         self.assertFalse(self.game.remove_team("Team1"), "Failed to remove team, list of teams empty")
 
     def test_remove_team_game_started(self):
-        self.game.started = True
+        self.game._Game__started = True
         self.assertFalse(self.game.remove_team("Team1"), "should not remove teams once game starts")
 
 
 class TestStartGame(unittest.TestCase):
+    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game.started = False
+        self.game._Game__started = False
 
     def test_start_game(self):
         self.game.start()
-        self.assertTrue(self.game.started, "game in progress value not set")
+        self.assertTrue(self.game._Game__started, "game in progress value not set")
 
 
 class TestAddLandmark(unittest.TestCase):
+    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game.started = False
+        self.game._Game__started = False
 
     def test_add_landmark(self):
         self.assertTrue(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty")
                         , "Failed to add landmark")
 
     def test_add_landmark_game_in_progress(self):
-        self.game.started = True
+        self.game._Game__started = True
         self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty")
                          , "Cannot add landmark once game has started")
 
     def test_add_landmark_duplicates(self):
         ld = LandmarkFactory().get_landmark("New York", "Gift given by the French", "statue of liberty")
-        self.game.landmarks.append(ld)
+        self.game._Game__landmarks.append(ld)
         self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
                          "Cannot add duplicate landmarks")
 
 
 class TestModifyLandmark(unittest.TestCase):
+    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game.landmarks.append(LandmarkFactory().get_landmark("Chicago", "Where the Bears play", "Soldier Field"))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("Chicago", "Where the Bears play",
+                                                                         "Soldier Field"))
 
     def test_edit_question(self):
         self.assertTrue(self.game.modify_landmark("Chicago", question="Where the UFC fights are"),
@@ -379,59 +413,62 @@ class TestModifyLandmark(unittest.TestCase):
 
 
 class TestModifyTeam(unittest.TestCase):
+    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game.teams["Team1"] = TeamFactory().get_team("Team1", "1234")
+        self.game._Game__teams["Team1"] = TeamFactory().get_team("Team1", "1234")
 
     def test_modify_team_name(self):
         self.assertTrue(self.game.modify_team("Team1", newname="Team2", newpassword=None), "Team name was not modified")
-        self.assertIn("Team2", self.game.teams, "Key was not updated")
+        self.assertIn("Team2", self.game._Game__teams, "Key was not updated")
 
     def test_modify_team_password(self):
         self.assertTrue(self.game.modify_team("Team1", newname=None, newpassword="5678"), "password was not modified")
-        self.assertIn("Team1", self.game.teams, "Key should not be updated")
+        self.assertIn("Team1", self.game._Game__teams, "Key should not be updated")
 
     def test_modify_team_name_and_password(self):
         self.assertTrue(self.game.modify_team("Team1", newname="Team103", newpassword="5678"),
                         "name and password was not modified")
-        self.assertIn("Team103", self.game.teams, "Key was not updated")
+        self.assertIn("Team103", self.game._Game__teams, "Key was not updated")
 
     def test_modify_team_does_not_exist(self):
-        self.game.teams.clear()
+        self.game._Game__teams.clear()
         self.assertFalse(self.game.modify_team("Team1", newname="Team2", newpassword="5678"), "Team does not exist")
 
 
 class TestEndGame(unittest.TestCase):
+    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game.started = True
+        self.game._Game__started = True
 
     def test_end_game_command(self):
-        self.assertTrue(self.game.started, "Game in progress")
+        self.assertTrue(self.game._Game__started, "Game in progress")
         self.game.end()
         self.assertTrue(self.game.ended, "Game Has Ended")
 
 
 class TestDeleteLandmarks(unittest.TestCase):
+    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game.started = False
+        self.game._Game__started = False
 
     def test_delete_landmark(self):
         landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
-        self.game.landmarks.append(landmark1)
+        self.game._Game__landmarks.append(landmark1)
         self.game.remove_landmark("ABC")
-        self.assertNotIn(landmark1, self.game.landmarks, "Failed to remove landmark")
+        self.assertNotIn(landmark1, self.game._Game__landmarks, "Failed to remove landmark")
 
     def test_delete_multi_landmarks(self):
         landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
         landmark2 = LandmarkFactory().get_landmark("JKL", "MNO", "PQR")
-        self.game.landmarks.append(landmark1)
-        self.game.landmarks.append(landmark2)
+        self.game._Game__landmarks.append(landmark1)
+        self.game._Game__landmarks.append(landmark2)
         self.game.remove_landmark("ABC")
-        self.assertNotIn(landmark1, self.game.landmarks, "Failed to remove Landmark1")
+        self.assertNotIn(landmark1, self.game._Game__landmarks, "Failed to remove Landmark1")
         self.game.remove_landmark("JKL")
-        self.assertNotIn(landmark1, self.game.landmarks, "Failed to remove Landmark2")
+        self.assertNotIn(landmark1, self.game._Game__landmarks, "Failed to remove Landmark2")
 
     def test_delete_landmark_does_not_exist(self):
         self.assertFalse(self.game.remove_landmark("ABC"), "landmark does not exist")
@@ -439,41 +476,43 @@ class TestDeleteLandmarks(unittest.TestCase):
     def test_delete_landmark_from_empty_landmark_list(self):
         landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
         landmark2 = LandmarkFactory().get_landmark("JKL", "MNO", "PQR")
-        self.game.landmarks.append(landmark1)
-        self.game.landmarks.append(landmark2)
-        self.game.landmarks.clear()
+        self.game._Game__landmarks.append(landmark1)
+        self.game._Game__landmarks.append(landmark2)
+        self.game._Game__landmarks.clear()
         self.assertFalse(self.game.remove_team("ABC"), "Failed to remove team, list of teams empty")
 
     def test_remove_landmark_game_started(self):
-        self.game.started = True
+        self.game._Game__started = True
         landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
-        self.game.landmarks.append(landmark1)
+        self.game._Game__landmarks.append(landmark1)
         self.assertFalse(self.game.remove_team("ABC"), "should not remove teams once game starts")
 
 
 class TestAddLandmark2(unittest.TestCase):
+    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
 
     def test_add_landmark(self):
         landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
-        self.assertNotIn(landmark1, self.game.landmarks, "Landmark already Exists")
+        self.assertNotIn(landmark1, self.game._Game__landmarks, "Landmark already Exists")
         self.game.add_landmark(landmark1.clue, landmark1.question, "GHI")
-        self.assertIn(landmark1, self.game.landmarks, "Landmark was not successfully added")
+        self.assertIn(landmark1, self.game._Game__landmarks, "Landmark was not successfully added")
 
     def test_add_landmark2(self):
         landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
         landmark2 = LandmarkFactory().get_landmark("JKL", "MNO", "PQR")
-        self.assertNotIn(landmark1, self.game.landmarks, "Landmark already Exists")
+        self.assertNotIn(landmark1, self.game._Game__landmarks, "Landmark already Exists")
         self.game.add_landmark(landmark1.clue, landmark1.question, "GHI")
-        self.assertIn(landmark1, self.game.landmarks, "Landmark1 was not successfully added")
+        self.assertIn(landmark1, self.game._Game__landmarks, "Landmark1 was not successfully added")
         self.game.add_landmark(landmark2.clue, landmark2.question, "PQR")
-        self.assertIn(landmark2, self.game.landmarks, "Landmark2 was not sucessfully added")
-        self.assertEqual((self.game.landmarks[0], self.game.landmarks[1]), (landmark1, landmark2),
+        self.assertIn(landmark2, self.game._Game__landmarks, "Landmark2 was not sucessfully added")
+        self.assertEqual((self.game._Game__landmarks[0], self.game._Game__landmarks[1]), (landmark1, landmark2),
                          "Adding not indexing properly")
 
 
 class TestGameTeam(unittest.TestCase):
+    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.team = TeamFactory().get_team("Dummy", "password")
         self.game = GameFactory(make_game).create_game()
@@ -483,23 +522,23 @@ class TestGameTeam(unittest.TestCase):
                                             "What is the name of the statue out front?", "three disks")
         l3 = LandmarkFactory().get_landmark("The Place we drink coffee and read books",
                                             "What is the name of the statue out front?", "three disks")
-        self.game.landmarks = [l1, l2, l3]
-        self.game.penaltyTime = 20
-        self.game.penaltyValue = 10
+        self.game._Game__landmarks = [l1, l2, l3]
+        self.game._Game__penalty_time = 20
+        self.game._Game__penalty_value = 10
         self.game.timer = datetime.timedelta(hours=0, minutes=0, seconds=15)
-        self.game.landmarkPoints = 150
-        self.game.teams[self.team.username] = self.team
+        self.game.landmark_points = 150
+        self.game._Game__teams[self.team.username] = self.team
 
     def test_get_status(self):
         self.team.clue_time = datetime.timedelta(hours=5, minutes=30, seconds=50)
         now = datetime.timedelta(hours=6, minutes=35, seconds=15)
-        self.game.started = True
+        self.game._Game__started = True
         self.assertEqual(self.game.get_status(now, self.team.username), 'Points:0;You Are On Landmark:1;' +
                          'Current Landmark Elapsed Time:1:04:25;Time Taken For Landmarks:0:00:00',
                          'get_status did not print the proper stats!')
 
     def test_quit_question_incorrectpass(self):
-        self.game.started = True
+        self.game._Game__started = True
         self.team.clue_time = self.team.clue_time = datetime.timedelta(days=15, hours=12, minutes=30, seconds=15)
         now = datetime.timedelta(days=16, hours=7, minutes=25, seconds=8)
         self.assertEqual(Errors.INVALID_LOGIN, self.game.quit_question(now, self.team, "incorrectpasswerd"),
@@ -512,7 +551,7 @@ class TestGameTeam(unittest.TestCase):
     def test_quit_question(self):
         self.team.clue_time = datetime.timedelta(days=15, hours=12, minutes=30, seconds=15)
         now = datetime.timedelta(days=16, hours=7, minutes=25, seconds=8)
-        self.game.started = True
+        self.game._Game__started = True
         self.assertTrue(self.game.quit_question(now, self.team, "password"),
                         "Quit Question Returned False After Correct Password!")
         self.assertEqual(self.team.points, 0, "Points Changed after Giving Up!")
@@ -525,7 +564,7 @@ class TestGameTeam(unittest.TestCase):
     def test_answer_question_correct_no_time(self):
         self.team.clue_time = datetime.timedelta(days=20, hours=9, minutes=24, seconds=10)
         now = datetime.timedelta(days=20, hours=9, minutes=24, seconds=20)
-        self.game.started = True
+        self.game._Game__started = True
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Correct Answer Returned False!")
         self.assertEqual(self.team.points, 150, "Points did not increment correctly")
@@ -538,7 +577,7 @@ class TestGameTeam(unittest.TestCase):
     def test_answer_question_incorrect_no_time(self):
         self.team.clue_time = datetime.timedelta(days=20, hours=9, minutes=24, seconds=10)
         now = datetime.timedelta(days=20, hours=9, minutes=24, seconds=20)
-        self.game.started = True
+        self.game._Game__started = True
         self.assertEqual(Errors.WRONG_ANSWER, self.game.answer_question(now, self.team, "trash fire"),
                          "Incorrect Answer Returned True!")
         self.assertEqual(self.team.points, 0, "Points did not increment correctly")
@@ -558,7 +597,7 @@ class TestGameTeam(unittest.TestCase):
     def test_answer_question_time_penalty(self):
         self.team.clue_time = datetime.timedelta(days=20, hours=9, minutes=24, seconds=10)
         now = datetime.timedelta(days=20, hours=9, minutes=24, seconds=26)
-        self.game.started = True
+        self.game._Game__started = True
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Returned False after Correct Answer!")
         self.assertEqual(self.team.points, 130, "Points did not increment correctly")
@@ -571,7 +610,7 @@ class TestGameTeam(unittest.TestCase):
     def test_answer_question_time_penalty2(self):
         self.team.clue_time = datetime.timedelta(days=20, hours=9, minutes=24, seconds=10)
         now = datetime.timedelta(days=20, hours=9, minutes=25, seconds=26)
-        self.game.started = True
+        self.game._Game__started = True
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Returned False After Correct Answer!")
         self.assertEqual(self.team.points, 50, "Points did not increment correctly")
@@ -584,7 +623,7 @@ class TestGameTeam(unittest.TestCase):
     def test_answer_question_time_complex(self):
         self.team.clue_time = datetime.timedelta(days=20, hours=9, minutes=24, seconds=10)
         now = datetime.timedelta(days=20, hours=9, minutes=25, seconds=26)
-        self.game.started = True
+        self.game._Game__started = True
         self.assertEqual(Errors.WRONG_ANSWER, self.game.answer_question(now, self.team, "two disks"),
                          "Returned True after Incorrect Answer!")
         self.assertEqual(self.team.points, 0, "Points did not increment correctly")
@@ -603,7 +642,7 @@ class TestGameTeam(unittest.TestCase):
     def test_answer_question_time_max(self):
         self.team.clue_time = datetime.timedelta(days=3, hours=12, minutes=30, seconds=0)
         now = datetime.timedelta(days=5, hours=20, minutes=30, seconds=15)
-        self.game.started = True
+        self.game._Game__started = True
         self.assertTrue(self.game.answer_question(now, self.team, "three disks"),
                         "Returned False after Correct Answer!")
         self.assertEqual(self.team.points, 0, "Team Earned Negative Points, Thats not fair!")
@@ -616,7 +655,7 @@ class TestGameTeam(unittest.TestCase):
     def test_answer_question_incorrect_max(self):
         self.team.clue_time = datetime.timedelta(days=3, hours=12, minutes=30, seconds=0)
         now = datetime.timedelta(days=3, hours=12, minutes=30, seconds=0)
-        self.game.started = True
+        self.game._Game__started = True
         for _ in range(0, 16):
             self.assertEqual(Errors.WRONG_ANSWER, self.game.answer_question(now, self.team, "two disks"),
                              "Returned True after Incorrect Answer!")
@@ -632,7 +671,7 @@ class TestGameTeam(unittest.TestCase):
     def test_answer_question_incorrect_max_complex(self):
         self.team.clue_time = datetime.timedelta(days=3, hours=12, minutes=30, seconds=0)
         now = datetime.timedelta(days=3, hours=12, minutes=31, seconds=45)
-        self.game.started = True
+        self.game._Game__started = True
         for _ in range(0, 11):
             self.assertEqual(Errors.WRONG_ANSWER, self.game.answer_question(now, self.team, "two disks"),
                              "Returned True after Incorrect Answer!")
@@ -649,37 +688,18 @@ class TestGameTeam(unittest.TestCase):
                          "Time Log Did Not Save The Correct Time")  # This may not work properly
 
 
-class TestGetClue(unittest.TestCase):
+class TestAnswerQuit(unittest.TestCase):
+    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game.teams['abc'] = TeamFactory().get_team('abc', 'def')
-        self.game.teams['ghi'] = TeamFactory().get_team('ghi', 'jkl')
-        self.game.landmarks.append(LandmarkFactory().get_landmark('clue1', 'question1', 'answer1'))
-        self.game.landmarks.append(LandmarkFactory().get_landmark('clue2', 'question2', 'answer2'))
-        self.game.landmarks.append(LandmarkFactory().get_landmark('clue3', 'question3', 'answer3'))
-
-    def test_game_not_started(self):
-        self.assertEqual("Game not started yet", self.game.get_clue(self.game.teams['abc']),
-                         "Got clue before game started")
-        self.assertEqual(0, self.game.teams['abc'].points, "Points assigned")
-        self.assertEqual(0, self.game.teams['abc'].current_landmark, "Current landmark changed")
-
-    def test_game_ready(self):
-        self.game.started = True
-        self.assertEqual("clue1", self.game.get_clue(self.game.teams['abc']), "Got the wrong clue")
-        self.assertEqual(0, self.game.teams['abc'].points, "Points assigned")
-        self.assertEqual(0, self.game.teams['abc'].current_landmark, "Current landmark changed")
-
-    def test_different_landmark(self):
-        self.game.started = True
-        self.game.teams['abc'].current_landmark = 1
-        self.game.teams['abc'].points = 100
-        self.assertEqual("clue2", self.game.get_clue(self.game.teams['abc']), "Got the wrong clue")
-        self.assertEqual(100, self.game.teams['abc'].points, "Pooints assigned")
-        self.assertEqual(1, self.game.teams['abc'].current_landmark, "Current landmark changed")
+        self.game._Game__teams['abc'] = TeamFactory().get_team('abc', 'def')
+        self.game._Game__teams['ghi'] = TeamFactory().get_team('ghi', 'jkl')
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark('clue1', 'question1', 'answer1'))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark('clue2', 'question2', 'answer2'))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark('clue3', 'question3', 'answer3'))
 
     def get_status_negative_time(self):
-        self.game.teams['abc'].clue_time = datetime.timedelta(days=2, hours=5, minutes=30, seconds=50)
+        self.game._Game__teams['abc'].clue_time = datetime.timedelta(days=2, hours=5, minutes=30, seconds=50)
         now = datetime.timedelta(days=1, hours=0, minutes=35, seconds=15)
         self.assertEqual(self.game.get_status(now, self.game.teams['abc'].username),
                          'Points:100;You Are On Landmark:1;Current Time:0:00:00;Time Taken For Landmarks:0:55:40',
@@ -715,7 +735,7 @@ if __name__ == "__main__":
     SUITE.addTest(unittest.makeSuite(TestAddLandmark2))
     SUITE.addTest(unittest.makeSuite(TestModifyLandmark))
     SUITE.addTest(unittest.makeSuite(TestEndGame))
-    SUITE.addTest(unittest.makeSuite(TestGetClue))
+    SUITE.addTest(unittest.makeSuite(TestAnswerQuit))
     SUITE.addTest(unittest.makeSuite(TestGameTeam))
     RUNNER = unittest.TextTestRunner()
     RES = RUNNER.run(SUITE)

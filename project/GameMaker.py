@@ -19,10 +19,10 @@ class GMFactory:
     class GameMaker(UserABC):
         def __init__(self):
             self.username = "gamemaker"
-            self.password = "1234"
+            self.__password = "1234"
 
         def login(self, username, password):
-            if self.username == username and self.password == password:
+            if self.username == username and self.__password == password:
                 return self
             return None
 
