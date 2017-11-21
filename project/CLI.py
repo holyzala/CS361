@@ -140,8 +140,10 @@ def create(self, _):
 @need_admin
 def edit_landmark_order(self, args):
     try:
-        value = self.game.edit_landmark_order(args[1], args[2])
-    except IndexError:
+        index1 = int(args[1])
+        index2 = int(args[2])
+        value = self.game.edit_landmark_order(index1, index2)
+    except (IndexError, ValueError):
         return sc.invalid_param
     if value == Errors.NO_ERROR:
         return sc.edit_landmark_order_success
@@ -623,11 +625,21 @@ class TestEditLandmarkOrder(unittest.TestCase):
                          "only game maker can remove")
 
     def test_swap_landmark_invalid_index(self):
-        self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder -2 3"),
+        self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder -10 3"),
                          "Failed to change landmark order")
 
     def test_swap_landmark_invalid_index_v2(self):
-        self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder 2 10"),
+        self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder 10 2"),
+                         "Failed to change landmark order")
+
+    def test_swap_cannot_convert_to_int(self):
+         self.assertEqual(sc.invalid_param, self.cli.command("editlandmarkorder 3 blah"),
+                          "input is not an integer")
+
+    def test_swap_landmark_after_game_is_not_new(self):
+        self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
+        self.assertEqual(sc.game_ended, self.cli.command("end"), "Failed to end game.")
+        self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder 2 3"),
                          "Failed to change landmark order")
 
     def test_swap_landmark_after_game_starts(self):
