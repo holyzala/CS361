@@ -147,7 +147,6 @@ def edit_landmark_order(self, args):
         return sc.edit_landmark_order_success
     return sc.edit_landmark_order_fail
 
-
 @need_admin
 def edit_landmark(self, args):
     oldclue_index = args[1]
@@ -628,6 +627,11 @@ class TestEditLandmarkOrder(unittest.TestCase):
                          "Failed to change landmark order")
 
     def test_swap_landmark_invalid_index_v2(self):
+        self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder 2 10"),
+                         "Failed to change landmark order")
+
+    def test_swap_landmark_after_game_starts(self):
+        self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
         self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder 2 10"),
                          "Failed to change landmark order")
 
