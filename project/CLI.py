@@ -268,6 +268,15 @@ def get_stats(self, args):
     return "You cannot see another users stats"
 
 
+@need_admin
+def get_snapshot(self, _):
+    if not self.game.started or self.game.ended:
+        return sc.no_game_running
+    time_now = datetime.datetime.now()
+    now = datetime.timedelta(days=time_now.day, hours=time_now.hour, minutes=time_now.minute, seconds=time_now.second)
+    return self.game.get_snapshot(now)
+
+
 def answer_question(self, args):
     if not self.current_user:
         return sc.permission_denied
@@ -292,7 +301,7 @@ def answer_question(self, args):
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
             "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
             "getclue": get_clue, "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question,
-            "getstats": get_stats, "editlandmarkorder": edit_landmark_order}
+            "getstats": get_stats, "editlandmarkorder": edit_landmark_order, "snapshot": get_snapshot}
 
 
 class CLI:
@@ -860,6 +869,32 @@ class TestGetStatus(unittest.TestCase):
         self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
         self.assertEqual("Invalid parameters", self.cli.command("getstats"), "CLI took improper args")
 
+
+class TestSnapShot(unittest.TestCase):
+    def setUp(self):
+        self.cli = CLI(COMMANDS)
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual(sc.game_create, self.cli.command("create"), "Failed to create game")
+        self.assertEqual(sc.team_add, self.cli.command("addteam Team1 1526"), "setup failed")
+        self.assertEqual(sc.team_add, self.cli.command("addteam Team2 1526"), "setup failed")
+        self.assertEqual(sc.landmark_add,
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         sc.landmark_add_fail)
+        self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"'),
+                         sc.landmark_add_fail)
+
+    def test_snapshot_gm(self):
+        self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
+        self.assertEqual(sc.get_snapshot_success, self.cli.command("snapshot"), "Failed to get snapshot!!")
+
+    def test_snapshot_no_game_running(self):
+        self.assertEqual(sc.no_game_running, self.cli.command("snapshot"), "Failed to get snapshot!!")
+
+    def test_snapshot_not_gm(self):
+        self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
+        self.assertEqual(sc.logout, self.cli.command("logout"), "logout message not correct")
+        self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Failed to log in ")
+        self.assertEqual(sc.permission_denied, self.cli.command("snapshot"), "Not Game Maker!!")
 
 class TestAnswerQuestion(unittest.TestCase):
     # pylint: disable=protected-access,no-member
