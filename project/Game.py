@@ -33,6 +33,10 @@ class GameInterface(ABC):
         pass
 
     @abstractmethod
+    def edit_landmark_order(self, oldindex, newindex):
+        pass
+
+    @abstractmethod
     def set_point_penalty(self, points):
         pass
 
@@ -70,6 +74,10 @@ class GameInterface(ABC):
 
     @abstractmethod
     def get_team_landmark(self, team):
+        pass
+
+    @abstractmethod
+    def get_snapshot(self, now):
         pass
 
 
@@ -170,6 +178,15 @@ class Game(GameInterface):
         except KeyError:
             return False
 
+    def edit_landmark_order(self, index1, index2):
+        if self.started or self.ended:
+            return Errors.CAN_ONLY_EDIT_ORDER_WHEN_GAME_IS_NEW
+        try:
+            self.__landmarks.insert(index2, self.__landmarks.pop(index1))
+        except IndexError:
+            return Errors.LANDMARK_INDEX
+        return Errors.NO_ERROR
+
     @property
     def penalty_value(self):
         return self.__penalty_value
@@ -248,6 +265,9 @@ class Game(GameInterface):
             stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
             return stat_str.format(current_team.points, current_team.current_landmark+1, current_time_calc, total_time)
         return 'Final Points: {}'.format(current_team.points)
+
+    def get_snapshot(self, now):
+        pass
 
 
 def make_game(*args, **kwargs):
@@ -379,6 +399,60 @@ class TestAddLandmark(unittest.TestCase):
         self.game._Game__landmarks.append(ld)
         self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
                          "Cannot add duplicate landmarks")
+
+
+class TestEditLandmarkOrder(unittest.TestCase):
+    def setUp(self):
+        self.game = TEST_FACTORY()
+        self.game._Game__started = False
+        self.game._Game__ended = False
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("Chicago", "Where the Bears play",
+                                                                         "Soldier Field"))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("GreenBay", "Where the Packers play",
+                                                                         "Lambeau Field"))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("Los Angeles", "Where the Lakers play",
+                                                                         "Staples Center"))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("Milwaukee", "Where the Brewers play",
+                                                                         "Miller Park"))
+
+    def test_swap_front_back(self):
+        self.assertEqual(Errors.NO_ERROR, self.game.edit_landmark_order(0, 3), "should have succeeded swapping")
+        self.assertEqual("GreenBay", self.game._Game__landmarks[0].clue, "Order changed")
+        self.assertEqual("Chicago", self.game._Game__landmarks[3].clue, "Order changed")
+
+    def test_swap_middle(self):
+        self.assertEqual(Errors.NO_ERROR, self.game.edit_landmark_order(1, 2), "should have succeeded swapping")
+        self.assertEqual("Los Angeles", self.game._Game__landmarks[1].clue, "Swapping failed")
+        self.assertEqual("GreenBay", self.game._Game__landmarks[2].clue, "Swapping failed")
+
+    def test_swap_double(self):
+        self.assertEqual(Errors.NO_ERROR, self.game.edit_landmark_order(1, 2), "should have succeeded swapping")
+        self.assertEqual(Errors.NO_ERROR, self.game.edit_landmark_order(1, 2), "should have succeeded swapping")
+        self.assertEqual("GreenBay", self.game._Game__landmarks[1].clue,
+                         "Swapping should have reverted back to original order")
+        self.assertEqual("Los Angeles", self.game._Game__landmarks[2].clue,
+                         "Swapping should have reverted back to original order")
+
+    def test_swap_negative_index_with_positive(self):
+        self.assertEqual(Errors.LANDMARK_INDEX, self.game.edit_landmark_order(-10, 3), "negative index!!")
+        self.assertEqual("Milwaukee", self.game._Game__landmarks[3].clue, "Swapping should not have occurred")
+
+    def test_swap_negative_index_with_negative(self):
+        self.assertEqual(Errors.LANDMARK_INDEX, self.game.edit_landmark_order(-12, -1), "negative index!!")
+
+    def test_swap_index_greater_than_length(self):
+        self.assertEqual(Errors.LANDMARK_INDEX, self.game.edit_landmark_order(4, 3), "Index out of range")
+        self.assertEqual("Milwaukee", self.game._Game__landmarks[3].clue, "Swapping should not have occurred")
+
+    def test_swap_from_empty_list(self):
+        self.game._Game__landmarks.clear()
+        self.assertEqual(Errors.LANDMARK_INDEX, self.game.edit_landmark_order(4, 3), "negative index!!")
+
+    def test_swap_after_game_started(self):
+        self.game._Game__started = True
+        self.assertEqual(Errors.CAN_ONLY_EDIT_ORDER_WHEN_GAME_IS_NEW, self.game.edit_landmark_order(1, 2), "can not change order after start of game")
+        self.assertEqual("GreenBay", self.game._Game__landmarks[1].clue, "Swapping failed")
+        self.assertEqual("Los Angeles", self.game._Game__landmarks[2].clue, "Swapping failed")
 
 
 class TestModifyLandmark(unittest.TestCase):
@@ -734,6 +808,7 @@ if __name__ == "__main__":
     SUITE.addTest(unittest.makeSuite(TestAddLandmark))
     SUITE.addTest(unittest.makeSuite(TestAddLandmark2))
     SUITE.addTest(unittest.makeSuite(TestModifyLandmark))
+    SUITE.addTest(unittest.makeSuite(TestEditLandmarkOrder))
     SUITE.addTest(unittest.makeSuite(TestEndGame))
     SUITE.addTest(unittest.makeSuite(TestAnswerQuit))
     SUITE.addTest(unittest.makeSuite(TestGameTeam))

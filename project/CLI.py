@@ -138,6 +138,19 @@ def create(self, _):
 
 
 @need_admin
+def edit_landmark_order(self, args):
+    try:
+        index1 = int(args[1])
+        index2 = int(args[2])
+        value = self.game.edit_landmark_order(index1, index2)
+    except (IndexError, ValueError):
+        return sc.invalid_param
+    if value == Errors.NO_ERROR:
+        return sc.edit_landmark_order_success
+    return sc.edit_landmark_order_fail
+
+
+@need_admin
 def edit_landmark(self, args):
     oldclue_index = args[1]
     clue_index = None
@@ -164,25 +177,25 @@ def edit_landmark(self, args):
                 if answer_index:
                     answer = args[answer_index + 1]
                     if self.game.modify_landmark(oldclue=oldclue_index, clue=clue, question=question, answer=answer):
-                        return "Landmark Edited Successfully"
+                        return sc.edit_landmark_success
                 if self.game.modify_landmark(oldclue=oldclue_index, clue=clue, question=question):
-                    return "Landmark Edited Successfully"
+                    return sc.edit_landmark_success
             if self.game.modify_landmark(oldclue=oldclue_index, clue=clue):
-                return "Landmark Edited Successfully"
+                return sc.edit_landmark_success
 
         if question_index:
             question = args[question_index + 1]
             if answer_index:
                 answer = args[answer_index + 1]
                 if self.game.modify_landmark(oldclue=oldclue_index, question=question, answer=answer):
-                    return "Landmark Edited Successfully"
+                    return sc.edit_landmark_success
             if self.game.modify_landmark(oldclue=oldclue_index, question=question):
-                return "Landmark Edited Successfully"
+                return sc.edit_landmark_success
 
         if answer_index:
             answer = args[answer_index + 1]
             if self.game.modify_landmark(oldclue=oldclue_index, answer=answer):
-                return "Landmark Edited Successfully"
+                return sc.edit_landmark_success
 
     except IndexError:
         return sc.invalid_param
@@ -280,7 +293,7 @@ def answer_question(self, args):
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
             "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
             "getclue": get_clue, "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question,
-            "getstats": get_stats}
+            "getstats": get_stats, "editlandmarkorder": edit_landmark_order}
 
 
 class CLI:
@@ -582,6 +595,56 @@ class TestRemoveLandmark(unittest.TestCase):
 
     def test_remove_landmark_bad_args(self):
         self.assertEqual(sc.invalid_param, self.cli.command("removelandmark"), sc.invalid_param)
+
+
+class TestEditLandmarkOrder(unittest.TestCase):
+    def setUp(self):
+        self.cli = CLI(COMMANDS)
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual(sc.game_create, self.cli.command("create"), "Failed to create game")
+        self.assertEqual(sc.team_add, self.cli.command("addteam Team1 1526"), "setup failed")
+        self.assertEqual(sc.landmark_add,
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         sc.landmark_add_fail)
+        self.assertEqual(sc.landmark_add,
+                         self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"'),
+                         sc.landmark_add_fail)
+        self.assertEqual(sc.landmark_add,
+                         self.cli.command('addlandmark "Los Angeles" "Where the Lakers play" "Staples Center"'),
+                         sc.landmark_add_fail)
+        self.assertEqual(sc.landmark_add,
+                         self.cli.command('addlandmark "Milwaukee" "Where the Brewers play" "Miller Park"'),
+                         sc.landmark_add_fail)
+
+    def test_swap_landmark_is_gm(self):
+        self.assertEqual(sc.edit_landmark_order_success, self.cli.command("editlandmarkorder 0 3"),
+                         "Failed to change landmark order")
+
+    def test_swap_landmark_is_not_gm(self):
+        self.assertEqual(sc.logout, self.cli.command("logout"), "Failed to logout")
+        self.assertEqual(sc.permission_denied, self.cli.command("editlandmarkorder 0 3"),
+                         "only game maker can remove")
+
+    def test_swap_landmark_invalid_index(self):
+        self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder -10 3"),
+                         "Failed to change landmark order")
+
+    def test_swap_landmark_invalid_index_v2(self):
+        self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder 10 2"),
+                         "Failed to change landmark order")
+
+    def test_swap_cannot_convert_to_int(self):
+         self.assertEqual(sc.invalid_param, self.cli.command("editlandmarkorder 3 blah"),
+                          "input is not an integer")
+
+    def test_swap_landmark_after_game_is_not_new(self):
+        self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
+        self.assertEqual(sc.game_ended, self.cli.command("end"), "Failed to end game.")
+        self.assertEqual(sc.edit_landmark_order_fail, self.cli.command("editlandmarkorder 2 3"),
+                         "Failed to change landmark order")
+
+    def test_swap_landmark_bad_args(self):
+        self.assertEqual(sc.invalid_param, self.cli.command("editlandmarkorder"), sc.invalid_param)
 
 
 class TestEditLandmark(unittest.TestCase):
