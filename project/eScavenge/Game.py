@@ -1,10 +1,10 @@
-import unittest
 import datetime
+import unittest
 from abc import ABC, abstractmethod
 
-from Landmark import LandmarkFactory
-from Team import TeamFactory
-from Errors import Errors
+from .Landmark import LandmarkFactory
+from .Team import TeamFactory
+from .Errors import Errors
 
 
 class GameInterface(ABC):

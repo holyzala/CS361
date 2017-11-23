@@ -1,7 +1,8 @@
 import unittest
-from datetime import timedelta
 from abc import ABC, abstractmethod
-from GameMaker import UserABC
+from datetime import timedelta
+
+from .GameMaker import UserABC
 
 
 class TeamI(ABC):
