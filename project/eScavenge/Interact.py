@@ -1,9 +1,9 @@
-import CLI
 import shlex
 
+from .CLI import CLI, COMMANDS
 
 if __name__ == "__main__":
-    cli = CLI.CLI(CLI.COMMANDS)
+    cli = CLI(COMMANDS)
     while True:
         inp = input("> ")
         tokenized = shlex.split(inp)
