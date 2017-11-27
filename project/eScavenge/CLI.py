@@ -122,7 +122,7 @@ def end(self, _):
 
 @need_admin
 def create(self, _):
-    if self.game is None or not self.game.started or self.game.ended:
+    if not self.game or not self.game.started or self.game.ended:
         self.game = GameFactory(make_game).create_game()
     if self.game:
         return "Game Created"
