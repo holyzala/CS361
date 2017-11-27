@@ -289,11 +289,31 @@ def answer_question(self, args):
         return "There are no more landmarks!"
     return "Incorrect Answer! The Question Was: \n{}".format(self.game.get_team_landmark(self.current_user).question)
 
+@need_admin
+def edit_penalty_value(self, args):
+    try:
+        penalty_value = self.game.set_point_penalty(int(args[1]))
+    except (ValueError, IndexError):
+        return "Proper Format editpenaltyvalue <amount>"
+    if penalty_value:
+        return penalty_value_changed
+    return penalty_value_failed
+
+@need_admin
+def edit_penalty_time(self, args):
+    try:
+        penalty_time = self.game.set_time_penalty(int(args[1]))
+    except (ValueError, IndexError):
+        return "Proper Format editpenaltytime <amount>"
+    if penalty_time:
+        return penalty_time_changed
+    return penalty_time_failed
 
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
             "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
             "getclue": get_clue, "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question,
-            "getstats": get_stats, "editlandmarkorder": edit_landmark_order}
+            "getstats": get_stats, "editlandmarkorder": edit_landmark_order, "editpenaltyvalue" : edit_penalty_value,
+            "editpenaltytime" : edit_penalty_time}
 
 
 class CLI:
