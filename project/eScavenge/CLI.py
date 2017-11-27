@@ -664,7 +664,7 @@ class TestEditLandmarkOrder(unittest.TestCase):
                          "Failed to change landmark order")
 
     def test_swap_landmark_bad_args(self):
-        self.assertEqual(invalid_param, self.cli.command("editlandmarkorder"), sc.invalid_param)
+        self.assertEqual(invalid_param, self.cli.command("editlandmarkorder"), invalid_param)
 
 
 class TestEditLandmark(unittest.TestCase):
