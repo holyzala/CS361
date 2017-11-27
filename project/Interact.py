@@ -1,6 +1,6 @@
 import shlex
 
-from .CLI import CLI, COMMANDS
+from eScavenge.CLI import CLI, COMMANDS
 
 if __name__ == "__main__":
     cli = CLI(COMMANDS)
