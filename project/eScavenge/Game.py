@@ -86,6 +86,7 @@ class Game(GameInterface):
         self.__teams = {}
         self.__landmarks = []
         self.__started = False
+        self.__running = False
         self.__ended = False
         self.__penalty_value = 0
         self.__penalty_time = 0
