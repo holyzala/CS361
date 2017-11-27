@@ -305,8 +305,6 @@ def edit_penalty_time(self, args):
         penalty_time = self.game.set_time_penalty(int(args[1]))
     except ValueError or IndexError:
         return "Proper Format editpenaltytime <amount>"
-    if len(args) < 1:
-        return "Proper Format editpenaltytime <amount>"
     if penalty_time:
         return penalty_time_changed
     return penalty_time_failed
