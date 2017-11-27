@@ -194,7 +194,7 @@ class Game(GameInterface):
     def set_point_penalty(self, points):
         if self.started:
             return False
-        if points <= 0:
+        if points < 0:
             return False
         self.__penalty_value = points
         return True
@@ -206,7 +206,7 @@ class Game(GameInterface):
     def set_time_penalty(self, penalty):
         if self.started:
             return False
-        if penalty <= 0:
+        if penalty < 0:
             return False
         self.__penalty_time = penalty
         return True
