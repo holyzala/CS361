@@ -293,7 +293,7 @@ def answer_question(self, args):
 def edit_penalty_value(self, args):
     try:
         penalty_value = self.game.set_point_penalty(int(args[1]))
-    except ValueError or IndexError:
+    except (ValueError, IndexError):
         return "Proper Format editpenaltyvalue <amount>"
     if penalty_value:
         return penalty_value_changed
@@ -303,7 +303,7 @@ def edit_penalty_value(self, args):
 def edit_penalty_time(self, args):
     try:
         penalty_time = self.game.set_time_penalty(int(args[1]))
-    except ValueError or IndexError:
+    except (ValueError, IndexError):
         return "Proper Format editpenaltytime <amount>"
     if penalty_time:
         return penalty_time_changed
