@@ -106,10 +106,7 @@ def remove_landmark(self, args):
 
 @need_admin
 def start(self, _):
-    try:
-        self.game.start()
-    except IndexError:
-        return invalid_param
+    self.game.start()
     if self.game.started:
         return game_started
     return "Failed to start Game"
@@ -117,10 +114,7 @@ def start(self, _):
 
 @need_admin
 def end(self, _):
-    try:
-        self.game.end()
-    except IndexError:
-        return invalid_param
+    self.game.end()
     if self.game.ended:
         return game_ended
     return "Failed to end game"
@@ -130,13 +124,8 @@ def end(self, _):
 def create(self, _):
     if self.game.started or not self.game.ended:
         return Errors.GAME_IN_PROGRESS
-    try:
-        self.game = GameFactory(make_game).create_game()
-    except ValueError:
-        return invalid_param
-    if self.game:
-        return "Game Created"
-    return "Game Failed"
+    self.game = GameFactory(make_game).create_game()
+    return "Game Created"
 
 
 @need_admin
