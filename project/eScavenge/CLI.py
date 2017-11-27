@@ -128,9 +128,11 @@ def end(self, _):
 
 @need_admin
 def create(self, _):
+    if self.game.started or not self.game.ended:
+        return Errors.GAME_IN_PROGRESS
     try:
         self.game = GameFactory(make_game).create_game()
-    except IndexError:
+    except ValueError:
         return invalid_param
     if self.game:
         return "Game Created"
