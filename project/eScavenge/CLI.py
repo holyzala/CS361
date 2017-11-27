@@ -291,10 +291,8 @@ def answer_question(self, args):
 
 @need_admin
 def edit_penalty_value(self, args):
-    if self.game.started or self.game.ended:
-        return game_currently_running
     try:
-        penalty_value = self.game.set_point_penalty(args[1])
+        penalty_value = self.game.set_point_penalty(int(args[1]))
     except ValueError:
         return invalid_param
     if len(args) < 1:
@@ -305,10 +303,8 @@ def edit_penalty_value(self, args):
 
 @need_admin
 def edit_penalty_time(self, args):
-    if self.game.started or self.game.ended:
-        return game_currently_running
     try:
-        penalty_time = self.game.set_time_penalty(args[1])
+        penalty_time = self.game.set_time_penalty(int(args[1]))
     except ValueError:
         return invalid_param
     if len(args) < 1:
