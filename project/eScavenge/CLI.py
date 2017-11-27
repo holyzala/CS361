@@ -298,7 +298,7 @@ def edit_penalty_value(self, args):
     except ValueError:
         return invalid_param
     if len(args) < 1:
-        return "Proper Format edit_penalty_value <amount>"
+        return "Proper Format editpenaltyvalue <amount>"
     if penalty_value:
         return penalty_value_changed
     return penalty_value_failed
@@ -312,7 +312,7 @@ def edit_penalty_time(self, args):
     except ValueError:
         return invalid_param
     if len(args) < 1:
-        return "Proper Format edit_penalty_time <amount>"
+        return "Proper Format editpenaltytime <amount>"
     if penalty_time:
         return penalty_time_changed
     return penalty_time_failed
@@ -320,7 +320,8 @@ def edit_penalty_time(self, args):
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
             "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
             "getclue": get_clue, "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question,
-            "getstats": get_stats, "editlandmarkorder": edit_landmark_order}
+            "getstats": get_stats, "editlandmarkorder": edit_landmark_order, "editpenaltyvalue" : edit_penalty_value,
+            "editpenaltytime" : edit_penalty_time}
 
 
 class CLI:
