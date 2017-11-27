@@ -301,6 +301,11 @@ class TestSetPenaltyValue(unittest.TestCase):
         point_value = -10
         self.assertFalse(self.game.set_point_penalty(point_value), "Set Point allowing negative values")
 
+    def test_set_penalty_zero(self):
+        point_value = 0
+        self.assertTrue(self.game.set_point_penalty(point_value), "Time Penalty Value Correctly set to 0")
+        self.assertEqual(point_value, self.game._Game__penalty_value, "Time Penalty Value not allowing 0")
+
     def test_set_penalty_during_game(self):
         point_value = 10
         self.game._Game__started = True
@@ -325,6 +330,12 @@ class TestSetPenaltyTime(unittest.TestCase):
         point_value = 10
         self.game._Game__started = True
         self.assertFalse(self.game.set_time_penalty(point_value), "Allowing time penalty setting during game")
+
+    def test_set_penalty_time_zero(self):
+        point_value = 0
+        self.assertTrue(self.game.set_time_penalty(point_value), "Time Penalty Value Correctly set to 0")
+        self.assertEqual(point_value, self.game._Game__penalty_time, "Time Penalty Value not allowing 0")
+
 
 
 class TestAddTeam(unittest.TestCase):
