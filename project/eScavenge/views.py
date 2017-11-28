@@ -17,7 +17,7 @@ def validate(request):
             message = "Invalid password"
     else:
         try:
-            u = Team.objects.get(name=request.POST["huntUser"])
+            u = Team.objects.get(username=request.POST["huntUser"])
         except Team.DoesNotExist:
             message = "No user named " + request.POST["huntUser"]
         else:
@@ -31,11 +31,7 @@ def validate(request):
 
 
 def terminal(request):
-    output = cli.command(request.POST["command"])
+    output = cli.command(request.POST["command"], request.POST['huntUser'])
     context = {"huntUser": request.POST["huntUser"], "output": output}
     return render(request, "terminal.html", context)
 
-
-def logout(request):
-    cli.command("logout")
-    return redirect("/")

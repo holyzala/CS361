@@ -1,15 +1,15 @@
 import unittest
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from django.db import models
 
 
 class Team(models.Model):
     username = models.CharField(max_length=20, unique=True)
     __password = models.CharField(max_length=20, db_column="password")
-    __points = models.IntegerField(default=0)
+    __points = models.IntegerField(default=0, db_column="points")
     current_landmark = models.IntegerField(default=0)
     penalty_count = models.IntegerField(default=0)
-    clue_time = models.DateTimeField(default=datetime.now())
+    clue_time = models.DateTimeField(default=datetime.now(timezone.utc))
 
     def __eq__(self, other):
         return self.username == other.username
@@ -51,6 +51,11 @@ class Team(models.Model):
 class TimeDelta(models.Model):
     time_delta = models.DurationField(default=timedelta(0))
     team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, related_name='time_log')
+
+
+class TeamFactory:
+    def get_team(self, username, password):
+        return Team.objects.create(username=username, password=password)
 
 
 class TestInit(unittest.TestCase):

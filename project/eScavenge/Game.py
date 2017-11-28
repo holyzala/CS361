@@ -3,7 +3,7 @@ import unittest
 from abc import ABC, abstractmethod
 
 from .Landmark import LandmarkFactory
-from .Team import Team
+from .Team import TeamFactory, Team
 from .Errors import Errors
 
 
@@ -120,7 +120,7 @@ class Game(GameInterface):
         if not self.started:
             if name in self.__teams:
                 return False
-            temp = Team.objects.create(username=name, password=password)
+            temp = TeamFactory().get_team(name, password)
             self.__teams[name] = temp
             temp.save()
 
@@ -216,9 +216,7 @@ class Game(GameInterface):
         return True
 
     def start(self):
-        dt = datetime.datetime.now()
-        now = datetime.timedelta(days=dt.day, hours=dt.hour,
-                                 minutes=dt.minute, seconds=dt.second)
+        now = datetime.datetime.now(datetime.timezone.utc)
         for team in self.__teams:
             self.__teams[team].clue_time = now
         self.__started = True
@@ -260,11 +258,11 @@ class Game(GameInterface):
             return Errors.NO_ERROR
 
     def get_status(self, now, username):
-        current_team = self.__teams[username]
+        current_team = Team.objects.get(username=username)
         current_time_calc = (now - current_team.clue_time)
         total_time = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
-        for t in current_team.time_log:
-            total_time += t
+        for t in current_team.time_log.all():
+            total_time += t.time_delta
         if current_team.current_landmark <= len(self.__landmarks):
             stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
             return stat_str.format(current_team.points, current_team.current_landmark+1, current_time_calc, total_time)
@@ -365,7 +363,7 @@ class TestRemoveTeam(unittest.TestCase):
     def setUp(self):
         self.game = TEST_FACTORY()
         self.game._Game__started = False
-        self.game._Game__teams["Team1"] = Team("Team1", "1232")
+        self.game._Game__teams["Team1"] = TeamFactory().get_team("Team1", "1232")
 
     def test_remove_team(self):
         self.assertTrue(self.game.remove_team("Team1"), "Failed to remove team")
@@ -505,7 +503,7 @@ class TestModifyTeam(unittest.TestCase):
     # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game._Game__teams["Team1"] = Team("Team1", "1234")
+        self.game._Game__teams["Team1"] = TeamFactory().get_team("Team1", "1234")
 
     def test_modify_team_name(self):
         self.assertTrue(self.game.modify_team("Team1", newname="Team2", newpassword=None), "Team name was not modified")
@@ -603,7 +601,7 @@ class TestAddLandmark2(unittest.TestCase):
 class TestGameTeam(unittest.TestCase):
     # pylint: disable=protected-access,no-member
     def setUp(self):
-        self.team = Team("Dummy", "password")
+        self.team = TeamFactory().get_team("Dummy", "password")
         self.game = GameFactory(make_game).create_game()
         l1 = LandmarkFactory().get_landmark("The Place we drink coffee and read books",
                                             "What is the name of the statue out front?", "three disks")
@@ -781,8 +779,8 @@ class TestAnswerQuit(unittest.TestCase):
     # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game._Game__teams['abc'] = Team('abc', 'def')
-        self.game._Game__teams['ghi'] = Team('ghi', 'jkl')
+        self.game._Game__teams['abc'] = TeamFactory().get_team('abc', 'def')
+        self.game._Game__teams['ghi'] = TeamFactory().get_team('ghi', 'jkl')
         self.game._Game__landmarks.append(LandmarkFactory().get_landmark('clue1', 'question1', 'answer1'))
         self.game._Game__landmarks.append(LandmarkFactory().get_landmark('clue2', 'question2', 'answer2'))
         self.game._Game__landmarks.append(LandmarkFactory().get_landmark('clue3', 'question3', 'answer3'))

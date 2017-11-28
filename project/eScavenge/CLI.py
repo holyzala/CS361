@@ -1,11 +1,13 @@
 import datetime
 import shlex
 import unittest
+from django.db import IntegrityError
 
 from .StringConst import *
 from .Errors import Errors
 from .Game import GameFactory, make_game
 from .GameMaker import GMFactory
+from .Team import Team
 
 
 def need_admin(func):
@@ -61,9 +63,13 @@ def add_team(self, args):
     try:
         if self.game is None:
             return team_add_fail
+        if args[1] == self.game_maker.username:
+            return team_add_fail
         added = self.game.add_team(args[1], args[2])
     except IndexError:
         return invalid_param
+    except IntegrityError:
+        return "Team already exists"
     if added:
         return team_add
     return team_add_fail
@@ -236,8 +242,7 @@ def quit_question(self, args):
         return permission_denied
     if self.current_user.is_admin():
         return "You're Not Playing!"
-    time_now = datetime.datetime.now()
-    now = datetime.timedelta(days=time_now.day, hours=time_now.hour, minutes=time_now.minute, seconds=time_now.second)
+    now = datetime.datetime.now(datetime.timezone.utc)
     rtn = self.game.quit_question(now, self.current_user, args[2])
     if rtn == Errors.INVALID_LOGIN:
         return permission_denied
@@ -253,8 +258,7 @@ def get_stats(self, args):
         return permission_denied
     if len(args) < 1:
         return "Proper Format get_stats <username>"
-    time_now = datetime.datetime.now()
-    now = datetime.timedelta(days=time_now.day, hours=time_now.hour, minutes=time_now.minute, seconds=time_now.second)
+    now = datetime.datetime.now(datetime.timezone.utc)
     if self.current_user.username == args[1] or self.current_user.is_admin():
         return self.game.get_status(now, args[1])
     return "You cannot see another users stats"
@@ -265,9 +269,7 @@ def answer_question(self, args):
         return permission_denied
     if self.current_user.is_admin():
         return "You're Not Playing!"
-    datetime_now = datetime.datetime.now()
-    now = datetime.timedelta(days=datetime_now.day, hours=datetime_now.hour, minutes=datetime_now.minute,
-                             seconds=datetime_now.second)
+    now = datetime.datetime.now(datetime.timezone.utc)
     correct_answer = self.game.answer_question(now, self.current_user, args[1])
     if correct_answer == Errors.NO_ERROR:
         return "That is Correct! The Next Question is: \n{}".format(
@@ -314,8 +316,12 @@ class CLI:
         self.current_user = None
         self.game = None
 
-    def command(self, args):
-        inp = shlex.split(args)
+    def command(self, inp, name):
+        if name == self.game_maker.username:
+            self.current_user = self.game_maker
+        else:
+            self.current_user = Team.objects.get(username=name)
+        inp = shlex.split(inp)
         try:
             return self.commands[inp[0].lower()](self, inp)
         except KeyError:
@@ -847,9 +853,7 @@ class TestGetStatus(unittest.TestCase):
 
     def test_admin(self):
         tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
-        time_now = datetime.datetime.now()
-        now = datetime.timedelta(days=time_now.day, hours=time_now.hour, minutes=time_now.minute,
-                                 seconds=time_now.second)
+        now = datetime.datetime.now(datetime.timezone.utc)
         for t in self.cli.game._Game__teams["Team1"].time_log:
             tt += t
         currenttimecalc = (now - self.cli.game._Game__teams["Team1"].clue_time)
@@ -861,9 +865,7 @@ class TestGetStatus(unittest.TestCase):
 
     def test_user(self):
         tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
-        time_now = datetime.datetime.now()
-        now = datetime.timedelta(days=time_now.day, hours=time_now.hour, minutes=time_now.minute,
-                                 seconds=time_now.second)
+        now = datetime.datetime.now(datetime.timezone.utc)
         for t in self.cli.game._Game__teams["Team1"].time_log:
             tt += t
         current_time_calc = (now - self.cli.game._Game__teams["Team1"].clue_time)
