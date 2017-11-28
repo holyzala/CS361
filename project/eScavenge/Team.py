@@ -1,95 +1,56 @@
 import unittest
-from abc import ABC, abstractmethod
-from datetime import timedelta
-
-from .GameMaker import UserABC
+from datetime import timedelta, datetime
+from django.db import models
 
 
-class TeamI(ABC):
-    @abstractmethod
+class Team(models.Model):
+    username = models.CharField(max_length=20, unique=True)
+    __password = models.CharField(max_length=20, db_column="password")
+    __points = models.IntegerField(default=0)
+    current_landmark = models.IntegerField(default=0)
+    penalty_count = models.IntegerField(default=0)
+    clue_time = models.DateTimeField(default=datetime.now())
+
+    def __eq__(self, other):
+        return self.username == other.username
+
     def login(self, username, password):
-        pass
-
-    @abstractmethod
-    def add_penalty(self, penalty):
-        pass
+        if username != self.username or password != self.__password:
+            return None
+        return self
 
     @property
-    @abstractmethod
     def points(self):
-        pass
+        return self.__points
 
     @points.setter
-    @abstractmethod
     def points(self, points):
-        pass
+        self.__points = max(0, points)
 
-    @property
-    @abstractmethod
-    def password(self):
-        pass
-
-    @password.setter
-    @abstractmethod
-    def password(self, password):
-        pass
-
-
-class TimeDeltaList(list):
-    def append(self, delta):
-        zero = timedelta()
-        super(TimeDeltaList, self).append(max(zero, delta))
-
-
-class TeamFactory:
-    def get_team(self, username, password):
-        return self.Team(username, password)
-
-    class Team(TeamI, UserABC):
-        def __init__(self, username, password):
-            self.username = username
-            self.__password = password
-            self.__points = 0
-            self.current_landmark = 0
-            self.penalty_count = 0
-            self.time_log = TimeDeltaList()
-            self.clue_time = None
-
-        def __eq__(self, other):
-            return self.username == other.username
-
-        def login(self, username, password):
-            if username != self.username or password != self.__password:
-                return None
-            return self
-
-        @property
-        def points(self):
-            return self.__points
-
-        @points.setter
-        def points(self, points):
-            self.__points = max(0, points)
-
-        def add_penalty(self, penalty=1):
-            try:
-                if penalty <= 0:
-                    return False
-                self.penalty_count += penalty
-                return True
-            except ValueError:
+    def add_penalty(self, penalty=1):
+        try:
+            if penalty <= 0:
                 return False
-
-        def is_admin(self):
+            self.penalty_count += penalty
+            return True
+        except ValueError:
             return False
 
-        @property
-        def password(self):
-            return None
+    def is_admin(self):
+        return False
 
-        @password.setter
-        def password(self, password):
-            self.__password = password
+    @property
+    def password(self):
+        return None
+
+    @password.setter
+    def password(self, password):
+        self.__password = password
+
+
+class TimeDelta(models.Model):
+    time_delta = models.DurationField(default=timedelta(0))
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, related_name='time_log')
 
 
 class TestInit(unittest.TestCase):

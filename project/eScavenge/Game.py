@@ -3,7 +3,7 @@ import unittest
 from abc import ABC, abstractmethod
 
 from .Landmark import LandmarkFactory
-from .Team import TeamFactory
+from .Team import Team
 from .Errors import Errors
 
 
@@ -120,7 +120,10 @@ class Game(GameInterface):
         if not self.started:
             if name in self.__teams:
                 return False
-            self.__teams[name] = TeamFactory().get_team(name, password)
+            temp = Team.objects.create(username=name, password=password)
+            self.__teams[name] = temp
+            temp.save()
+
             return True
         return False
 
@@ -362,7 +365,7 @@ class TestRemoveTeam(unittest.TestCase):
     def setUp(self):
         self.game = TEST_FACTORY()
         self.game._Game__started = False
-        self.game._Game__teams["Team1"] = TeamFactory().get_team("Team1", "1232")
+        self.game._Game__teams["Team1"] = Team("Team1", "1232")
 
     def test_remove_team(self):
         self.assertTrue(self.game.remove_team("Team1"), "Failed to remove team")
@@ -502,7 +505,7 @@ class TestModifyTeam(unittest.TestCase):
     # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game._Game__teams["Team1"] = TeamFactory().get_team("Team1", "1234")
+        self.game._Game__teams["Team1"] = Team("Team1", "1234")
 
     def test_modify_team_name(self):
         self.assertTrue(self.game.modify_team("Team1", newname="Team2", newpassword=None), "Team name was not modified")
@@ -600,7 +603,7 @@ class TestAddLandmark2(unittest.TestCase):
 class TestGameTeam(unittest.TestCase):
     # pylint: disable=protected-access,no-member
     def setUp(self):
-        self.team = TeamFactory().get_team("Dummy", "password")
+        self.team = Team("Dummy", "password")
         self.game = GameFactory(make_game).create_game()
         l1 = LandmarkFactory().get_landmark("The Place we drink coffee and read books",
                                             "What is the name of the statue out front?", "three disks")
@@ -778,8 +781,8 @@ class TestAnswerQuit(unittest.TestCase):
     # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game._Game__teams['abc'] = TeamFactory().get_team('abc', 'def')
-        self.game._Game__teams['ghi'] = TeamFactory().get_team('ghi', 'jkl')
+        self.game._Game__teams['abc'] = Team('abc', 'def')
+        self.game._Game__teams['ghi'] = Team('ghi', 'jkl')
         self.game._Game__landmarks.append(LandmarkFactory().get_landmark('clue1', 'question1', 'answer1'))
         self.game._Game__landmarks.append(LandmarkFactory().get_landmark('clue2', 'question2', 'answer2'))
         self.game._Game__landmarks.append(LandmarkFactory().get_landmark('clue3', 'question3', 'answer3'))
