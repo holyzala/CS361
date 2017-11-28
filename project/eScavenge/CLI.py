@@ -124,7 +124,6 @@ def end(self, _):
 def create(self, _):
     if not self.game or not self.game.started or self.game.ended:
         self.game = GameFactory(make_game).create_game()
-    if self.game:
         return "Game Created"
     return "Game Failed"
 
@@ -538,6 +537,21 @@ class TestCreate(unittest.TestCase):
     def test_create_not_gm(self):
         self.assertEqual(logout, self.cli.command("logout"), "Failed to logout")
         self.assertEqual(permission_denied, self.cli.command("create"), "Only admin can Create a new Game")
+
+    def test_create_in_progress_game(self):
+        self.assertEqual(game_create, self.cli.command("create"), "Failed to Create Game")
+        self.assertEqual(game_started, self.cli.command("start"), "Failed to Start Game")
+        self.assertEqual(game_failed, self.cli.command("create"), "Creation occurred with Game in Progress")
+
+    def test_create_double_game(self):
+        self.assertEqual(game_create, self.cli.command("create"), "Failed to Create Game")
+        self.assertEqual(game_create, self.cli.command("create"), "Failed to Create Game")
+
+    def test_create_after_end_game(self):
+        self.assertEqual(game_create, self.cli.command("create"), "Failed to Create Game")
+        self.assertEqual(game_started, self.cli.command("start"), "Failed to Start Game")
+        self.assertEqual(game_ended, self.cli.command("end"), "Failed to End Game")
+        self.assertEqual(game_create, self.cli.command("create"), "Failed to Create Game after Ending")
 
 
 class TestAddLandmark(unittest.TestCase):
