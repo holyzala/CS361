@@ -876,14 +876,19 @@ class TestSnapShot(unittest.TestCase):
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual(sc.game_create, self.cli.command("create"), "Failed to create game")
         self.assertEqual(sc.team_add, self.cli.command("addteam Team1 1526"), "setup failed")
-        self.assertEqual(sc.team_add, self.cli.command("addteam Team2 1526"), "setup failed")
         self.assertEqual(sc.landmark_add,
                          self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
                          sc.landmark_add_fail)
         self.assertEqual(sc.landmark_add, self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"'),
                          sc.landmark_add_fail)
 
-    def test_snapshot_gm(self):
+    def test_snapshot_one_team(self):
+        self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
+        self.assertEqual(sc.get_snapshot_success, self.cli.command("snapshot"), "Failed to get snapshot!!")
+
+    def test_snapshot_multiple_teams(self):
+        self.assertEqual(sc.team_add, self.cli.command("addteam Team2 1526"), "setup failed")
+        self.assertEqual(sc.team_add, self.cli.command("addteam Team3 1526"), "setup failed")
         self.assertEqual(sc.game_started, self.cli.command("start"), "Failed to start game.")
         self.assertEqual(sc.get_snapshot_success, self.cli.command("snapshot"), "Failed to get snapshot!!")
 
@@ -895,6 +900,7 @@ class TestSnapShot(unittest.TestCase):
         self.assertEqual(sc.logout, self.cli.command("logout"), "logout message not correct")
         self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Failed to log in ")
         self.assertEqual(sc.permission_denied, self.cli.command("snapshot"), "Not Game Maker!!")
+
 
 class TestAnswerQuestion(unittest.TestCase):
     # pylint: disable=protected-access,no-member
