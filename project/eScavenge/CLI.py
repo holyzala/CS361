@@ -262,12 +262,13 @@ def get_stats(self, args):
 
 @need_admin
 def get_snapshot(self, _):
-    if not self.game.started or self.game.ended:
-        return sc.no_game_running
     time_now = datetime.datetime.now()
     now = datetime.timedelta(days=time_now.day, hours=time_now.hour, minutes=time_now.minute, seconds=time_now.second)
-    return self.game.get_snapshot(now)
-
+    err, rtn =  self.game.get_snapshot(now)
+    if err == Errors.NO_GAME:
+        return no_game_running
+    if err == Errors.NO_ERROR:
+        return rtn
 
 def answer_question(self, args):
     if not self.current_user:
@@ -289,6 +290,7 @@ def answer_question(self, args):
         return "There are no more landmarks!"
     return "Incorrect Answer! The Question Was: \n{}".format(self.game.get_team_landmark(self.current_user).question)
 
+
 @need_admin
 def edit_penalty_value(self, args):
     try:
@@ -308,6 +310,7 @@ def edit_penalty_time(self, args):
     if penalty_time:
         return penalty_time_changed
     return penalty_time_failed
+
 
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
             "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
@@ -903,21 +906,44 @@ class TestSnapShot(unittest.TestCase):
         self.assertEqual(login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual(game_create, self.cli.command("create"), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526"), "setup failed")
+        self.assertEqual(team_add, self.cli.command("addteam Team2 1526"), "setup failed")
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
                          landmark_add_fail)
         self.assertEqual(landmark_add, self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"'),
                          landmark_add_fail)
 
-    def test_snapshot_one_team(self):
-        self.assertEqual(game_started, self.cli.command("start"), "Failed to start game.")
-        self.assertEqual(get_snapshot_success, self.cli.command("snapshot"), "Failed to get snapshot!!")
-
     def test_snapshot_multiple_teams(self):
-        self.assertEqual(team_add, self.cli.command("addteam Team2 1526"), "setup failed")
-        self.assertEqual(team_add, self.cli.command("addteam Team3 1526"), "setup failed")
         self.assertEqual(game_started, self.cli.command("start"), "Failed to start game.")
-        self.assertEqual(get_snapshot_success, self.cli.command("snapshot"), "Failed to get snapshot!!")
+        self.assertEqual(logout, self.cli.command("logout"), "logout message not correct")
+        self.assertEqual(login_success, self.cli.command("login Team1 1526"), "Failed to log in ")
+        self.assertEqual("That is Correct! The Next Question is: \n{}".format("Place we purchase coffee from"),
+                         self.cli.command("answer 'Statue of Liberty'"),
+                         "Correct answer did not print correct response")
+        self.assertEqual(logout, self.cli.command("logout"), "logout message not correct")
+        self.assertEqual(login_success, self.cli.command("login Team2 1526"), "Failed to log in ")
+        self.assertEqual("That is Correct! The Next Question is: \n{}".format("Place we purchase coffee from"),
+                         self.cli.command("answer 'Statue of Liberty'"),
+                         "Correct answer did not print correct response")
+        self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer 'Grind'"),
+                         "Correct answer did not print correct response")
+        self.assertEqual(logout, self.cli.command("logout"), "logout message not correct")
+        self.assertEqual(login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        total_time_list = []
+        team_points = []
+        for username in self.cli.game._Game__teams:
+            current_team = self.cli.game.get_team(username)
+            total_time = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
+            for t in current_team.time_log:
+                total_time += t
+            total_time_list.append(total_time)
+            team_points.append(current_team.points)
+        stat_str_team_1 = "Team: Team1\nYou Are On Landmark 2\nTime Taken For Landmarks: "\
+                          + str(total_time_list[0]) +"\nTotal Points: "+str(team_points[0])+"\n"
+        stat_str_team_2 = "Team: Team2\nYou Are On Landmark 2\nTime Taken For Landmarks: " \
+                          + str(total_time_list[1]) + "\nTotal Points: " + str(team_points[1]) + "\n"
+        final_stat_str = stat_str_team_1 + stat_str_team_2
+        self.assertEqual(final_stat_str, self.cli.command("snapshot"), "Failed to get snapshot!!")
 
     def test_snapshot_no_game_running(self):
         self.assertEqual(no_game_running, self.cli.command("snapshot"), "Failed to get snapshot!!")
@@ -1081,6 +1107,7 @@ if __name__ == "__main__":
     SUITE.addTest(unittest.makeSuite(TestGetClue))
     SUITE.addTest(unittest.makeSuite(TestGetStatus))
     SUITE.addTest(unittest.makeSuite(TestQuitQuestion))
+    SUITE.addTest(unittest.makeSuite(TestSnapShot))
     SUITE.addTest(unittest.makeSuite(TestAnswerQuestion))
     RUNNER = unittest.TextTestRunner()
     RES = RUNNER.run(SUITE)
