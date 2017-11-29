@@ -1,6 +1,5 @@
 import datetime
 import shlex
-import unittest
 from django.db import IntegrityError
 
 from .StringConst import *
@@ -282,6 +281,7 @@ def answer_question(self, args):
         return "There are no more landmarks!"
     return "Incorrect Answer! The Question Was: \n{}".format(self.game.get_team_landmark(self.current_user).question)
 
+
 @need_admin
 def edit_penalty_value(self, args):
     try:
@@ -292,6 +292,7 @@ def edit_penalty_value(self, args):
         return penalty_value_changed
     return penalty_value_failed
 
+
 @need_admin
 def edit_penalty_time(self, args):
     try:
@@ -301,6 +302,7 @@ def edit_penalty_time(self, args):
     if penalty_time:
         return penalty_time_changed
     return penalty_time_failed
+
 
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
             "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
