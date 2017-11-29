@@ -268,7 +268,24 @@ class Game(GameInterface):
         return 'Final Points: {}'.format(current_team.points)
 
     def get_snapshot(self, now):
-        pass
+        if not self.started or self.ended:
+            return Errors.NO_GAME, None
+        stringList = []
+        for username in self.__teams:
+            current_team = self.get_team(username)
+            total_time = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
+            for t in current_team.time_log:
+                total_time += t
+            if current_team.current_landmark < len(self.__landmarks):
+                stat_str = "Team: {}\nYou Are On Landmark {}\nTime Taken For Landmarks: {}\nTotal Points: {}\n"
+                stringList.append(stat_str.format(username, current_team.current_landmark + 1, total_time,
+                                                  current_team.points))
+            else: # on last landmark
+                stat_str = "Team: {}\nYou Are On Landmark {}\nTime Taken For Landmarks: {}\nTotal Points: {}\n"
+                stringList.append(stat_str.format(username, current_team.current_landmark, total_time,
+                                                  current_team.points))
+
+        return Errors.NO_ERROR,''.join(stringList)
 
 
 def make_game(*args, **kwargs):
@@ -597,6 +614,63 @@ class TestAddLandmark2(unittest.TestCase):
                          "Adding not indexing properly")
 
 
+class TestGameSnapShot(unittest.TestCase):
+    def setUp(self):
+        self.game = TEST_FACTORY()
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("c1", "q1", "a1"))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("c2", "q2", "a2"))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("c3", "q3", "a3"))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("c4", "q4", "a4"))
+        self.game._Game__teams["Team1"] = TeamFactory().get_team("Team1", "1232")
+
+    def test_snapshot_no_game_running(self):
+        now = datetime.timedelta(hours=6, minutes=35, seconds=15)
+        self.assertEqual(Errors.NO_GAME, self.game.get_snapshot(now), "incorrect Error returned")
+
+    def test_get_snapshot_for_one_team(self):
+        self.game._Game__started = True
+        now = datetime.timedelta(hours=6, minutes=35, seconds=15)
+        clue_time = datetime.timedelta(hours=0, minutes=20, seconds=50)
+        clue_time2 = datetime.timedelta(hours=0, minutes=10, seconds=20)
+        clue_time3 = datetime.timedelta(hours=0, minutes=2, seconds=0)
+        self.game._Game__teams["Team1"].time_log.append(now - clue_time)
+        self.game._Game__teams["Team1"].time_log.append(now - clue_time2)
+        self.game._Game__teams["Team1"].time_log.append(now - clue_time3)
+        self.game._Game__teams["Team1"].current_landmark = 2
+        self.game._Game__teams["Team1"].points = 10
+        err, rtn = self.game.get_snapshot(now)
+        self.assertEqual(Errors.NO_ERROR, err, "incorrent message")
+        self.assertEqual("Team: Team1\nYou Are On Landmark 3\nTime Taken For Landmarks: 19:12:35\nTotal Points: 10\n",
+                         rtn, "Format incorrect")
+
+    def test_get_snapshot_for_several_teams(self):
+        self.game._Game__teams["Team2"] = TeamFactory().get_team("Team2", "1232")
+        self.game._Game__teams["Team3"] = TeamFactory().get_team("Team3", "1232")
+        self.game._Game__started = True
+        now = datetime.timedelta(hours=6, minutes=35, seconds=15)
+        clue_time = datetime.timedelta(hours=0, minutes=20, seconds=50)
+        clue_time2 = datetime.timedelta(hours=0, minutes=10, seconds=20)
+        clue_time3 = datetime.timedelta(hours=0, minutes=2, seconds=0)
+        self.game._Game__teams["Team1"].time_log.append(now - clue_time)
+        self.game._Game__teams["Team1"].time_log.append(now - clue_time2)
+        self.game._Game__teams["Team1"].time_log.append(now - clue_time3)
+        self.game._Game__teams["Team1"].current_landmark = 2
+        self.game._Game__teams["Team1"].points = 10
+        self.game._Game__teams["Team2"].time_log.append(now - clue_time)
+        self.game._Game__teams["Team2"].time_log.append(now - clue_time2)
+        self.game._Game__teams["Team2"].current_landmark = 1
+        self.game._Game__teams["Team2"].points = 5
+        self.game._Game__teams["Team3"].time_log.append(now - clue_time)
+        self.game._Game__teams["Team3"].current_landmark = 0
+        self.game._Game__teams["Team3"].points = 0
+        err, rtn = self.game.get_snapshot(now)
+        self.assertEqual(Errors.NO_ERROR, err, "incorrent message")
+        self.assertEqual("Team: Team1\nYou Are On Landmark 3\nTime Taken For Landmarks: 19:12:35\nTotal Points: 10\n"
+                         "Team: Team2\nYou Are On Landmark 2\nTime Taken For Landmarks: 12:39:20\nTotal Points: 5\n"
+                         "Team: Team3\nYou Are On Landmark 1\nTime Taken For Landmarks: 6:14:25\nTotal Points: 0\n",
+                         rtn, "Format incorrect")
+
+
 class TestGameTeam(unittest.TestCase):
     # pylint: disable=protected-access,no-member
     def setUp(self):
@@ -823,6 +897,7 @@ if __name__ == "__main__":
     SUITE.addTest(unittest.makeSuite(TestEditLandmarkOrder))
     SUITE.addTest(unittest.makeSuite(TestEndGame))
     SUITE.addTest(unittest.makeSuite(TestAnswerQuit))
+    SUITE.addTest(unittest.makeSuite(TestGameSnapShot))
     SUITE.addTest(unittest.makeSuite(TestGameTeam))
     RUNNER = unittest.TextTestRunner()
     RES = RUNNER.run(SUITE)
