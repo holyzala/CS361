@@ -3,7 +3,7 @@ import unittest
 from abc import ABC, abstractmethod
 
 from .Landmark import LandmarkFactory
-from .Team import TeamFactory, Team
+from .Team import TeamFactory, Team, TimeDelta
 from .Errors import Errors
 
 
@@ -230,7 +230,7 @@ class Game(GameInterface):
         if not team.login(team.username, password):
             return Errors.INVALID_LOGIN
         team.current_landmark += 1
-        team.time_log.append(now - team.clue_time)
+        TimeDelta.objects.create(time_delta=now-team.clue_time, team=team)
         team.clue_time = now
         team.penalty_count = 0
         return Errors.NO_ERROR
@@ -246,7 +246,7 @@ class Game(GameInterface):
             team.penalty_count += self.penalty_value
             return Errors.WRONG_ANSWER
         else:
-            team.time_log.append(now - team.clue_time)
+            TimeDelta.objects.create(time_delta=now-team.clue_time, team=team)
             team.current_landmark += 1
             if self.timer:
                 team.penalty_count += int(((now - team.clue_time) / self.timer)) * self.penalty_time
