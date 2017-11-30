@@ -163,6 +163,22 @@ class TestCreate(TestCase):
         self.assertEqual(game_create, self.cli.command("create", GM), "Failed to Create Game after Ending")
 
 
+class TestChangePointPenalty(TestCase):
+    def setUp(self):
+        self.cli = CLI(COMMANDS)
+        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to Create Game")
+        self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
+
+    def test_change_points_is_admin(self):
+        self.assertEqual(point_change, self.cli.command("setpointpenalty 10", GM), "Admin couldn't change points")
+
+    def test_change_points_no_admin(self):
+        self.assertEqual(permission_denied, self.cli.command("setpointpenalty 10", "Team1"), "Non-admin user changing points")
+
+    def test_change_points_invalid(self):
+        self.assertEqual("Invalid parameters", self.cli.command("setpointpenalty random", GM), "Invalid parameters accepted")
+
+
 class TestAddLandmark(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
@@ -278,6 +294,29 @@ class TestEditLandmarkOrder(TestCase):
         self.assertEqual(invalid_param, self.cli.command("editlandmarkorder", GM), invalid_param)
 
 
+class TestGetLandmarksIndex(TestCase):
+    def setUp(self):
+        self.cli = CLI(COMMANDS)
+        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(team_add, self.cli.command("addteam team1 1234", GM), "setup failed")
+        self.assertEqual(landmark_add,
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"', GM),
+                         landmark_add_fail)
+        self.assertEqual(landmark_add,
+                         self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"', GM),
+                         landmark_add_fail)
+        self.assertEqual(landmark_add,
+                         self.cli.command('addlandmark "Los Angeles" "Where the Lakers play" "Staples Center"', GM),
+                         landmark_add_fail)
+        self.assertEqual(landmark_add,
+                         self.cli.command('addlandmark "Milwaukee" "Where the Brewers play" "Miller Park"', GM),
+                         landmark_add_fail)
+
+    def test_get_landmark_index_is_not_gm(self):
+        self.assertEqual(permission_denied, self.cli.command("getlandmarksindex", "team1"),
+                         "Only game maker can see landmarks by index")
+
+
 class TestEditLandmark(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
@@ -358,6 +397,25 @@ class TestGetClue(TestCase):
         self.assertEqual("UWM", self.cli.command("getclue", "Team1"), "Wrong clue returned")
 
 
+class TestGetQuestion(TestCase):
+    def setUp(self):
+        self.cli = CLI(COMMANDS)
+        self.assertEqual(sc.game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(sc.team_add, self.cli.command("addteam team1 1234", GM), "Setup failed")
+        self.assertEqual(sc.landmark_add,
+                         self.cli.command('addlandmark "New York" "What is gift given by the French?" "Statue of Liberty"', GM),
+                         "Failed to add landmark")
+        self.assertEqual(sc.landmark_add,
+                         self.cli.command('addlandmark "UWM" "Where do we purchase coffe from?" "Grind"', GM),
+                         "Failed to add landmark")
+
+        def test_admin(self):
+            self.assertEqual(sc.permission_denied, self.cli.command("getquestion", GM), "Question returned for admin")
+
+        def test_correctness(self):
+            self.assertEqual("What is gift given by the French?", self.cli.command("getquestion", "team1"), "Incorrect question given")
+
+
 class TestQuitQuestion(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
@@ -419,6 +477,8 @@ class TestGetStatus(TestCase):
         self.assertEqual(no_game_running, self.cli.command("getstats Team1", "Team1"),
                          "Get Stats wroked with noone logged in")
 
+        self.assertEqual(no_game_running, self.cli.command("getstats", "Team1"),
+                         "Get Stats wroked with noone logged in")
     def test_admin(self):
         tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
         now = datetime.datetime.now(datetime.timezone.utc)
@@ -430,6 +490,10 @@ class TestGetStatus(TestCase):
         self.assertEqual(stat_str.format(self.cli.current_user.points, self.cli.current_user.current_landmark+1,
                                          str(currenttimecalc).split(".")[0], tt),
                          self.cli.command("getstats Team1", "Team1"), "Admin Couldn't user get stats")
+
+        self.assertEqual(stat_str.format(self.cli.current_user.points, self.cli.current_user.current_landmark+1,
+                                         str(currenttimecalc).split(".")[0], tt),
+                         self.cli.command("getstats", "Team1"), "Admin Couldn't user get stats")
 
     def test_user(self):
         tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
@@ -448,7 +512,7 @@ class TestGetStatus(TestCase):
                          "Get Stats wroked with noone logged in")
 
     def test_bad_args(self):
-        self.assertEqual("Invalid parameters", self.cli.command("getstats", "Team1"), "CLI took improper args")
+        self.assertEqual("Invalid parameters", self.cli.command("getstats Team1 blah", "Team1"), "CLI took improper args")
 
 
 class TestAnswerQuestion(TestCase):

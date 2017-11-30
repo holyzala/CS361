@@ -345,6 +345,15 @@ class TestGameTeam(TestCase):
                          'Current Landmark Elapsed Time:1:04:25;Time Taken For Landmarks:0:00:00',
                          'get_status did not print the proper stats!')
 
+    def test_get_landmarks_index(self):
+        landmarks = "0: The Place we drink coffee and read books\n"
+        landmarks += "1: The Place we drink coffee and read books\n"
+        landmarks += "2: The Place we drink coffee and read books\n"
+        self.assertEqual(landmarks, self.game.get_landmarks_index(), "Landmarks aren't correctly returned")
+
+    def test_team_question(self):
+        self.assertEqual("What is the name of the statue out front?", self.game.get_team_question(self.team), "Team question isn't correct")
+
     def test_quit_question_incorrectpass(self):
         self.game._Game__started = True
         self.team.clue_time = self.team.clue_time = datetime.timedelta(days=15, hours=12, minutes=30, seconds=15)
