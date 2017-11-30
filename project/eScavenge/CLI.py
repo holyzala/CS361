@@ -90,7 +90,7 @@ def add_landmark(self, args):
     try:
         if self.game is None:
             return landmark_add_fail
-        added = self.game.add_landmark(args[1], args[2], args[3])
+        added = self.game.add_landmark(args[1], args[2], args[3], args[4])
     except IndexError:
         return invalid_param
     if added:
@@ -148,10 +148,15 @@ def edit_landmark_order(self, args):
 
 @need_admin
 def edit_landmark(self, args):
-    oldclue_index = args[1]
+    oldname_index = args[1]
+    name_index = None
     clue_index = None
     question_index = None
     answer_index = None
+    try:
+        name_index = args.index('name', 2)
+    except ValueError:
+        pass
     try:
         clue_index = args.index('clue', 2)
     except ValueError:
@@ -166,31 +171,35 @@ def edit_landmark(self, args):
         pass
 
     try:
-        if clue_index:
-            clue = args[clue_index + 1]
-            if question_index:
-                question = args[question_index + 1]
-                if answer_index:
-                    answer = args[answer_index + 1]
-                    if self.game.modify_landmark(oldclue=oldclue_index, clue=clue, question=question, answer=answer):
+        if name_index:
+            name = args[name_index + 1]
+            if clue_index:
+                clue = args[clue_index + 1]
+                if question_index:
+                    question = args[question_index + 1]
+                    if answer_index:
+                        answer = args[answer_index + 1]
+                        if self.game.modify_landmark(oldname=oldname_index, name=name, clue=clue, question=question, answer=answer):
+                            return edit_landmark_success
+                    if self.game.modify_landmark(oldname=oldname_index, clue=clue, question=question):
                         return edit_landmark_success
-                if self.game.modify_landmark(oldclue=oldclue_index, clue=clue, question=question):
+                if self.game.modify_landmark(oldname=oldname_index, clue=clue):
                     return edit_landmark_success
-            if self.game.modify_landmark(oldclue=oldclue_index, clue=clue):
-                return edit_landmark_success
+            if self.game.modify_landmark(oldname=oldname_index, name=name):
+                return edit_landmark_order_success
 
         if question_index:
             question = args[question_index + 1]
             if answer_index:
                 answer = args[answer_index + 1]
-                if self.game.modify_landmark(oldclue=oldclue_index, question=question, answer=answer):
+                if self.game.modify_landmark(oldname=oldname_index, question=question, answer=answer):
                     return edit_landmark_success
-            if self.game.modify_landmark(oldclue=oldclue_index, question=question):
+            if self.game.modify_landmark(oldname=oldname_index, question=question):
                 return edit_landmark_success
 
         if answer_index:
             answer = args[answer_index + 1]
-            if self.game.modify_landmark(oldclue=oldclue_index, answer=answer):
+            if self.game.modify_landmark(oldname=oldname_index, answer=answer):
                 return edit_landmark_success
 
     except IndexError:

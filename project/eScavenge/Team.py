@@ -5,7 +5,7 @@ from django.core.validators import MinValueValidator
 
 
 class Team(models.Model):
-    username = models.CharField(max_length=20, unique=True)
+    username = models.CharField(max_length=20, primary_key=True)
     password = models.CharField(max_length=20)
     points = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0)])
     current_landmark = models.IntegerField(default=0)

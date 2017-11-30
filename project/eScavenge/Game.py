@@ -150,33 +150,36 @@ class Game(GameInterface):
         except KeyError:
             return False
 
-    def add_landmark(self, clue, question, answer):
+    def add_landmark(self, name, clue, question, answer):
         if not self.started:
-            landmark = LandmarkFactory().get_landmark(clue, question, answer)
+            landmark = LandmarkFactory.get_landmark(name, clue, question, answer)
             if landmark in self.__landmarks:
                 return False
             self.__landmarks.append(landmark)
+            landmark.save()
             return True
         return False
 
-    def remove_landmark(self, clue):
+    def remove_landmark(self, name):
         if not self.started:
             for landmark in self.__landmarks:
-                if landmark.clue == clue:
+                if landmark.name == name:
                     self.__landmarks.remove(landmark)
                     return True
         return False
 
-    def modify_landmark(self, oldclue, clue=None, question=None, answer=None):
+    def modify_landmark(self, oldname, name=None, clue=None, question=None, answer=None):
         try:
             for x in self.__landmarks:
-                if x.clue == oldclue:
+                if x.name == oldname:
                     if question:
                         x.question = question
                     if answer:
                         x.answer = answer
                     if clue:
                         x.clue = clue
+                    if name:
+                        x.name = name
             return True
 
         except KeyError:

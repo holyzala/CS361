@@ -5,14 +5,14 @@ from .Team import TeamFactory, Team
 
 class TestInit(TestCase):
     def test_init(self):
-        team = TeamFactory().get_team("TeamA", "2123")
+        team = TeamFactory.get_team("TeamA", "2123")
         self.assertEqual("TeamA", team.username, "username value improperly set")
         self.assertEqual("2123", team.password, "password value improperly set")
 
 
 class TestPassword(TestCase):
     def setUp(self):
-        self.team = TeamFactory().get_team("Team1", "1234")
+        self.team = TeamFactory.get_team("Team1", "1234")
 
     def test_get_password(self):
         self.assertEqual("1234", self.team.password, "Got some password")
@@ -27,7 +27,7 @@ class TestPassword(TestCase):
 
 class TestPoints(TestCase):
     def setUp(self):
-        self.team = TeamFactory().get_team("Team 1", "1234")
+        self.team = TeamFactory.get_team("Team 1", "1234")
 
     def test_get_points(self):
         self.team.points = 32
