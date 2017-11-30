@@ -1,6 +1,6 @@
-import datetime
-import unittest
 from abc import ABC, abstractmethod
+from datetime import timedelta
+from django.utils import timezone
 
 from .Landmark import LandmarkFactory
 from .Team import TeamFactory, Team, TimeDelta
@@ -216,7 +216,7 @@ class Game(GameInterface):
         return True
 
     def start(self):
-        now = datetime.datetime.now(datetime.timezone.utc)
+        now = timezone.now()
         for team in self.__teams:
             self.__teams[team].clue_time = now
         self.__started = True
@@ -253,6 +253,8 @@ class Game(GameInterface):
             team.points += max(0, self.landmark_points - team.penalty_count)
             team.clue_time = now
             team.penalty_count = 0
+            team.full_clean()
+            team.save()
             if len(self.__landmarks) == team.current_landmark:
                 return Errors.FINAL_ANSWER
             return Errors.NO_ERROR
@@ -260,7 +262,7 @@ class Game(GameInterface):
     def get_status(self, now, username):
         current_team = Team.objects.get(username=username)
         current_time_calc = (now - current_team.clue_time)
-        total_time = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
+        total_time = timedelta(days=0, hours=0, minutes=0, seconds=0)
         for t in current_team.time_log.all():
             total_time += t.time_delta
         if current_team.current_landmark <= len(self.__landmarks):

@@ -1,6 +1,6 @@
-import datetime
 import shlex
 from django.db import IntegrityError
+from django.utils import timezone
 
 from .StringConst import *
 from .Errors import Errors
@@ -241,8 +241,7 @@ def quit_question(self, args):
         return permission_denied
     if self.current_user.is_admin():
         return "You're Not Playing!"
-    now = datetime.datetime.now(datetime.timezone.utc)
-    rtn = self.game.quit_question(now, self.current_user, args[2])
+    rtn = self.game.quit_question(timezone.now(), self.current_user, args[2])
     if rtn == Errors.INVALID_LOGIN:
         return permission_denied
     elif rtn == Errors.NO_GAME:
@@ -257,9 +256,8 @@ def get_stats(self, args):
         return permission_denied
     if len(args) < 1:
         return "Proper Format get_stats <username>"
-    now = datetime.datetime.now(datetime.timezone.utc)
     if self.current_user.username == args[1] or self.current_user.is_admin():
-        return self.game.get_status(now, args[1])
+        return self.game.get_status(timezone.now(), args[1])
     return "You cannot see another users stats"
 
 
@@ -268,8 +266,7 @@ def answer_question(self, args):
         return permission_denied
     if self.current_user.is_admin():
         return "You're Not Playing!"
-    now = datetime.datetime.now(datetime.timezone.utc)
-    correct_answer = self.game.answer_question(now, self.current_user, args[1])
+    correct_answer = self.game.answer_question(timezone.now(), self.current_user, args[1])
     if correct_answer == Errors.NO_ERROR:
         return "That is Correct! The Next Question is: \n{}".format(
             self.game.get_team_landmark(self.current_user).question)
@@ -308,7 +305,7 @@ COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "r
             "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
             "getclue": get_clue, "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question,
             "getstats": get_stats, "editlandmarkorder": edit_landmark_order, "editpenaltyvalue" : edit_penalty_value,
-            "editpenaltytime" : edit_penalty_time}
+            "editpenaltytime": edit_penalty_time}
 
 
 class CLI:
