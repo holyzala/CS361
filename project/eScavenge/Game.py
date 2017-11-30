@@ -124,7 +124,6 @@ class Game(GameInterface):
             temp = TeamFactory.get_team(name, password)
             self.__teams[name] = temp
             temp.save()
-
             return True
         return False
 
