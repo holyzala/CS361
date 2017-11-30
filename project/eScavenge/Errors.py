@@ -12,3 +12,4 @@ class Errors(Enum):
     WRONG_ANSWER = auto()
     INVALID_LOGIN = auto()
     FINAL_ANSWER = auto()
+    INTEGRITY_ERROR = auto()

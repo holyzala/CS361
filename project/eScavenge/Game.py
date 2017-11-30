@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from django.utils import timezone
+from django.db import IntegrityError
 
 from .Landmark import LandmarkFactory
 from .Team import TeamFactory, Team, TimeDelta
@@ -130,7 +131,6 @@ class Game(GameInterface):
             temp = TeamFactory.get_team(name, password)
             self.__teams[name] = temp
             temp.save()
-
             return True
         return False
 
@@ -157,20 +157,24 @@ class Game(GameInterface):
         except KeyError:
             return False
 
-    def add_landmark(self, clue, question, answer):
+    def add_landmark(self, name, clue, question, answer):
         if not self.started:
-            landmark = LandmarkFactory().get_landmark(clue, question, answer)
+            try:
+                landmark = LandmarkFactory.get_landmark(name, clue, question, answer)
+            except IntegrityError:
+                return False
             if landmark in self.__landmarks:
                 return False
             self.__landmarks.append(landmark)
             return True
         return False
 
-    def remove_landmark(self, clue):
+    def remove_landmark(self, name):
         if not self.started:
             for landmark in self.__landmarks:
-                if landmark.clue == clue:
+                if landmark.name == name:
                     self.__landmarks.remove(landmark)
+                    landmark.delete()
                     return True
         return False
 
@@ -184,16 +188,20 @@ class Game(GameInterface):
 
         return landmarks
 
-    def modify_landmark(self, oldclue, clue=None, question=None, answer=None):
+    def modify_landmark(self, oldname, name=None, clue=None, question=None, answer=None):
         try:
             for x in self.__landmarks:
-                if x.clue == oldclue:
+                if x.name == oldname:
                     if question:
                         x.question = question
                     if answer:
                         x.answer = answer
                     if clue:
                         x.clue = clue
+                    if name:
+                        x.name = name
+                    x.full_clean()
+                    x.save()
             return True
 
         except KeyError:
@@ -292,6 +300,7 @@ class Game(GameInterface):
         if not self.started or self.ended:
             return Errors.NO_GAME, None
         stringList = []
+
         for current_team in Team.objects.all():
             total_time = timedelta(days=0, hours=0, minutes=0, seconds=0)
             for t in current_team.time_log.all():

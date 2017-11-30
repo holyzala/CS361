@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.utils import timezone
 from .Errors import Errors
 from .Game import GameFactory, make_game
-from .Landmark import LandmarkFactory
+from .Landmark import LandmarkFactory, Landmark
 from .Team import TeamFactory, TimeDelta, Team
 
 
@@ -120,18 +120,18 @@ class TestAddLandmark(TestCase):
         self.game._Game__started = False
 
     def test_add_landmark(self):
-        self.assertTrue(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
+        self.assertTrue(self.game.add_landmark("lm1", "New York", "Gift given by the French", "statue of liberty"),
                         "Failed to add landmark")
 
     def test_add_landmark_game_in_progress(self):
         self.game._Game__started = True
-        self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
+        self.assertFalse(self.game.add_landmark("lm1", "New York", "Gift given by the French", "statue of liberty"),
                          "Cannot add landmark once game has started")
 
     def test_add_landmark_duplicates(self):
-        ld = LandmarkFactory().get_landmark("New York", "Gift given by the French", "statue of liberty")
+        ld = LandmarkFactory().get_landmark("lm1", "New York", "Gift given by the French", "statue of liberty")
         self.game._Game__landmarks.append(ld)
-        self.assertFalse(self.game.add_landmark("New York", "Gift given by the French", "statue of liberty"),
+        self.assertFalse(self.game.add_landmark("lm1", "New York", "Gift given by the French", "statue of liberty"),
                          "Cannot add duplicate landmarks")
 
 
@@ -140,43 +140,43 @@ class TestEditLandmarkOrder(TestCase):
         self.game = TEST_FACTORY()
         self.game._Game__started = False
         self.game._Game__ended = False
-        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("Chicago", "Where the Bears play",
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm1", "Chicago", "Where the Bears play",
                                                                          "Soldier Field"))
-        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("GreenBay", "Where the Packers play",
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm2", "GreenBay", "Where the Packers play",
                                                                          "Lambeau Field"))
-        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("Los Angeles", "Where the Lakers play",
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm3", "Los Angeles", "Where the Lakers play",
                                                                          "Staples Center"))
-        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("Milwaukee", "Where the Brewers play",
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm4", "Milwaukee", "Where the Brewers play",
                                                                          "Miller Park"))
 
     def test_swap_front_back(self):
         self.assertEqual(Errors.NO_ERROR, self.game.edit_landmark_order(0, 3), "should have succeeded swapping")
-        self.assertEqual("GreenBay", self.game._Game__landmarks[0].clue, "Order changed")
-        self.assertEqual("Chicago", self.game._Game__landmarks[3].clue, "Order changed")
+        self.assertEqual("lm2", self.game._Game__landmarks[0].name, "Order changed")
+        self.assertEqual("lm1", self.game._Game__landmarks[3].name, "Order changed")
 
     def test_swap_middle(self):
         self.assertEqual(Errors.NO_ERROR, self.game.edit_landmark_order(1, 2), "should have succeeded swapping")
-        self.assertEqual("Los Angeles", self.game._Game__landmarks[1].clue, "Swapping failed")
-        self.assertEqual("GreenBay", self.game._Game__landmarks[2].clue, "Swapping failed")
+        self.assertEqual("lm3", self.game._Game__landmarks[1].name, "Swapping failed")
+        self.assertEqual("lm2", self.game._Game__landmarks[2].name, "Swapping failed")
 
     def test_swap_double(self):
         self.assertEqual(Errors.NO_ERROR, self.game.edit_landmark_order(1, 2), "should have succeeded swapping")
         self.assertEqual(Errors.NO_ERROR, self.game.edit_landmark_order(1, 2), "should have succeeded swapping")
-        self.assertEqual("GreenBay", self.game._Game__landmarks[1].clue,
+        self.assertEqual("lm2", self.game._Game__landmarks[1].name,
                          "Swapping should have reverted back to original order")
-        self.assertEqual("Los Angeles", self.game._Game__landmarks[2].clue,
+        self.assertEqual("lm3", self.game._Game__landmarks[2].name,
                          "Swapping should have reverted back to original order")
 
     def test_swap_negative_index_with_positive(self):
         self.assertEqual(Errors.LANDMARK_INDEX, self.game.edit_landmark_order(-10, 3), "negative index!!")
-        self.assertEqual("Milwaukee", self.game._Game__landmarks[3].clue, "Swapping should not have occurred")
+        self.assertEqual("lm4", self.game._Game__landmarks[3].name, "Swapping should not have occurred")
 
     def test_swap_negative_index_with_negative(self):
         self.assertEqual(Errors.LANDMARK_INDEX, self.game.edit_landmark_order(-12, -1), "negative index!!")
 
     def test_swap_index_greater_than_length(self):
         self.assertEqual(Errors.LANDMARK_INDEX, self.game.edit_landmark_order(4, 3), "Index out of range")
-        self.assertEqual("Milwaukee", self.game._Game__landmarks[3].clue, "Swapping should not have occurred")
+        self.assertEqual("lm4", self.game._Game__landmarks[3].name, "Swapping should not have occurred")
 
     def test_swap_from_empty_list(self):
         self.game._Game__landmarks.clear()
@@ -185,38 +185,43 @@ class TestEditLandmarkOrder(TestCase):
     def test_swap_after_game_started(self):
         self.game._Game__started = True
         self.assertEqual(Errors.CAN_ONLY_EDIT_ORDER_WHEN_GAME_IS_NEW, self.game.edit_landmark_order(1, 2), "can not change order after start of game")
-        self.assertEqual("GreenBay", self.game._Game__landmarks[1].clue, "Swapping failed")
-        self.assertEqual("Los Angeles", self.game._Game__landmarks[2].clue, "Swapping failed")
+        self.assertEqual("lm2", self.game._Game__landmarks[1].name, "Swapping failed")
+        self.assertEqual("lm3", self.game._Game__landmarks[2].name, "Swapping failed")
 
 
 class TestModifyLandmark(TestCase):
     # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("Chicago", "Where the Bears play",
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm1", "Chicago", "Where the Bears play",
                                                                          "Soldier Field"))
 
+    def test_edit_name(self):
+        self.assertTrue(self.game.modify_landmark("lm1", name="lmX"),
+                        "Landmark name was not modified")
+        self.assertEqual("lmX", Landmark.objects.get(name="lmX").name, "did not save in DB")
+
     def test_edit_question(self):
-        self.assertTrue(self.game.modify_landmark("Chicago", question="Where the UFC fights are"),
+        self.assertTrue(self.game.modify_landmark("lm1", question="Where the UFC fights are"),
                         "Landmark question was not modified")
 
     def test_edit_answer(self):
-        self.assertTrue(self.game.modify_landmark("Chicago", answer="The United Center"),
+        self.assertTrue(self.game.modify_landmark("lm1", answer="The United Center"),
                         "Landmark answer was not modified")
 
     def test_edit_clue(self):
-        self.assertTrue(self.game.modify_landmark("Chicago", clue="Chiccago"), "Landmark clue was not modified")
+        self.assertTrue(self.game.modify_landmark("lm1", clue="Chiccago"), "Landmark clue was not modified")
 
     def test_edit_question_and_answer(self):
-        self.assertTrue(self.game.modify_landmark("Chicago", question="Tallest Building", answer="Sears Tower"),
+        self.assertTrue(self.game.modify_landmark("lm1", question="Tallest Building", answer="Sears Tower"),
                         "Landmark question and answer not modified")
 
     def test_edit_question_and_clue(self):
-        self.assertTrue(self.game.modify_landmark("Chicago", question="Tallest Building", clue="Chicaago"),
+        self.assertTrue(self.game.modify_landmark("lm1", question="Tallest Building", clue="Chicaago"),
                         "Landmark question and clue not modified")
 
     def test_edit_clue_and_answer(self):
-        self.assertTrue(self.game.modify_landmark("Chicago", clue="CChicago", answer="Sears Tower"),
+        self.assertTrue(self.game.modify_landmark("lm1", clue="CChicago", answer="Sears Tower"),
                         "Landmark question and clue not modified")
 
 
@@ -263,37 +268,47 @@ class TestDeleteLandmarks(TestCase):
         self.game._Game__started = False
 
     def test_delete_landmark(self):
-        landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
+        landmark1 = LandmarkFactory().get_landmark("lm1", "ABC", "DEF", "GHI")
         self.game._Game__landmarks.append(landmark1)
-        self.game.remove_landmark("ABC")
+        self.game.remove_landmark("lm1")
         self.assertNotIn(landmark1, self.game._Game__landmarks, "Failed to remove landmark")
+        with self.assertRaises(Landmark.DoesNotExist):
+            Landmark.objects.get(name="lm1").name
 
     def test_delete_multi_landmarks(self):
-        landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
-        landmark2 = LandmarkFactory().get_landmark("JKL", "MNO", "PQR")
+        landmark1 = LandmarkFactory().get_landmark("lm1", "ABC", "DEF", "GHI")
+        landmark2 = LandmarkFactory().get_landmark("lm2", "JKL", "MNO", "PQR")
         self.game._Game__landmarks.append(landmark1)
         self.game._Game__landmarks.append(landmark2)
-        self.game.remove_landmark("ABC")
-        self.assertNotIn(landmark1, self.game._Game__landmarks, "Failed to remove Landmark1")
-        self.game.remove_landmark("JKL")
-        self.assertNotIn(landmark1, self.game._Game__landmarks, "Failed to remove Landmark2")
+        self.game.remove_landmark("lm1")
+        self.assertNotIn(landmark1, self.game._Game__landmarks, "Failed to remove landmark")
+        with self.assertRaises(Landmark.DoesNotExist):
+            Landmark.objects.get(name="lm1").name
+        self.game.remove_landmark("lm2")
+        self.assertNotIn(landmark2, self.game._Game__landmarks, "Failed to remove Landmark2")
+        with self.assertRaises(Landmark.DoesNotExist):
+            Landmark.objects.get(name="lm2").name
 
     def test_delete_landmark_does_not_exist(self):
-        self.assertFalse(self.game.remove_landmark("ABC"), "landmark does not exist")
+        self.assertFalse(self.game.remove_landmark("lm1"), "landmark does not exist")
 
     def test_delete_landmark_from_empty_landmark_list(self):
-        landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
-        landmark2 = LandmarkFactory().get_landmark("JKL", "MNO", "PQR")
+        landmark1 = LandmarkFactory().get_landmark("lm1", "ABC", "DEF", "GHI")
+        landmark2 = LandmarkFactory().get_landmark("lm2", "JKL", "MNO", "PQR")
         self.game._Game__landmarks.append(landmark1)
         self.game._Game__landmarks.append(landmark2)
         self.game._Game__landmarks.clear()
-        self.assertFalse(self.game.remove_team("ABC"), "Failed to remove team, list of teams empty")
+        Landmark.objects.all().delete()
+        self.assertFalse(self.game.remove_landmark("lm1"), "Failed to remove landmark, list of teams empty")
+        with self.assertRaises(Landmark.DoesNotExist):
+            Landmark.objects.get(name="lm2").name
 
     def test_remove_landmark_game_started(self):
         self.game._Game__started = True
-        landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
+        landmark1 = LandmarkFactory().get_landmark("lm1", "ABC", "DEF", "GHI")
         self.game._Game__landmarks.append(landmark1)
-        self.assertFalse(self.game.remove_team("ABC"), "should not remove teams once game starts")
+        self.assertFalse(self.game.remove_landmark("lm1"), "should not remove landmark once game starts")
+        self.assertEqual("lm1", Landmark.objects.get(name="lm1").name, "Landmark shouldnt have been delete from database")
 
 
 class TestAddLandmark2(TestCase):
@@ -302,20 +317,18 @@ class TestAddLandmark2(TestCase):
         self.game = TEST_FACTORY()
 
     def test_add_landmark(self):
-        landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
-        self.assertNotIn(landmark1, self.game._Game__landmarks, "Landmark already Exists")
-        self.game.add_landmark(landmark1.clue, landmark1.question, "GHI")
-        self.assertIn(landmark1, self.game._Game__landmarks, "Landmark was not successfully added")
+        self.assertTrue(self.game.add_landmark("lm1", "ABC", "DEF", "GHI"), "not added")
+        landmark = Landmark.objects.get(name="lm1")
+        self.assertIn(landmark, self.game._Game__landmarks, "Landmark was not successfully added")
 
-    def test_add_landmark2(self):
-        landmark1 = LandmarkFactory().get_landmark("ABC", "DEF", "GHI")
-        landmark2 = LandmarkFactory().get_landmark("JKL", "MNO", "PQR")
-        self.assertNotIn(landmark1, self.game._Game__landmarks, "Landmark already Exists")
-        self.game.add_landmark(landmark1.clue, landmark1.question, "GHI")
-        self.assertIn(landmark1, self.game._Game__landmarks, "Landmark1 was not successfully added")
-        self.game.add_landmark(landmark2.clue, landmark2.question, "PQR")
-        self.assertIn(landmark2, self.game._Game__landmarks, "Landmark2 was not sucessfully added")
-        self.assertEqual((self.game._Game__landmarks[0], self.game._Game__landmarks[1]), (landmark1, landmark2),
+    def test_add_multiple_landmarks2(self):
+        self.assertTrue(self.game.add_landmark("lm1", "ABC", "DEF", "GHI"), "not added")
+        self.assertTrue(self.game.add_landmark("lm2", "ABC", "DEF", "GHI"), "not added")
+        landmark = Landmark.objects.get(name="lm1")
+        landmark2 = Landmark.objects.get(name="lm2")
+        self.assertIn(landmark, self.game._Game__landmarks, "Landmark was not successfully added")
+        self.assertIn(landmark2, self.game._Game__landmarks, "Landmark was not successfully added")
+        self.assertEqual((self.game._Game__landmarks[0], self.game._Game__landmarks[1]), (landmark, landmark2),
                          "Adding not indexing properly")
 
 
@@ -324,11 +337,11 @@ class TestGameTeam(TestCase):
     def setUp(self):
         self.team = TeamFactory.get_team("Dummy", "password")
         self.game = GameFactory(make_game).create_game()
-        l1 = LandmarkFactory().get_landmark("The Place we drink coffee and read books",
+        l1 = LandmarkFactory().get_landmark("lm1", "The Place we drink coffee and read books",
                                             "What is the name of the statue out front?", "three disks")
-        l2 = LandmarkFactory().get_landmark("The Place we drink coffee and read books",
+        l2 = LandmarkFactory().get_landmark("lm2", "The Place we drink coffee and read books",
                                             "What is the name of the statue out front?", "three disks")
-        l3 = LandmarkFactory().get_landmark("The Place we drink coffee and read books",
+        l3 = LandmarkFactory().get_landmark("lm3", "The Place we drink coffee and read books",
                                             "What is the name of the statue out front?", "three disks")
         self.game._Game__landmarks = [l1, l2, l3]
         self.game._Game__penalty_time = 20
@@ -521,9 +534,9 @@ class TestAnswerQuit(TestCase):
         self.game = TEST_FACTORY()
         self.game._Game__teams['abc'] = TeamFactory.get_team('abc', 'def')
         self.game._Game__teams['ghi'] = TeamFactory.get_team('ghi', 'jkl')
-        self.game._Game__landmarks.append(LandmarkFactory().get_landmark('clue1', 'question1', 'answer1'))
-        self.game._Game__landmarks.append(LandmarkFactory().get_landmark('clue2', 'question2', 'answer2'))
-        self.game._Game__landmarks.append(LandmarkFactory().get_landmark('clue3', 'question3', 'answer3'))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm1", 'clue1', 'question1', 'answer1'))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm2", 'clue2', 'question2', 'answer2'))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm3", 'clue3', 'question3', 'answer3'))
 
     def get_status_negative_time(self):
         self.game._Game__teams['abc'].clue_time = datetime.timedelta(days=2, hours=5, minutes=30, seconds=50)
@@ -552,11 +565,11 @@ class TestAnswerQuit(TestCase):
 class TestGameSnapShot(TestCase):
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("c1", "q1", "a1"))
-        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("c2", "q2", "a2"))
-        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("c3", "q3", "a3"))
-        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("c4", "q4", "a4"))
-        self.game._Game__teams["Team1"] = TeamFactory.get_team("Team1", "1232")
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm1", "c1", "q1", "a1"))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm2", "c2", "q2", "a2"))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm3", "c3", "q3", "a3"))
+        self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm4", "c4", "q4", "a4"))
+        self.game._Game__teams["Team1"] = TeamFactory().get_team("Team1", "1232")
 
     def test_snapshot_no_game_running(self):
         now = datetime.timedelta(hours=6, minutes=35, seconds=15)
