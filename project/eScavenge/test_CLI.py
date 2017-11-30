@@ -566,3 +566,50 @@ class TestAnswerQuestion(TestCase):
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer 'Statue of Liberty'", "Team2"),
                          "Correct answer did not print correct response")
+
+
+class TestSnapShot(TestCase):
+    def setUp(self):
+        self.cli = CLI(COMMANDS)
+        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
+        self.assertEqual(team_add, self.cli.command("addteam Team2 1526", GM), "setup failed")
+        self.assertEqual(landmark_add,
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"', GM),
+                         landmark_add_fail)
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"',
+                                                        GM),
+                         landmark_add_fail)
+
+    def test_snapshot_multiple_teams(self):
+        self.assertEqual(game_started, self.cli.command("start", GM), "Failed to start game.")
+        self.assertEqual("That is Correct! The Next Question is: \n{}".format("Place we purchase coffee from"),
+                         self.cli.command("answer 'Statue of Liberty'", "Team1"),
+                         "Correct answer did not print correct response")
+        self.assertEqual("That is Correct! The Next Question is: \n{}".format("Place we purchase coffee from"),
+                         self.cli.command("answer 'Statue of Liberty'", "Team2"),
+                         "Correct answer did not print correct response")
+        self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer 'Grind'", "Team2"),
+                         "Correct answer did not print correct response")
+        total_time_list = []
+        team_points = []
+        for username in self.cli.game._Game__teams:
+            current_team = self.cli.game.get_team(username)
+            total_time = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
+            for t in current_team.time_log.all():
+                total_time += t.time_delta
+            total_time_list.append(total_time)
+            team_points.append(current_team.points)
+        stat_str_team_1 = "Team: Team1\nYou Are On Landmark 2\nTime Taken For Landmarks: "\
+                          + str(total_time_list[0]) +"\nTotal Points: "+str(team_points[0])+"\n"
+        stat_str_team_2 = "Team: Team2\nYou Are On Landmark 2\nTime Taken For Landmarks: " \
+                          + str(total_time_list[1]) + "\nTotal Points: " + str(team_points[1]) + "\n"
+        final_stat_str = stat_str_team_1 + stat_str_team_2
+        self.assertEqual(final_stat_str, self.cli.command("snapshot", GM), "Failed to get snapshot!!")
+
+    def test_snapshot_no_game_running(self):
+        self.assertEqual(no_game_running, self.cli.command("snapshot", GM), "Failed to get snapshot!!")
+
+    def test_snapshot_not_gm(self):
+        self.assertEqual(game_started, self.cli.command("start", GM), "Failed to start game.")
+        self.assertEqual(permission_denied, self.cli.command("snapshot", "Team1"), "Not Game Maker!!")

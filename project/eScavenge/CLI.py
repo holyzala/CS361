@@ -261,6 +261,14 @@ def get_stats(self, args):
     return "You cannot see another users stats"
 
 
+@need_admin
+def get_snapshot(self, _):
+    err, rtn =  self.game.get_snapshot(timezone.now())
+    if err == Errors.NO_GAME:
+        return no_game_running
+    if err == Errors.NO_ERROR:
+        return rtn
+
 def answer_question(self, args):
     if not self.current_user:
         return permission_denied
@@ -305,7 +313,7 @@ COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "r
             "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
             "getclue": get_clue, "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question,
             "getstats": get_stats, "editlandmarkorder": edit_landmark_order, "editpenaltyvalue" : edit_penalty_value,
-            "editpenaltytime": edit_penalty_time}
+            "editpenaltytime": edit_penalty_time, "snapshot": get_snapshot}
 
 
 class CLI:

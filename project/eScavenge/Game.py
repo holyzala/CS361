@@ -272,7 +272,23 @@ class Game(GameInterface):
         return 'Final Points: {}'.format(current_team.points)
 
     def get_snapshot(self, now):
-        pass
+        if not self.started or self.ended:
+            return Errors.NO_GAME, None
+        stringList = []
+        for current_team in Team.objects.all():
+            total_time = timedelta(days=0, hours=0, minutes=0, seconds=0)
+            for t in current_team.time_log.all():
+                total_time += t.time_delta
+            if current_team.current_landmark < len(self.__landmarks):
+                stat_str = "Team: {}\nYou Are On Landmark {}\nTime Taken For Landmarks: {}\nTotal Points: {}\n"
+                stringList.append(stat_str.format(current_team.username, current_team.current_landmark + 1, total_time,
+                                                  current_team.points))
+            else:  # on last landmark
+                stat_str = "Team: {}\nYou Are On Landmark {}\nTime Taken For Landmarks: {}\nTotal Points: {}\n"
+                stringList.append(stat_str.format(current_team.username, current_team.current_landmark, total_time,
+                                                  current_team.points))
+
+        return Errors.NO_ERROR, ''.join(stringList)
 
 
 def make_game(*args, **kwargs):

@@ -23,10 +23,10 @@ edit_landmark_success = "Landmark Edited Successfully"
 edit_landmark_fail = "Landmark Not Edited Successfully"
 edit_landmark_order_success = "Landmark Order Edited Successfully"
 edit_landmark_order_fail = "Landmark Order Not Edited Successfully"
+no_team_logged_in = "There is no Team Logged In"
 no_game_running = "There is no Game Running"
 penalty_value_changed = "Penalty Value Changed"
 penalty_value_failed = "Penalty Value Change Failed"
 penalty_time_changed = "Penalty Time Changed"
 penalty_time_failed = "Penalty Time Change Failed"
-
-
+get_snapshot_success = "Successfully retrieved current status for all teams"
