@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.utils import timezone
 from .CLI import CLI, COMMANDS
 from .StringConst import *
 import datetime
@@ -481,10 +482,9 @@ class TestGetStatus(TestCase):
                          "Get Stats wroked with noone logged in")
     def test_admin(self):
         tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
-        now = datetime.datetime.now(datetime.timezone.utc)
         for t in self.cli.game._Game__teams["Team1"].time_log.all():
             tt += t
-        currenttimecalc = (now - self.cli.game._Game__teams["Team1"].clue_time)
+        currenttimecalc = (timezone.now() - self.cli.game._Game__teams["Team1"].clue_time)
         stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
         self.cli.current_user = Team.objects.get(username="Team1")
         self.assertEqual(stat_str.format(self.cli.current_user.points, self.cli.current_user.current_landmark+1,
@@ -497,10 +497,9 @@ class TestGetStatus(TestCase):
 
     def test_user(self):
         tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
-        now = datetime.datetime.now(datetime.timezone.utc)
         for t in self.cli.game._Game__teams["Team1"].time_log.all():
             tt += t
-        current_time_calc = (now - self.cli.game._Game__teams["Team1"].clue_time)
+        current_time_calc = (timezone.now() - self.cli.game._Game__teams["Team1"].clue_time)
         stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
         self.assertEqual(stat_str.format(self.cli.game.get_team("Team1").points,
                                          self.cli.game.get_team("Team1").current_landmark + 1,

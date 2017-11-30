@@ -29,7 +29,8 @@ class Team(models.Model):
         except ValueError:
             return False
 
-    def is_admin(self):
+    @staticmethod
+    def is_admin():
         return False
 
 
@@ -39,5 +40,6 @@ class TimeDelta(models.Model):
 
 
 class TeamFactory:
-    def get_team(self, username, password):
+    @staticmethod
+    def get_team(username, password):
         return Team.objects.create(username=username, password=password)
