@@ -16,3 +16,5 @@ class Landmark(models.Model):
     def check_answer(self, answer):
         return self.answer.lower() == answer.lower()
 
+    def __eq__(self, other):
+        return self.name == other.name

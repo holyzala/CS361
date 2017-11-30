@@ -141,10 +141,15 @@ def edit_landmark_order(self, args):
 
 @need_admin
 def edit_landmark(self, args):
-    oldclue_index = args[1]
+    oldname_index = args[1]
+    name_index = None
     clue_index = None
     question_index = None
     answer_index = None
+    try:
+        name_index = args.index('name', 2)
+    except ValueError:
+        pass
     try:
         clue_index = args.index('clue', 2)
     except ValueError:
@@ -159,10 +164,11 @@ def edit_landmark(self, args):
         pass
 
     try:
+        name = args[name_index + 1] if name_index else None
         clue = args[clue_index + 1] if clue_index else None
         question = args[question_index + 1] if question_index else None
         answer = args[answer_index + 1] if answer_index else None
-        if self.game.modify_landmark(oldclue=oldclue_index, clue=clue, question=question, answer=answer):
+        if self.game.modify_landmark(oldname=oldname_index, name=name, clue=clue, question=question, answer=answer):
             return edit_landmark_success
     except IndexError:
         return invalid_param

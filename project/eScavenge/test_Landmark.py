@@ -14,7 +14,7 @@ class TestInit(TestCase):
         self.assertEqual(self.NAME, landmark.name, "Failed to set name properly")
         self.assertEqual(self.CLUE, landmark.clue, "Failed to set clue properly")
         self.assertEqual(self.QUESTION, landmark.question, "Failed to set question properly")
-        self.assertEqual(self.ANSWER, landmark._Landmark__answer, "Failed to answer properly")
+        self.assertEqual(self.ANSWER, landmark.answer, "Failed to answer properly")
 
 
 class TestSettersToDatabase(TestCase):
@@ -26,7 +26,7 @@ class TestSettersToDatabase(TestCase):
         self.landmark.full_clean()
         self.landmark.save()
         self.landmark = Landmark.objects.get(name=self.landmark.name)
-        self.assertEqual("blah", self.landmark.clue, "name not set properly")
+        self.assertEqual("blah", self.landmark.name, "name not set properly")
 
     def test_clue(self):
         self.landmark.clue = "c1"
@@ -38,13 +38,13 @@ class TestSettersToDatabase(TestCase):
         self.landmark.question = "q1"
         self.landmark.save()
         self.landmark = Landmark.objects.get(name=self.landmark.name)
-        self.assertEqual("q1", self.landmark.clue, "question not set properly")
+        self.assertEqual("q1", self.landmark.question, "question not set properly")
 
     def test_answer(self):
         self.landmark.answer = "a1"
         self.landmark.save()
         self.landmark = Landmark.objects.get(name=self.landmark.name)
-        self.assertEqual("a1", self.landmark.clue, "answer not set properly")
+        self.assertEqual("a1", self.landmark.answer, "answer not set properly")
 
 
 class TestCheckAnswer(TestCase):

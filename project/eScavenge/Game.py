@@ -172,6 +172,7 @@ class Game(GameInterface):
             for landmark in self.__landmarks:
                 if landmark.name == name:
                     self.__landmarks.remove(landmark)
+                    landmark.delete()
                     return True
         return False
 
@@ -187,6 +188,8 @@ class Game(GameInterface):
                         x.clue = clue
                     if name:
                         x.name = name
+                    x.full_clean()
+                    x.save()
             return True
 
         except KeyError:
@@ -285,6 +288,7 @@ class Game(GameInterface):
         if not self.started or self.ended:
             return Errors.NO_GAME, None
         stringList = []
+
         for current_team in Team.objects.all():
             total_time = timedelta(days=0, hours=0, minutes=0, seconds=0)
             for t in current_team.time_log.all():
