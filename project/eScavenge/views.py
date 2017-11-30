@@ -1,7 +1,6 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from .CLI import CLI, COMMANDS
 from .Team import Team
-from .StringConst import login_success
 
 cli = CLI(COMMANDS)
 
@@ -26,12 +25,10 @@ def validate(request):
     if message == "XXX":
         context = {"huntUser": request.POST["huntUser"]}
         return render(request, "terminal.html", context)
-    else:
-        return render(request, "index.html", {"message": message})
+    return render(request, "index.html", {"message": message})
 
 
 def terminal(request):
     output = cli.command(request.POST["command"], request.POST['huntUser'])
     context = {"huntUser": request.POST["huntUser"], "output": output}
     return render(request, "terminal.html", context)
-

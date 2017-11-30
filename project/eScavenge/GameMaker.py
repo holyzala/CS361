@@ -25,5 +25,6 @@ class GMFactory:
                 return self
             return None
 
-        def is_admin(self):
+        @staticmethod
+        def is_admin():
             return True
