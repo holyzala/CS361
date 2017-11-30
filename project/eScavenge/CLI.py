@@ -140,6 +140,28 @@ def edit_landmark_order(self, args):
 
 
 @need_admin
+def get_landmarks_index(self, _):
+    if self.game is None:
+        return no_game_running
+
+    return self.game.get_landmarks_index()
+
+
+@need_admin
+def set_point_penalty(self, args):
+    if self.game is None:
+        return point_change_fail
+    try:
+        changed_points = self.game.set_point_penalty(int(args[1]))
+    except (IndexError, ValueError):
+        return invalid_param
+
+    if changed_points:
+        return point_change
+    return point_change_fail
+
+
+@need_admin
 def edit_landmark(self, args):
     oldname_index = args[1]
     name_index = None
@@ -211,6 +233,13 @@ def get_clue(self, _):
     return self.game.get_team_landmark(self.current_user).clue
 
 
+def get_current_question(self, _):
+    if not self.current_user or self.current_user.is_admin():
+        return permission_denied
+
+    return self.game.get_team_question(self.current_user)
+
+
 def quit_question(self, args):
     if len(args) < 3:
         return "Proper Format giveup <username> <password>"
@@ -231,11 +260,15 @@ def get_stats(self, args):
         return no_game_running
     if self.current_user is None:
         return permission_denied
-    if len(args) < 1:
-        return "Proper Format get_stats <username>"
-    if self.current_user.username == args[1] or self.current_user.is_admin():
-        return self.game.get_status(timezone.now(), args[1])
-    return "You cannot see another users stats"
+    if len(args) == 1:
+        return self.game.get_status(timezone.now(), self.current_user.username)
+
+    elif len(args) == 2:
+        if self.current_user.username == args[1] or self.current_user.is_admin():
+            return self.game.get_status(timezone.now(), args[1])
+        return "You cannot see another users stats"
+    else:
+        return "Invalid parameters"
 
 
 @need_admin
@@ -288,10 +321,11 @@ def edit_penalty_time(self, args):
 
 
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
-            "end": end, "create": create, "editteam": edit_team, "removelandmark": remove_landmark, "getclue": get_clue,
-            "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question, "getstats": get_stats,
-            "editlandmarkorder": edit_landmark_order, "editpenaltyvalue" : edit_penalty_value,
-            "editpenaltytime": edit_penalty_time, "snapshot": get_snapshot}
+            "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
+            "getclue": get_clue, "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question,
+            "getstats": get_stats, "editlandmarkorder": edit_landmark_order, "editpenaltyvalue" : edit_penalty_value,
+            "editpenaltytime": edit_penalty_time, "snapshot": get_snapshot, "getlandmarksindex": get_landmarks_index,
+            "getquestion": get_current_question, "setpointpenalty": set_point_penalty, "snapshot": get_snapsho}
 
 
 class CLI:

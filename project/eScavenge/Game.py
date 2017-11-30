@@ -78,6 +78,10 @@ class GameInterface(ABC):
         pass
 
     @abstractmethod
+    def get_team_question(self, team):
+        pass
+
+    @abstractmethod
     def get_snapshot(self, now):
         pass
 
@@ -116,6 +120,9 @@ class Game(GameInterface):
 
     def get_team_landmark(self, team):
         return self.__landmarks[team.current_landmark]
+
+    def get_team_question(self, team):
+        return (self.__landmarks[team.current_landmark]).question
 
     def add_team(self, name, password):
         if not self.started:
@@ -170,6 +177,16 @@ class Game(GameInterface):
                     landmark.delete()
                     return True
         return False
+
+    def get_landmarks_index(self):
+        landmarks = "";
+        index = 0;
+
+        for landmark in self.__landmarks:
+            landmarks += "{}: {}\n".format(index, landmark.clue)
+            index = index + 1
+
+        return landmarks
 
     def modify_landmark(self, oldname, name=None, clue=None, question=None, answer=None):
         try:
