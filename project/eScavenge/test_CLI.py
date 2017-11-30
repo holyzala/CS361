@@ -301,16 +301,18 @@ class TestGetLandmarksIndex(TestCase):
         self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam team1 1234", GM), "setup failed")
         self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"', GM),
+                         self.cli.command('addlandmark "L1" "New York" "Gift given by the French" "Statue of Liberty"',
+                                          GM),
                          landmark_add_fail)
         self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"', GM),
+                         self.cli.command('addlandmark "L2" "UWM" "Place we purchase coffee from" "Grind"', GM),
                          landmark_add_fail)
         self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "Los Angeles" "Where the Lakers play" "Staples Center"', GM),
+                         self.cli.command('addlandmark "L3" "Los Angeles" "Where the Lakers play" "Staples Center"',
+                                          GM),
                          landmark_add_fail)
         self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "Milwaukee" "Where the Brewers play" "Miller Park"', GM),
+                         self.cli.command('addlandmark "L4" "Milwaukee" "Where the Brewers play" "Miller Park"', GM),
                          landmark_add_fail)
 
     def test_get_landmark_index_is_not_gm(self):

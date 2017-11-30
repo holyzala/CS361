@@ -328,11 +328,11 @@ def edit_penalty_time(self, args):
 
 
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
-            "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
+            "end": end, "create": create, "editteam": edit_team, "removelandmark": remove_landmark,
             "getclue": get_clue, "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question,
             "getstats": get_stats, "editlandmarkorder": edit_landmark_order, "editpenaltyvalue" : edit_penalty_value,
             "editpenaltytime": edit_penalty_time, "snapshot": get_snapshot, "getlandmarksindex": get_landmarks_index,
-            "getquestion": get_current_question, "setpointpenalty": set_point_penalty, "snapshot": get_snapsho}
+            "getquestion": get_current_question, "setpointpenalty": set_point_penalty}
 
 
 class CLI:
