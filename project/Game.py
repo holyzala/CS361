@@ -77,6 +77,10 @@ class GameInterface(ABC):
         pass
 
     @abstractmethod
+    def get_team_question(self, team):
+        pass
+
+    @abstractmethod
     def get_snapshot(self, now):
         pass
 
@@ -114,6 +118,9 @@ class Game(GameInterface):
 
     def get_team_landmark(self, team):
         return self.__landmarks[team.current_landmark]
+
+    def get_team_question(self, team):
+        return (self.__landmarks[team.current_landmark]).question
 
     def add_team(self, name, password):
         if not self.started:
@@ -162,6 +169,16 @@ class Game(GameInterface):
                     self.__landmarks.remove(landmark)
                     return True
         return False
+
+    def get_landmarks_index(self):
+        landmarks = "";
+        index = 0;
+
+        for landmark in self.__landmarks:
+            landmarks += str(index) + ": " + str(landmark.clue) + "\n"
+            index = index + 1
+
+        return landmarks
 
     def modify_landmark(self, oldclue, clue=None, question=None, answer=None):
         try:
@@ -611,6 +628,16 @@ class TestGameTeam(unittest.TestCase):
                          'Current Landmark Elapsed Time:1:04:25;Time Taken For Landmarks:0:00:00',
                          'get_status did not print the proper stats!')
 
+
+    def test_get_landmarks_index(self):
+        landmarks = "0: The Place we drink coffee and read books\n"
+        landmarks += "1: The Place we drink coffee and read books\n"
+        landmarks += "2: The Place we drink coffee and read books\n"
+        self.assertEqual(self.game.get_landmarks_index(), landmarks, "Landmarks aren't correctly returned")
+
+    def test_team_question(self):
+        self.assertEqual(self.game.get_team_question(self.team), "What is the name of the statue out front?", "Team question isn't correct")
+
     def test_quit_question_incorrectpass(self):
         self.game._Game__started = True
         self.team.clue_time = self.team.clue_time = datetime.timedelta(days=15, hours=12, minutes=30, seconds=15)
@@ -811,6 +838,7 @@ if __name__ == "__main__":
     SUITE.addTest(unittest.makeSuite(TestEditLandmarkOrder))
     SUITE.addTest(unittest.makeSuite(TestEndGame))
     SUITE.addTest(unittest.makeSuite(TestAnswerQuit))
+    SUITE.addTest(unittest.makeSuite(TestGameTeam))
     SUITE.addTest(unittest.makeSuite(TestGameTeam))
     RUNNER = unittest.TextTestRunner()
     RES = RUNNER.run(SUITE)

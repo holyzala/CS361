@@ -149,6 +149,25 @@ def edit_landmark_order(self, args):
         return sc.edit_landmark_order_success
     return sc.edit_landmark_order_fail
 
+@need_admin
+def get_landmarks_index(self, _):
+    if self.game is None:
+        return sc.no_game_running
+
+    return self.game.get_landmarks_index()
+
+@need_admin
+def set_point_penalty(self, args):
+    try:
+        if self.game is None:
+            return sc.point_change_fail
+        changed_points = self.game.set_point_penalty(int(args[1]))
+    except (IndexError, ValueError):
+        return sc.invalid_param
+
+    if changed_points:
+        return sc.point_change
+    return sc.point_change_fail
 
 @need_admin
 def edit_landmark(self, args):
@@ -237,6 +256,11 @@ def get_clue(self, _):
         return sc.permission_denied
     return self.game.get_team_landmark(self.current_user).clue
 
+def get_current_question(self, _):
+    if not self.current_user or self.current_user.is_admin():
+        return sc.permission_denied
+
+    return self.game.get_team_question(self.current_user)
 
 def quit_question(self, args):
     if len(args) < 3:
@@ -260,14 +284,18 @@ def get_stats(self, args):
         return sc.no_game_running
     if self.current_user is None:
         return sc.permission_denied
-    if len(args) < 1:
-        return "Proper Format get_stats <username>"
     time_now = datetime.datetime.now()
     now = datetime.timedelta(days=time_now.day, hours=time_now.hour, minutes=time_now.minute, seconds=time_now.second)
-    if self.current_user.username == args[1] or self.current_user.is_admin():
-        return self.game.get_status(now, args[1])
-    return "You cannot see another users stats"
 
+    if len(args) == 1:
+        return self.game.get_status(now, self.current_user.username)
+
+    elif len(args) == 2:
+        if self.current_user.username == args[1] or self.current_user.is_admin():
+            return self.game.get_status(now, args[1])
+        return "You cannot see another users stats"
+    else:
+        return "Invalid parameters"
 
 def answer_question(self, args):
     if not self.current_user:
@@ -290,10 +318,13 @@ def answer_question(self, args):
     return "Incorrect Answer! The Question Was: \n{}".format(self.game.get_team_landmark(self.current_user).question)
 
 
+
+
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
             "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
             "getclue": get_clue, "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question,
-            "getstats": get_stats, "editlandmarkorder": edit_landmark_order}
+            "getstats": get_stats, "editlandmarkorder": edit_landmark_order, "getlandmarksindex": get_landmarks_index,
+            "getquestion": get_current_question, "setpointpenalty": set_point_penalty}
 
 
 class CLI:
@@ -528,6 +559,22 @@ class TestCreate(unittest.TestCase):
         self.assertEqual(sc.permission_denied, self.cli.command("create"), "Only admin can Create a new Game")
 
 
+class TestChangePointPenalty(unittest.TestCase):
+    def setUp(self):
+        self.cli = CLI(COMMANDS)
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual(sc.game_create, self.cli.command("create"), "Failed to Create Game")
+
+    def test_change_points_is_admin(self):
+        self.assertEqual(sc.point_change, self.cli.command("setpointpenalty 10"), "Admin couldn't change points")
+
+    def test_change_points_no_admin(self):
+        self.assertEqual(sc.logout, self.cli.command("logout"), "Failed to logout")
+        self.assertEqual(sc.permission_denied, self.cli.command("setpointpenalty 10"), "Non-admin user changing points")
+
+    def test_change_points_invalid(self):
+        self.assertEqual("Invalid parameters", self.cli.command("setpointpenalty random"), "Invalid parameters accepted")
+
 class TestAddLandmark(unittest.TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
@@ -646,6 +693,30 @@ class TestEditLandmarkOrder(unittest.TestCase):
     def test_swap_landmark_bad_args(self):
         self.assertEqual(sc.invalid_param, self.cli.command("editlandmarkorder"), sc.invalid_param)
 
+class TestGetLandmarksIndex(unittest.TestCase):
+    def setUp(self):
+        self.cli = CLI(COMMANDS)
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual(sc.game_create, self.cli.command("create"), "Failed to create game")
+        self.assertEqual(sc.team_add, self.cli.command("addteam team1 1234"), "setup failed")
+        self.assertEqual(sc.landmark_add,
+                         self.cli.command('addlandmark "New York" "Gift given by the French" "Statue of Liberty"'),
+                         sc.landmark_add_fail)
+        self.assertEqual(sc.landmark_add,
+                         self.cli.command('addlandmark "UWM" "Place we purchase coffee from" "Grind"'),
+                         sc.landmark_add_fail)
+        self.assertEqual(sc.landmark_add,
+                         self.cli.command('addlandmark "Los Angeles" "Where the Lakers play" "Staples Center"'),
+                         sc.landmark_add_fail)
+        self.assertEqual(sc.landmark_add,
+                         self.cli.command('addlandmark "Milwaukee" "Where the Brewers play" "Miller Park"'),
+                         sc.landmark_add_fail)
+
+    def test_get_landmark_index_is_not_gm(self):
+        self.assertEqual(sc.logout, self.cli.command("logout"), "Failed to logout")
+        self.assertEqual(sc.permission_denied, self.cli.command("getlandmarksindex"), "Only game maker can see landmarks by index")
+
+
 
 class TestEditLandmark(unittest.TestCase):
     def setUp(self):
@@ -737,6 +808,31 @@ class TestGetClue(unittest.TestCase):
                          self.cli.command("answer 'Statue of Liberty'"), "Answer didn't work")
         self.assertEqual("UWM", self.cli.command("getclue"), "Wrong clue returned")
 
+class TestGetQuestion(unittest.TestCase):
+    def setUp(self):
+        self.cli = CLI(COMMANDS)
+        self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
+        self.assertEqual(sc.game_create, self.cli.command("create"), "Failed to create game")
+        self.assertEqual(sc.team_add, self.cli.command("addteam team1 1234"), "Setup failed")
+        self.assertEqual(sc.landmark_add,
+                         self.cli.command('addlandmark "New York" "What is gift given by the French?" "Statue of Liberty"'),
+                         "Failed to add landmark")
+        self.assertEqual(sc.landmark_add,
+                         self.cli.command('addlandmark "UWM" "Where do we purchase coffe from?" "Grind"'),
+                         "Failed to add landmark")
+
+        def test_admin(self):
+            self.assertEqual(sc.permission_denied, self.cli.command("getquestion"), "Question returned for admin")
+
+        def test_no_login(self):
+            self.assertEqual(sc.logout, self.cli.command("logout"), "Failed to log out")
+            self.assertEqual(sc.permission_denied, self.cli.command("getquestion"), "Question returned for no one")
+
+        def test_correctness(self):
+            self.assertEqual(sc.logout, self.cli.command("logout"), "Failed to logout")
+            self.assertEqual(sc.login_success, self.cli.command("login team1 1234"), "Failed login")
+            self.assertEqual("What is gift given by the French?", self.cli.command("getquestion"), "Incorrect question given")
+
 
 class TestQuitQuestion(unittest.TestCase):
     def setUp(self):
@@ -811,12 +907,19 @@ class TestGetStatus(unittest.TestCase):
         self.assertEqual(sc.permission_denied, self.cli.command("getstats Team1"),
                          "Get Stats wroked with noone logged in")
 
+        self.assertEqual(sc.permission_denied, self.cli.command("getstats"),
+                         "Get Stats wroked with noone logged in")
+
+
     def test_no_game(self):
         self.assertEqual(sc.login_success, self.cli.command("login gamemaker 1234"), "Login message not correct")
         self.assertEqual(sc.game_ended, self.cli.command("end"), "Incorrect Message when ending game")
         self.assertEqual(sc.logout, self.cli.command("logout"), "lougout message not correct")
         self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
         self.assertEqual(sc.no_game_running, self.cli.command("getstats Team1"),
+                         "Get Stats wroked with noone logged in")
+
+        self.assertEqual(sc.no_game_running, self.cli.command("getstats"),
                          "Get Stats wroked with noone logged in")
 
     def test_admin(self):
@@ -831,6 +934,10 @@ class TestGetStatus(unittest.TestCase):
         stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
         self.assertEqual(stat_str.format(self.cli.current_user.points, self.cli.current_user.current_landmark+1,
                                          currenttimecalc, tt), self.cli.command("getstats Team1"),
+                         "Admin Couldn't user get stats")
+
+        self.assertEqual(stat_str.format(self.cli.current_user.points, self.cli.current_user.current_landmark + 1,
+                                         currenttimecalc, tt), self.cli.command("getstats"),
                          "Admin Couldn't user get stats")
 
     def test_user(self):
@@ -854,7 +961,7 @@ class TestGetStatus(unittest.TestCase):
 
     def test_bad_args(self):
         self.assertEqual(sc.login_success, self.cli.command("login Team1 1526"), "Login message not correct")
-        self.assertEqual("Invalid parameters", self.cli.command("getstats"), "CLI took improper args")
+        self.assertEqual("Invalid parameters", self.cli.command("getstats Team1 blah"), "CLI took improper args")
 
 
 class TestAnswerQuestion(unittest.TestCase):
@@ -1010,6 +1117,10 @@ if __name__ == "__main__":
     SUITE.addTest(unittest.makeSuite(TestGetStatus))
     SUITE.addTest(unittest.makeSuite(TestQuitQuestion))
     SUITE.addTest(unittest.makeSuite(TestAnswerQuestion))
+    SUITE.addTest(unittest.makeSuite(TestChangePointPenalty))
+    SUITE.addTest(unittest.makeSuite(TestGetLandmarksIndex))
+    SUITE.addTest(unittest.makeSuite(TestGetQuestion))
+
     RUNNER = unittest.TextTestRunner()
     RES = RUNNER.run(SUITE)
     print(RES)
