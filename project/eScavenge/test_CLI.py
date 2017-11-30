@@ -428,8 +428,8 @@ class TestGetStatus(TestCase):
         stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
         self.cli.current_user = Team.objects.get(username="Team1")
         self.assertEqual(stat_str.format(self.cli.current_user.points, self.cli.current_user.current_landmark+1,
-                                         currenttimecalc, tt), self.cli.command("getstats Team1", "Team1"),
-                         "Admin Couldn't user get stats")
+                                         str(currenttimecalc).split(".")[0], tt),
+                         self.cli.command("getstats Team1", "Team1"), "Admin Couldn't user get stats")
 
     def test_user(self):
         tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
@@ -439,7 +439,8 @@ class TestGetStatus(TestCase):
         current_time_calc = (now - self.cli.game._Game__teams["Team1"].clue_time)
         stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
         self.assertEqual(stat_str.format(self.cli.game.get_team("Team1").points,
-                                         self.cli.game.get_team("Team1").current_landmark + 1, current_time_calc, tt),
+                                         self.cli.game.get_team("Team1").current_landmark + 1,
+                                         str(current_time_calc).split(".")[0], tt),
                          self.cli.command("getstats Team1", GM), "Admin Couldn't get user stats")
 
     def test_not_user(self):

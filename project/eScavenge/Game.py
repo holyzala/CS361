@@ -267,7 +267,8 @@ class Game(GameInterface):
             total_time += t.time_delta
         if current_team.current_landmark <= len(self.__landmarks):
             stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
-            return stat_str.format(current_team.points, current_team.current_landmark+1, current_time_calc, total_time)
+            return stat_str.format(current_team.points, current_team.current_landmark+1,
+                                   str(current_time_calc).split(".")[0], total_time)
         return 'Final Points: {}'.format(current_team.points)
 
     def get_snapshot(self, now):
