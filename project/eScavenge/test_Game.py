@@ -1,6 +1,9 @@
 import datetime
+
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils import timezone
+
 from .Errors import Errors
 from .Game import GameFactory, make_game
 from .Landmark import LandmarkFactory, Landmark
@@ -69,6 +72,7 @@ class TestAddTeam(TestCase):
 
     def test_add_team(self):
         self.assertTrue(self.game.add_team("Team1", "1232"), "Did not add team")
+        self.assertEqual("Team1", Team.objects.get(username="Team1").username, "Team not in DB")
 
     def test_add_team_duplicates(self):
         self.assertTrue(self.game.add_team("Team1", "1232"), "Did not add team")
@@ -88,6 +92,8 @@ class TestRemoveTeam(TestCase):
 
     def test_remove_team(self):
         self.assertTrue(self.game.remove_team("Team1"), "Failed to remove team")
+        with self.assertRaises(Team.DoesNotExist):
+            Team.objects.get(username="Team1")
 
     def test_remove_team_does_not_exist(self):
         self.assertTrue(self.game.remove_team("Team1"), "Failed to remove team")
@@ -184,7 +190,8 @@ class TestEditLandmarkOrder(TestCase):
 
     def test_swap_after_game_started(self):
         self.game._Game__started = True
-        self.assertEqual(Errors.CAN_ONLY_EDIT_ORDER_WHEN_GAME_IS_NEW, self.game.edit_landmark_order(1, 2), "can not change order after start of game")
+        self.assertEqual(Errors.CAN_ONLY_EDIT_ORDER_WHEN_GAME_IS_NEW, self.game.edit_landmark_order(1, 2),
+                         "can not change order after start of game")
         self.assertEqual("lm2", self.game._Game__landmarks[1].name, "Swapping failed")
         self.assertEqual("lm3", self.game._Game__landmarks[2].name, "Swapping failed")
 
@@ -234,15 +241,28 @@ class TestModifyTeam(TestCase):
     def test_modify_team_name(self):
         self.assertTrue(self.game.modify_team("Team1", newname="Team2", newpassword=None), "Team name was not modified")
         self.assertIn("Team2", self.game._Game__teams, "Key was not updated")
+        team = Team.objects.get(username="Team2")
+        self.assertEqual("Team2", team.username, "Team name not udpated in DB")
+        self.assertEqual("1234", team.password, "Team password got incorrectly updated in DB")
+        with self.assertRaises(Team.DoesNotExist):
+            Team.objects.get(username="Team1")
 
     def test_modify_team_password(self):
         self.assertTrue(self.game.modify_team("Team1", newname=None, newpassword="5678"), "password was not modified")
         self.assertIn("Team1", self.game._Game__teams, "Key should not be updated")
+        team = Team.objects.get(username="Team1")
+        self.assertEqual("Team1", team.username, "Username changed in DB")
+        self.assertEqual("5678", team.password, "Password not updated in DB")
 
     def test_modify_team_name_and_password(self):
         self.assertTrue(self.game.modify_team("Team1", newname="Team103", newpassword="5678"),
                         "name and password was not modified")
         self.assertIn("Team103", self.game._Game__teams, "Key was not updated")
+        with self.assertRaises(Team.DoesNotExist):
+            Team.objects.get(username="Team1")
+        team = Team.objects.get(username="Team103")
+        self.assertEqual("Team103", team.username, "Team name not udpated in DB")
+        self.assertEqual("5678", team.password, "Team password not updated in DB")
 
     def test_modify_team_does_not_exist(self):
         self.game._Game__teams.clear()
@@ -273,7 +293,7 @@ class TestDeleteLandmarks(TestCase):
         self.game.remove_landmark("lm1")
         self.assertNotIn(landmark1, self.game._Game__landmarks, "Failed to remove landmark")
         with self.assertRaises(Landmark.DoesNotExist):
-            Landmark.objects.get(name="lm1").name
+            Landmark.objects.get(name="lm1")
 
     def test_delete_multi_landmarks(self):
         landmark1 = LandmarkFactory().get_landmark("lm1", "ABC", "DEF", "GHI")
@@ -283,11 +303,11 @@ class TestDeleteLandmarks(TestCase):
         self.game.remove_landmark("lm1")
         self.assertNotIn(landmark1, self.game._Game__landmarks, "Failed to remove landmark")
         with self.assertRaises(Landmark.DoesNotExist):
-            Landmark.objects.get(name="lm1").name
+            Landmark.objects.get(name="lm1")
         self.game.remove_landmark("lm2")
         self.assertNotIn(landmark2, self.game._Game__landmarks, "Failed to remove Landmark2")
         with self.assertRaises(Landmark.DoesNotExist):
-            Landmark.objects.get(name="lm2").name
+            Landmark.objects.get(name="lm2")
 
     def test_delete_landmark_does_not_exist(self):
         self.assertFalse(self.game.remove_landmark("lm1"), "landmark does not exist")
@@ -301,18 +321,18 @@ class TestDeleteLandmarks(TestCase):
         Landmark.objects.all().delete()
         self.assertFalse(self.game.remove_landmark("lm1"), "Failed to remove landmark, list of teams empty")
         with self.assertRaises(Landmark.DoesNotExist):
-            Landmark.objects.get(name="lm2").name
+            Landmark.objects.get(name="lm2")
 
     def test_remove_landmark_game_started(self):
         self.game._Game__started = True
         landmark1 = LandmarkFactory().get_landmark("lm1", "ABC", "DEF", "GHI")
         self.game._Game__landmarks.append(landmark1)
         self.assertFalse(self.game.remove_landmark("lm1"), "should not remove landmark once game starts")
-        self.assertEqual("lm1", Landmark.objects.get(name="lm1").name, "Landmark shouldnt have been delete from database")
+        self.assertEqual("lm1", Landmark.objects.get(name="lm1").name,
+                         "Landmark shouldnt have been delete from database")
 
 
 class TestAddLandmark2(TestCase):
-    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
 
@@ -365,7 +385,8 @@ class TestGameTeam(TestCase):
         self.assertEqual(landmarks, self.game.get_landmarks_index(), "Landmarks aren't correctly returned")
 
     def test_team_question(self):
-        self.assertEqual("What is the name of the statue out front?", self.game.get_team_question(self.team), "Team question isn't correct")
+        self.assertEqual("What is the name of the statue out front?", self.game.get_team_question(self.team),
+                         "Team question isn't correct")
 
     def test_quit_question_incorrectpass(self):
         self.game._Game__started = True
@@ -386,6 +407,7 @@ class TestGameTeam(TestCase):
                         "Quit Question Returned False After Correct Password!")
         self.assertEqual(self.team.points, 0, "Points Changed after Giving Up!")
         self.assertEqual(self.team.current_landmark, 1, "Landmark Index Did Not Properly Incriment")
+        self.assertEqual(1, Team.objects.get(username="Dummy").current_landmark, "Landmark index not updated in DB")
         self.assertEqual(len(self.team.time_log.all()), 1, "Time log did not recieve new entry")
         temp = self.team.time_log.first()
         self.assertEqual(temp.time_delta, datetime.timedelta(days=0, hours=18, minutes=54, seconds=53),
@@ -399,6 +421,7 @@ class TestGameTeam(TestCase):
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Correct Answer Returned False!")
         self.assertEqual(self.team.points, 150, "Points did not increment correctly")
+        self.assertEqual(150, Team.objects.get(username="Dummy").points, "Points not saved in DB")
         self.assertEqual(self.team.current_landmark, 1, "Landmark Index Did not Properly increment")
         self.assertEqual(len(self.team.time_log.all()), 1, "Time Log Did Not recieve a new entry")
         temp = self.team.time_log.first()
@@ -420,6 +443,7 @@ class TestGameTeam(TestCase):
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Correct Answer Returned False After Incorrect Guess!")
         self.assertEqual(self.team.points, 140, "Points did not increment correctly")
+        self.assertEqual(140, Team.objects.get(username="Dummy").points, "DB points not updated")
         self.assertEqual(self.team.current_landmark, 1, "Landmark Index Did not Properly increment")
         self.assertEqual(len(self.team.time_log.all()), 1, "Time Log Did Not recieve a new entry")
         temp = self.team.time_log.first()
@@ -434,6 +458,7 @@ class TestGameTeam(TestCase):
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Returned False after Correct Answer!")
         self.assertEqual(self.team.points, 130, "Points did not increment correctly")
+        self.assertEqual(130, Team.objects.get(username="Dummy").points, "DB points not updated")
         self.assertEqual(self.team.current_landmark, 1, "Landmark Index Did not Properly increment")
         self.assertEqual(len(self.team.time_log.all()), 1, "Time Log Did Not recieve a new entry")
         temp = self.team.time_log.first()
@@ -448,6 +473,7 @@ class TestGameTeam(TestCase):
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Returned False After Correct Answer!")
         self.assertEqual(self.team.points, 50, "Points did not increment correctly")
+        self.assertEqual(50, Team.objects.get(username="Dummy").points, "DB points not updated")
         self.assertEqual(self.team.current_landmark, 1, "Landmark Index Did not Properly increment")
         self.assertEqual(len(self.team.time_log.all()), 1, "Time Log Did Not recieve a new entry")
         temp = self.team.time_log.first()
@@ -468,6 +494,7 @@ class TestGameTeam(TestCase):
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Correct Answer Returned False After Incorrect Answer and Wait!")
         self.assertEqual(self.team.points, 40, "Points did not increment correctly")
+        self.assertEqual(40, Team.objects.get(username="Dummy").points, "DB points not updated")
         self.assertEqual(self.team.current_landmark, 1, "Landmark Index Did not Properly increment")
         self.assertEqual(len(self.team.time_log.all()), 1, "Time Log Did Not recieve a new entry")
         temp = self.team.time_log.first()

@@ -128,15 +128,18 @@ class Game(GameInterface):
         if not self.started:
             if name in self.__teams:
                 return False
-            temp = TeamFactory.get_team(name, password)
+            try:
+                temp = TeamFactory.get_team(name, password)
+            except IntegrityError:
+                return False
             self.__teams[name] = temp
-            temp.save()
             return True
         return False
 
     def remove_team(self, name):
         if not self.started:
             try:
+                self.__teams[name].delete()
                 del self.__teams[name]
             except KeyError:
                 return False
@@ -145,17 +148,21 @@ class Game(GameInterface):
         return False
 
     def modify_team(self, oldname, newname=None, newpassword=None):
+        if newname in self.__teams:
+            return False
         try:
-            if newname in self.__teams:
-                return False
+            team = self.__teams.pop(oldname)
             if newpassword:
-                self.__teams[oldname].password = newpassword
+                team.password = newpassword
             if newname:
-                self.__teams[oldname].username = newname
-                self.__teams[newname] = self.__teams.pop(oldname)
-            return True
+                team.delete()
+                team.username = newname
+            self.__teams[team.username] = team
+            team.full_clean()
+            team.save()
         except KeyError:
             return False
+        return True
 
     def add_landmark(self, name, clue, question, answer):
         if not self.started:
@@ -258,6 +265,8 @@ class Game(GameInterface):
         TimeDelta.objects.create(time_delta=now-team.clue_time, team=team)
         team.clue_time = now
         team.penalty_count = 0
+        team.full_clean()
+        team.save()
         return Errors.NO_ERROR
 
     def answer_question(self, now, team, answer):
