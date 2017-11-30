@@ -347,8 +347,6 @@ class TestGameTeam(TestCase):
 
     def test_quit_question_incorrectpass(self):
         self.game._Game__started = True
-        self.team.clue_time = datetime.timedelta(days=15, hours=12, minutes=30, seconds=15)
-        now = datetime.timedelta(days=16, hours=7, minutes=25, seconds=8)
         self.team.clue_time = timezone.now()
         now = self.team.clue_time + datetime.timedelta(hours=18, minutes=54, seconds=53)
         self.assertEqual(Errors.INVALID_LOGIN, self.game.quit_question(now, self.team, "incorrectpasswerd"),
