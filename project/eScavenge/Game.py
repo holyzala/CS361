@@ -159,10 +159,6 @@ class Game(GameInterface):
                 return False
             if landmark in self.__landmarks:
                 return False
-            try:
-                landmark.save()
-            except IntegrityError:
-                return False
             self.__landmarks.append(landmark)
             return True
         return False
