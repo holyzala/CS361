@@ -186,8 +186,8 @@ def edit_landmark(self, args):
                 if self.game.modify_landmark(oldname=oldname_index, clue=clue):
                     return edit_landmark_success
             if self.game.modify_landmark(oldname=oldname_index, name=name):
-                return edit_landmark_order_success
-
+                return edit_landmark_success
+        
         if question_index:
             question = args[question_index + 1]
             if answer_index:

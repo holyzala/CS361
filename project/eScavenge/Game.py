@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from django.utils import timezone
+from django.db import IntegrityError
 
 from .Landmark import LandmarkFactory
 from .Team import TeamFactory, Team, TimeDelta
@@ -152,11 +153,17 @@ class Game(GameInterface):
 
     def add_landmark(self, name, clue, question, answer):
         if not self.started:
-            landmark = LandmarkFactory.get_landmark(name, clue, question, answer)
+            try:
+                landmark = LandmarkFactory.get_landmark(name, clue, question, answer)
+            except IntegrityError:
+                return False
             if landmark in self.__landmarks:
                 return False
+            try:
+                landmark.save()
+            except IntegrityError:
+                return False
             self.__landmarks.append(landmark)
-            landmark.save()
             return True
         return False
 
