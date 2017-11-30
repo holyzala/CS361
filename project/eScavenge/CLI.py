@@ -23,8 +23,6 @@ def need_self(func):
         try:
             if not args[0].current_user:
                 return permission_denied
-            if not args[0].current_user.is_admin() and not args[0].current_user.username == args[1][1]:
-                return permission_denied
         except IndexError:
             return invalid_param
         return func(*args)
@@ -170,31 +168,40 @@ def edit_landmark(self, args):
 
 @need_self
 def edit_team(self, args):
+    name_in_command = False
+    if args[1] not in ['name', 'password']:
+      name_in_command = True
+      if args[1] != self.current_user.username and not self.current_user.is_admin():
+        return permission_denied
+
     name_index = None
     pass_index = None
     try:
-        name_index = args.index('name', 2)
+        name_index = args.index('name', 1)
     except ValueError:
         pass
 
     try:
-        pass_index = args.index('password', 2)
+        pass_index = args.index('password', 1)
     except ValueError:
         pass
 
     try:
-        if name_index:
-            name = args[name_index + 1]
-            password = None
-            if pass_index:
-                password = args[pass_index + 1]
-            if self.game.modify_team(oldname=args[1], newname=name, newpassword=password):
-                return "Team changed"
-            return "Team new name already exists"
-        if pass_index:
-            if self.game.modify_team(oldname=args[1], newpassword=args[pass_index + 1]):
-                return "Team changed"
-        return "No Changes"
+      currentname = self.current_user.username
+      if name_in_command and self.current_user.is_admin():
+        currentname = args[1]
+      if name_index:
+          name = args[name_index + 1]
+          password = None
+          if pass_index:
+              password = args[pass_index + 1]
+          if self.game.modify_team(oldname=currentname, newname=name, newpassword=password):
+              return "Team changed"
+          return "Team new name already exists"
+      if pass_index:
+          if self.game.modify_team(oldname=currentname, newpassword=args[pass_index + 1]):
+              return "Team changed"
+      return "No Changes"
     except IndexError:
         return invalid_param
 
