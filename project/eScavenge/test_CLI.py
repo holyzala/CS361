@@ -16,15 +16,15 @@ class TestEditTeams(TestCase):
         self.assertEqual(team_add, self.cli.command("addteam Team2 Rocks", GM))
 
     def test_team_edit_name_logged_in(self):
-        self.assertEqual(team_change, self.cli.command("editteam Team1 name ILikeCheese", "Team1"),
+        self.assertEqual(team_change, self.cli.command("editteam name ILikeCheese", "Team1"),
                          "Failed to change username")
 
     def test_team_edit_password_logged_in(self):
-        self.assertEqual(team_change, self.cli.command("editteam Team1 password ThisIsSecure", "Team1"),
+        self.assertEqual(team_change, self.cli.command("editteam password ThisIsSecure", "Team1"),
                          "Failed to change pass")
 
     def test_team_edit_name_and_password_logged_in(self):
-        self.assertEqual(team_change, self.cli.command("editteam Team1 name ILikeCheese password ThisIsSecure",
+        self.assertEqual(team_change, self.cli.command("editteam name ILikeCheese password ThisIsSecure",
                                                        "Team1"),
                          "Failed to change pass")
 
@@ -38,7 +38,7 @@ class TestEditTeams(TestCase):
 
     def test_team_edit_name_but_there_is_a_team_with_same_new_name_v2(self):
         self.assertEqual(team_exist,
-                         self.cli.command("editteam Team1 name Team2 password ThisIsSecure", "Team1"), "Only edit self")
+                         self.cli.command("editteam name Team2 password ThisIsSecure", "Team1"), "Only edit self")
 
     def test_gm_edit_team_name(self):
         self.assertEqual(team_change, self.cli.command("editteam Team1 name ILikeCheese", GM), "Failed to change name")
