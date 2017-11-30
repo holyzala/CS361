@@ -84,7 +84,7 @@ class TestRemoveTeam(TestCase):
     def setUp(self):
         self.game = TEST_FACTORY()
         self.game._Game__started = False
-        self.game._Game__teams["Team1"] = TeamFactory().get_team("Team1", "1232")
+        self.game._Game__teams["Team1"] = TeamFactory.get_team("Team1", "1232")
 
     def test_remove_team(self):
         self.assertTrue(self.game.remove_team("Team1"), "Failed to remove team")
@@ -228,7 +228,7 @@ class TestModifyTeam(TestCase):
     # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game._Game__teams["Team1"] = TeamFactory().get_team("Team1", "1234")
+        self.game._Game__teams["Team1"] = TeamFactory.get_team("Team1", "1234")
 
     def test_modify_team_name(self):
         self.assertTrue(self.game.modify_team("Team1", newname="Team2", newpassword=None), "Team name was not modified")
@@ -326,7 +326,7 @@ class TestAddLandmark2(TestCase):
 class TestGameTeam(TestCase):
     # pylint: disable=protected-access,no-member
     def setUp(self):
-        self.team = TeamFactory().get_team("Dummy", "password")
+        self.team = TeamFactory.get_team("Dummy", "password")
         self.game = GameFactory(make_game).create_game()
         l1 = LandmarkFactory().get_landmark("lm1", "The Place we drink coffee and read books",
                                             "What is the name of the statue out front?", "three disks")
@@ -351,8 +351,8 @@ class TestGameTeam(TestCase):
 
     def test_quit_question_incorrectpass(self):
         self.game._Game__started = True
-        self.team.clue_time = self.team.clue_time = datetime.timedelta(days=15, hours=12, minutes=30, seconds=15)
-        now = datetime.timedelta(days=16, hours=7, minutes=25, seconds=8)
+        self.team.clue_time = timezone.now()
+        now = self.team.clue_time + datetime.timedelta(hours=18, minutes=54, seconds=53)
         self.assertEqual(Errors.INVALID_LOGIN, self.game.quit_question(now, self.team, "incorrectpasswerd"),
                          "Quit Question Returned True After Incorrect Password!")
         self.assertEqual(self.team.points, 0, "Points Changed after Failing Give Up!")
@@ -361,8 +361,8 @@ class TestGameTeam(TestCase):
         self.assertNotEqual(self.team.clue_time, now, "Clue Time Updated After Incorrect Password!")
 
     def test_quit_question(self):
-        self.team.clue_time = datetime.timedelta(days=15, hours=12, minutes=30, seconds=15)
-        now = datetime.timedelta(days=16, hours=7, minutes=25, seconds=8)
+        self.team.clue_time = timezone.now()
+        now = self.team.clue_time + datetime.timedelta(hours=18, minutes=54, seconds=53)
         self.game._Game__started = True
         self.assertTrue(self.game.quit_question(now, self.team, "password"),
                         "Quit Question Returned False After Correct Password!")
@@ -514,8 +514,8 @@ class TestAnswerQuit(TestCase):
     # pylint: disable=protected-access,no-member
     def setUp(self):
         self.game = TEST_FACTORY()
-        self.game._Game__teams['abc'] = TeamFactory().get_team('abc', 'def')
-        self.game._Game__teams['ghi'] = TeamFactory().get_team('ghi', 'jkl')
+        self.game._Game__teams['abc'] = TeamFactory.get_team('abc', 'def')
+        self.game._Game__teams['ghi'] = TeamFactory.get_team('ghi', 'jkl')
         self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm1", 'clue1', 'question1', 'answer1'))
         self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm2", 'clue2', 'question2', 'answer2'))
         self.game._Game__landmarks.append(LandmarkFactory().get_landmark("lm3", 'clue3', 'question3', 'answer3'))
@@ -577,8 +577,8 @@ class TestGameSnapShot(TestCase):
                          rtn, "Format incorrect")
 
     def test_get_snapshot_for_several_teams(self):
-        self.game._Game__teams["Team2"] = TeamFactory().get_team("Team2", "1232")
-        self.game._Game__teams["Team3"] = TeamFactory().get_team("Team3", "1232")
+        self.game._Game__teams["Team2"] = TeamFactory.get_team("Team2", "1232")
+        self.game._Game__teams["Team3"] = TeamFactory.get_team("Team3", "1232")
         self.game._Game__started = True
         now = datetime.timedelta(hours=6, minutes=35, seconds=15)
         clue_time = datetime.timedelta(hours=0, minutes=20, seconds=50)

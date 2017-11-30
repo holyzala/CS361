@@ -73,7 +73,7 @@ class TestPoints(TestCase):
 
 class TestTeamLogin(TestCase):
     def setUp(self):
-        self.team = TeamFactory().get_team("team1", "password123")
+        self.team = TeamFactory.get_team("team1", "password123")
 
     def test_team_login_success(self):
         user = self.team.login("team1", "password123")
@@ -88,7 +88,7 @@ class TestTeamLogin(TestCase):
 
 class TestAddCurrentPenalty(TestCase):
     def setUp(self):
-        self.team = TeamFactory().get_team("Team2", "password123")
+        self.team = TeamFactory.get_team("Team2", "password123")
 
     def test_add_pos_points(self):
         self.assertTrue(self.team.add_penalty(1), "Incorrect Penalty Value")

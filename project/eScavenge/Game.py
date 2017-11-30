@@ -121,7 +121,7 @@ class Game(GameInterface):
         if not self.started:
             if name in self.__teams:
                 return False
-            temp = TeamFactory().get_team(name, password)
+            temp = TeamFactory.get_team(name, password)
             self.__teams[name] = temp
             temp.save()
 
@@ -192,11 +192,11 @@ class Game(GameInterface):
         except KeyError:
             return False
 
-    def edit_landmark_order(self, index1, index2):
+    def edit_landmark_order(self, oldindex, newindex):
         if self.started or self.ended:
             return Errors.CAN_ONLY_EDIT_ORDER_WHEN_GAME_IS_NEW
         try:
-            self.__landmarks.insert(index2, self.__landmarks.pop(index1))
+            self.__landmarks.insert(newindex, self.__landmarks.pop(oldindex))
         except IndexError:
             return Errors.LANDMARK_INDEX
         return Errors.NO_ERROR

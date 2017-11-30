@@ -1,7 +1,5 @@
 from django.contrib import admin
-from .models import HuntUser
-from .models import HuntCommand
+from .Team import Team, TimeDelta
 
-admin.site.register(HuntUser)
-admin.site.register(HuntCommand)
-
+admin.site.register(Team)
+admin.site.register(TimeDelta)

@@ -50,13 +50,6 @@ def login(self, args):
     return login_fail
 
 
-def logout(self, _):
-    if not self.current_user:
-        return "No user logged in"
-    self.current_user = None
-    return logout
-
-
 @need_admin
 def add_team(self, args):
     try:
@@ -148,15 +141,10 @@ def edit_landmark_order(self, args):
 
 @need_admin
 def edit_landmark(self, args):
-    oldname_index = args[1]
-    name_index = None
+    oldclue_index = args[1]
     clue_index = None
     question_index = None
     answer_index = None
-    try:
-        name_index = args.index('name', 2)
-    except ValueError:
-        pass
     try:
         clue_index = args.index('clue', 2)
     except ValueError:
@@ -171,37 +159,11 @@ def edit_landmark(self, args):
         pass
 
     try:
-        if name_index:
-            name = args[name_index + 1]
-            if clue_index:
-                clue = args[clue_index + 1]
-                if question_index:
-                    question = args[question_index + 1]
-                    if answer_index:
-                        answer = args[answer_index + 1]
-                        if self.game.modify_landmark(oldname=oldname_index, name=name, clue=clue, question=question, answer=answer):
-                            return edit_landmark_success
-                    if self.game.modify_landmark(oldname=oldname_index, clue=clue, question=question):
-                        return edit_landmark_success
-                if self.game.modify_landmark(oldname=oldname_index, clue=clue):
-                    return edit_landmark_success
-            if self.game.modify_landmark(oldname=oldname_index, name=name):
-                return edit_landmark_success
-        
-        if question_index:
-            question = args[question_index + 1]
-            if answer_index:
-                answer = args[answer_index + 1]
-                if self.game.modify_landmark(oldname=oldname_index, question=question, answer=answer):
-                    return edit_landmark_success
-            if self.game.modify_landmark(oldname=oldname_index, question=question):
-                return edit_landmark_success
-
-        if answer_index:
-            answer = args[answer_index + 1]
-            if self.game.modify_landmark(oldname=oldname_index, answer=answer):
-                return edit_landmark_success
-
+        clue = args[clue_index + 1] if clue_index else None
+        question = args[question_index + 1] if question_index else None
+        answer = args[answer_index + 1] if answer_index else None
+        if self.game.modify_landmark(oldclue=oldclue_index, clue=clue, question=question, answer=answer):
+            return edit_landmark_success
     except IndexError:
         return invalid_param
 
@@ -272,11 +234,12 @@ def get_stats(self, args):
 
 @need_admin
 def get_snapshot(self, _):
-    err, rtn =  self.game.get_snapshot(timezone.now())
+    err, rtn = self.game.get_snapshot(timezone.now())
     if err == Errors.NO_GAME:
         return no_game_running
     if err == Errors.NO_ERROR:
         return rtn
+
 
 def answer_question(self, args):
     if not self.current_user:
@@ -319,9 +282,9 @@ def edit_penalty_time(self, args):
 
 
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
-            "end": end, "create": create, "logout": logout, "editteam": edit_team, "removelandmark": remove_landmark,
-            "getclue": get_clue, "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question,
-            "getstats": get_stats, "editlandmarkorder": edit_landmark_order, "editpenaltyvalue" : edit_penalty_value,
+            "end": end, "create": create, "editteam": edit_team, "removelandmark": remove_landmark, "getclue": get_clue,
+            "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question, "getstats": get_stats,
+            "editlandmarkorder": edit_landmark_order, "editpenaltyvalue" : edit_penalty_value,
             "editpenaltytime": edit_penalty_time, "snapshot": get_snapshot}
 
 
