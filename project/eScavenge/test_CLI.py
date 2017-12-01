@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from .CLI import CLI, COMMANDS
 from .StringConst import *
-from .models import Team
+from .models import Team, GameFactory, make_game
 
 GM = "gamemaker"
 
