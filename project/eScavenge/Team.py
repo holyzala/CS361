@@ -21,13 +21,12 @@ class Team(models.Model):
         return self
 
     def add_penalty(self, penalty=1):
-        try:
-            if penalty <= 0:
-                return False
-            self.penalty_count += penalty
-            return True
-        except ValueError:
+        if penalty <= 0:
             return False
+        self.penalty_count += penalty
+        self.full_clean()
+        self.save()
+        return True
 
     @staticmethod
     def is_admin():
