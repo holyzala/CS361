@@ -4,9 +4,7 @@ from django.utils import timezone
 
 from .StringConst import *
 from .Errors import Errors
-from .Game import GameFactory, make_game
-from .GameMaker import GMFactory
-from .Team import Team
+from .models import GameFactory, make_game, GMFactory, Team
 
 
 def need_admin(func):
@@ -120,6 +118,7 @@ def end(self, _):
 def create(self, _):
     if not self.game or not self.game.started or self.game.ended:
         self.game = GameFactory(make_game).create_game()
+        self.game.save()
         return "Game Created"
     return "Game Failed"
 
@@ -198,9 +197,9 @@ def edit_landmark(self, args):
 def edit_team(self, args):
     name_in_command = False
     if args[1] not in ['name', 'password']:
-      name_in_command = True
-      if args[1] != self.current_user.username and not self.current_user.is_admin():
-        return permission_denied
+        name_in_command = True
+        if args[1] != self.current_user.username and not self.current_user.is_admin():
+            return permission_denied
 
     name_index = None
     pass_index = None
@@ -215,21 +214,21 @@ def edit_team(self, args):
         pass
 
     try:
-      currentname = self.current_user.username
-      if name_in_command and self.current_user.is_admin():
-        currentname = args[1]
-      if name_index:
-          name = args[name_index + 1]
-          password = None
-          if pass_index:
-              password = args[pass_index + 1]
-          if self.game.modify_team(oldname=currentname, newname=name, newpassword=password):
-              return "Team changed"
-          return "Team new name already exists"
-      if pass_index:
-          if self.game.modify_team(oldname=currentname, newpassword=args[pass_index + 1]):
-              return "Team changed"
-      return "No Changes"
+        currentname = self.current_user.username
+        if name_in_command and self.current_user.is_admin():
+            currentname = args[1]
+        if name_index:
+            name = args[name_index + 1]
+            password = None
+            if pass_index:
+                password = args[pass_index + 1]
+            if self.game.modify_team(oldname=currentname, newname=name, newpassword=password):
+                return "Team changed"
+            return "Team new name already exists"
+        if pass_index:
+            if self.game.modify_team(oldname=currentname, newpassword=args[pass_index + 1]):
+                return "Team changed"
+        return "No Changes"
     except IndexError:
         return invalid_param
 
@@ -280,7 +279,7 @@ def get_stats(self, args):
 
 @need_admin
 def get_snapshot(self, _):
-    err, rtn = self.game.get_snapshot(timezone.now())
+    err, rtn = self.game.get_snapshot()
     if err == Errors.NO_GAME:
         return no_game_running
     if err == Errors.NO_ERROR:

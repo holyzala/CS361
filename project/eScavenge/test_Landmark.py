@@ -1,5 +1,6 @@
 from django.test import TestCase
-from .Landmark import LandmarkFactory, Landmark
+
+from .models import LandmarkFactory, Landmark
 
 
 class TestInit(TestCase):
@@ -9,8 +10,7 @@ class TestInit(TestCase):
     ANSWER = "Give me your tired, your poor, your huddled masses yearning to breathe free"
 
     def test_init(self):
-        # pylint: disable=protected-access,no-member
-        landmark = LandmarkFactory.get_landmark(self.NAME, self.CLUE, self.QUESTION, self.ANSWER)
+        landmark = LandmarkFactory.get_landmark(self.NAME, self.CLUE, self.QUESTION, self.ANSWER, None, 0)
         self.assertEqual(self.NAME, landmark.name, "Failed to set name properly")
         self.assertEqual(self.CLUE, landmark.clue, "Failed to set clue properly")
         self.assertEqual(self.QUESTION, landmark.question, "Failed to set question properly")
@@ -19,11 +19,10 @@ class TestInit(TestCase):
 
 class TestSettersToDatabase(TestCase):
     def setUp(self):
-        self.landmark = LandmarkFactory.get_landmark("landmark1", "C1", "Q1", "A1")
+        self.landmark = LandmarkFactory.get_landmark("landmark1", "C1", "Q1", "A1", None, 0)
 
     def test_name(self):
         self.landmark.name = "blah"
-        self.landmark.full_clean()
         self.landmark.save()
         self.landmark = Landmark.objects.get(name=self.landmark.name)
         self.assertEqual("blah", self.landmark.name, "name not set properly")
@@ -54,7 +53,7 @@ class TestCheckAnswer(TestCase):
     ANSWER = "Give me your tired, your poor, your huddled masses yearning to breathe free"
 
     def setUp(self):
-        self.landmark = LandmarkFactory.get_landmark(self.NAME, self.CLUE, self.QUESTION, self.ANSWER)
+        self.landmark = LandmarkFactory.get_landmark(self.NAME, self.CLUE, self.QUESTION, self.ANSWER, None, 0)
 
     def test_correct(self):
         self.assertTrue(self.landmark.check_answer(self.ANSWER), "Incorrectly returned False")

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .CLI import CLI, COMMANDS
-from .Team import Team
+from .models import Team
 
 cli = CLI(COMMANDS)
 
