@@ -1,5 +1,6 @@
 from django.test import TestCase
-from .GameMaker import GMFactory
+
+from .models import GMFactory
 
 
 class TestLogin(TestCase):

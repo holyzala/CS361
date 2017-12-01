@@ -1,18 +1,19 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from .Team import TeamFactory, Team
+
+from .models import TeamFactory, Team
 
 
 class TestInit(TestCase):
     def test_init(self):
-        team = TeamFactory.get_team("TeamA", "2123")
+        team = TeamFactory.get_team("TeamA", "2123", None)
         self.assertEqual("TeamA", team.username, "username value improperly set")
         self.assertEqual("2123", team.password, "password value improperly set")
 
 
 class TestPassword(TestCase):
     def setUp(self):
-        self.team = TeamFactory.get_team("Team1", "1234")
+        self.team = TeamFactory.get_team("Team1", "1234", None)
 
     def test_get_password(self):
         self.assertEqual("1234", self.team.password, "Got some password")
@@ -27,7 +28,7 @@ class TestPassword(TestCase):
 
 class TestPoints(TestCase):
     def setUp(self):
-        self.team = TeamFactory.get_team("Team 1", "1234")
+        self.team = TeamFactory.get_team("Team 1", "1234", None)
 
     def test_get_points(self):
         self.team.points = 32
@@ -73,7 +74,7 @@ class TestPoints(TestCase):
 
 class TestTeamLogin(TestCase):
     def setUp(self):
-        self.team = TeamFactory.get_team("team1", "password123")
+        self.team = TeamFactory.get_team("team1", "password123", None)
 
     def test_team_login_success(self):
         user = self.team.login("team1", "password123")
@@ -88,7 +89,7 @@ class TestTeamLogin(TestCase):
 
 class TestAddCurrentPenalty(TestCase):
     def setUp(self):
-        self.team = TeamFactory.get_team("Team2", "password123")
+        self.team = TeamFactory.get_team("Team2", "password123", None)
 
     def test_add_pos_points(self):
         self.assertTrue(self.team.add_penalty(1), "Incorrect Penalty Value")

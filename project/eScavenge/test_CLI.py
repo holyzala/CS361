@@ -1,9 +1,11 @@
+import datetime
+
 from django.test import TestCase
 from django.utils import timezone
+
 from .CLI import CLI, COMMANDS
 from .StringConst import *
-import datetime
-from .Team import Team
+from .models import Team
 
 GM = "gamemaker"
 
@@ -96,8 +98,7 @@ class TestRemoveTeam(TestCase):
         self.assertEqual(team_remove_fail, self.cli.command("removeteam Team3", GM), "team does not exist")
 
     def test_remove_team_from_empty_team_list(self):
-        # pylint: disable=protected-access,no-member
-        self.cli.game._Game__teams.clear()
+        self.cli.game.teams.all().delete()
         self.assertEqual(team_remove_fail, self.cli.command("removeteam Team1", GM), "list of teams empty")
 
     def test_remove_team_bad_args(self):
@@ -216,7 +217,6 @@ class TestAddLandmark(TestCase):
 
 
 class TestRemoveLandmark(TestCase):
-    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.cli = CLI(COMMANDS)
         self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
@@ -236,11 +236,11 @@ class TestRemoveLandmark(TestCase):
                          "only game maker can remove")
 
     def test_remove_landmark_does_not_exist(self):
-        self.cli.game._Game__landmarks.pop()
+        self.cli.game.landmarks.get(name='ldm2').delete()
         self.assertEqual(landmark_remove_fail, self.cli.command("removelandmark ldm2", GM), "landmark does not exist")
 
     def test_remove_landmark_from_empty_landmark_list(self):
-        self.cli.game._Game__landmarks.clear()
+        self.cli.game.landmarks.all().delete()
         self.assertEqual(landmark_remove_fail, self.cli.command("removelandmark ldm2", GM), "list of teams empty")
 
     def test_remove_landmark_bad_args(self):
@@ -408,20 +408,21 @@ class TestGetClue(TestCase):
 class TestGetQuestion(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(sc.game_create, self.cli.command("create", GM), "Failed to create game")
-        self.assertEqual(sc.team_add, self.cli.command("addteam team1 1234", GM), "Setup failed")
-        self.assertEqual(sc.landmark_add,
-                         self.cli.command('addlandmark "New York" "What is gift given by the French?" "Statue of Liberty"', GM),
+        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(team_add, self.cli.command("addteam team1 1234", GM), "Setup failed")
+        self.assertEqual(landmark_add,
+                         self.cli.command('addlandmark "New York" "Large Lady" "What is gift given by the French?" "Statue of Liberty"', GM),
                          "Failed to add landmark")
-        self.assertEqual(sc.landmark_add,
-                         self.cli.command('addlandmark "UWM" "Where do we purchase coffe from?" "Grind"', GM),
+        self.assertEqual(landmark_add,
+                         self.cli.command('addlandmark "UWM" "Public university in Milwuakee" "Where do we purchase coffee from?" "Grind"', GM),
                          "Failed to add landmark")
 
-        def test_admin(self):
-            self.assertEqual(sc.permission_denied, self.cli.command("getquestion", GM), "Question returned for admin")
+    def test_admin(self):
+        self.assertEqual(permission_denied, self.cli.command("getquestion", GM), "Question returned for admin")
 
-        def test_correctness(self):
-            self.assertEqual("What is gift given by the French?", self.cli.command("getquestion", "team1"), "Incorrect question given")
+    def test_correctness(self):
+        self.assertEqual("What is gift given by the French?", self.cli.command("getquestion", "team1"),
+                         "Incorrect question given")
 
 
 class TestQuitQuestion(TestCase):
@@ -454,9 +455,8 @@ class TestQuitQuestion(TestCase):
                          "Incorrect Message when giving up with wrong password")
 
     def test_quit(self):
-        # pylint: disable=protected-access,no-member
         self.cli.current_user = Team.objects.get(username="Team1")
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("Question Quit, Your Next Question: \n{}".format(question),
                          self.cli.command("giveup Team1 1526", "Team1"), "Could not quit question with proper login")
 
@@ -466,7 +466,6 @@ class TestQuitQuestion(TestCase):
 
 
 class TestGetStatus(TestCase):
-    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.cli = CLI(COMMANDS)
         self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
@@ -489,9 +488,9 @@ class TestGetStatus(TestCase):
                          "Get Stats wroked with noone logged in")
     def test_admin(self):
         tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
-        for t in self.cli.game._Game__teams["Team1"].time_log.all():
+        for t in self.cli.game.teams.get(username="Team1").time_log.all():
             tt += t
-        currenttimecalc = (timezone.now() - self.cli.game._Game__teams["Team1"].clue_time)
+        currenttimecalc = (timezone.now() - self.cli.game.teams.get(username="Team1").clue_time)
         stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
         self.cli.current_user = Team.objects.get(username="Team1")
         self.assertEqual(stat_str.format(self.cli.current_user.points, self.cli.current_user.current_landmark+1,
@@ -504,9 +503,9 @@ class TestGetStatus(TestCase):
 
     def test_user(self):
         tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
-        for t in self.cli.game._Game__teams["Team1"].time_log.all():
+        for t in self.cli.game.teams.get(username="Team1").time_log.all():
             tt += t
-        current_time_calc = (timezone.now() - self.cli.game._Game__teams["Team1"].clue_time)
+        current_time_calc = (timezone.now() - self.cli.game.teams.get(username="Team1").clue_time)
         stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
         self.assertEqual(stat_str.format(self.cli.game.get_team("Team1").points,
                                          self.cli.game.get_team("Team1").current_landmark + 1,
@@ -522,7 +521,6 @@ class TestGetStatus(TestCase):
 
 
 class TestAnswerQuestion(TestCase):
-    # pylint: disable=protected-access,no-member
     def setUp(self):
         self.cli = CLI(COMMANDS)
         self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
@@ -550,43 +548,43 @@ class TestAnswerQuestion(TestCase):
         self.assertEqual("Invalid parameters", self.cli.command("answer", "Team1"), "CLI took improper args")
 
     def test_answer_incorrect(self):
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark].question
         self.assertEqual("Incorrect Answer! The Question Was: \n{}".format(question),
                          self.cli.command("answer 'this is so very wrong'", "Team1"),
                          "Incorrect answer did not print correct response")
 
     def test_answer_correct(self):
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
 
     def test_answer_correcttwice(self):
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer Grind", "Team1"), "Correct answer did not print correct response")
 
     def test_answer_last_question(self):
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer Grind", "Team1"), "Correct answer did not print correct response")
         self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer 'Last'", "Team1"),
                          "Correct answer did not print correct response")
 
     def test_answer_pass_last_question(self):
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer Grind", "Team1"), "Correct answer did not print correct response")
         self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer Last", "Team1"),
@@ -595,43 +593,43 @@ class TestAnswerQuestion(TestCase):
                          "Correct answer did not print correct response")
 
     def test_answer_right_wrong_right(self):
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark].question
         self.assertEqual("Incorrect Answer! The Question Was: \n{}".format(question),
                          self.cli.command("answer 'this is so very wrong'", "Team1"),
                          "Incorrect answer did not print correct response")
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer 'Grind'", "Team1"), "Correct answer did not print correct response")
 
     def test_answer_team1_team2(self):
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
         self.cli.current_user = Team.objects.get(username="Team2")
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer 'Statue of Liberty'", "Team2"),
                          "Correct answer did not print correct response")
 
     def test_answer_correctteam1_incorrectteam2(self):
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer 'Grind'", "Team1"), "Correct answer did not print correct response")
         self.cli.current_user = Team.objects.get(username="Team2")
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark].question
         self.assertEqual("Incorrect Answer! The Question Was: \n{}".format(question),
                          self.cli.command("answer 'this is so very wrong'", "Team2"),
                          "Incorrect answer did not print correct response")
-        question = self.cli.game._Game__landmarks[self.cli.current_user.current_landmark+1].question
+        question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
                          self.cli.command("answer 'Statue of Liberty'", "Team2"),
                          "Correct answer did not print correct response")
@@ -662,13 +660,12 @@ class TestSnapShot(TestCase):
                          "Correct answer did not print correct response")
         total_time_list = []
         team_points = []
-        for username in self.cli.game._Game__teams:
-            current_team = self.cli.game.get_team(username)
+        for team in self.cli.game.teams.all():
             total_time = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
-            for t in current_team.time_log.all():
+            for t in team.time_log.all():
                 total_time += t.time_delta
             total_time_list.append(total_time)
-            team_points.append(current_team.points)
+            team_points.append(team.points)
         stat_str_team_1 = "Team: Team1\nYou Are On Landmark 2\nTime Taken For Landmarks: "\
                           + str(total_time_list[0]) +"\nTotal Points: "+str(team_points[0])+"\n"
         stat_str_team_2 = "Team: Team2\nYou Are On Landmark 2\nTime Taken For Landmarks: " \
