@@ -248,8 +248,7 @@ class Game(models.Model):
         if not self.started or self.ended:
             return Errors.NO_GAME, None
         stringList = []
-
-        for current_team in Team.objects.all():
+        for current_team in self.teams.all():
             total_time = timedelta(days=0, hours=0, minutes=0, seconds=0)
             for t in current_team.time_log.all():
                 total_time += t.time_delta
