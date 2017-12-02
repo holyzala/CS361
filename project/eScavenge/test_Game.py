@@ -597,7 +597,9 @@ class TestGameSnapShot(TestCase):
         self.assertEqual((Errors.NO_GAME, None), self.game.get_snapshot(), "incorrect Error returned")
 
     def test_get_snapshot_for_one_team(self):
+        TeamFactory.get_team("Team2", "1234", None)
         self.game.started = True
+        self.game.save()
         now = datetime.timedelta(hours=6, minutes=35, seconds=15)
         clue_time = datetime.timedelta(hours=0, minutes=20, seconds=50)
         clue_time2 = datetime.timedelta(hours=0, minutes=10, seconds=20)

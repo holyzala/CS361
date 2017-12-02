@@ -54,7 +54,7 @@ class Game(models.Model):
 
     def modify_team(self, oldname, newname=None, newpassword=None):
         try:
-            Team.objects.get(username=newname)
+            self.teams.get(username=newname)
         except Team.DoesNotExist:
             pass
         else:
@@ -233,7 +233,7 @@ class Game(models.Model):
             return Errors.NO_ERROR
 
     def get_status(self, now, username):
-        current_team = Team.objects.get(username=username)
+        current_team = self.teams.get(username=username)
         current_time_calc = max(timedelta(0), now - current_team.clue_time)
         total_time = timedelta(days=0, hours=0, minutes=0, seconds=0)
         for t in current_team.time_log.all():
@@ -249,7 +249,7 @@ class Game(models.Model):
             return Errors.NO_GAME, None
         stringList = []
 
-        for current_team in Team.objects.all():
+        for current_team in self.teams.all():
             total_time = timedelta(days=0, hours=0, minutes=0, seconds=0)
             for t in current_team.time_log.all():
                 total_time += t.time_delta
