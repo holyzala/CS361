@@ -101,7 +101,7 @@ def remove_landmark(self, args):
 @need_admin
 def start(self, _):
     ret = self.game.start()
-    if ret == Errors.GAME_STARTED:
+    if ret == Errors.NO_ERROR:
         return game_started
     if ret == Errors.ALREADY_STARTED:
         return game_already_started

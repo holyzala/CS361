@@ -12,6 +12,5 @@ class Errors(Enum):
     WRONG_ANSWER = auto()
     INVALID_LOGIN = auto()
     FINAL_ANSWER = auto()
-    GAME_STARTED = auto()
     ALREADY_STARTED = auto()
     INTEGRITY_ERROR = auto()
