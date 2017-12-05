@@ -9,12 +9,13 @@ from .Errors import Errors
 
 
 class Game(models.Model):
+    name = models.TextField(primary_key=True)
     started = models.BooleanField(default=False)
     ended = models.BooleanField(default=False)
     penalty_value = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0)])
     penalty_time = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0)])
     timer = models.DurationField(blank=True, null=True)
-    landmark_points = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0)])
+    landmark_points = models.PositiveIntegerField(default=100, validators=[MinValueValidator(0)])
 
     def login(self, username, password):
         try:
@@ -97,7 +98,7 @@ class Game(models.Model):
     def get_landmarks_index(self):
         landmarks = ""
         for landmark in self.landmarks.all().order_by("order"):
-            landmarks += "{}: {}\n".format(landmark.order, landmark.name)
+            landmarks += f"{landmark.order}: {landmark.name}\n"
         return landmarks
 
     def modify_landmark(self, oldname, name=None, clue=None, question=None, answer=None):
@@ -242,7 +243,7 @@ class Game(models.Model):
             stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
             return stat_str.format(current_team.points, current_team.current_landmark+1,
                                    str(current_time_calc).split(".")[0], total_time)
-        return 'Final Points: {}'.format(current_team.points)
+        return f'Final Points: {current_team.points}'
 
     def get_snapshot(self):
         if not self.started or self.ended:
@@ -329,6 +330,7 @@ class GMFactory:
         def __init__(self):
             self.username = "gamemaker"
             self.__password = "1234"
+            self.game = None
 
         def login(self, username, password):
             if self.username == username and self.__password == password:
@@ -346,15 +348,15 @@ class LandmarkFactory:
         return Landmark.objects.create(name=name, clue=clue, question=question, answer=answer, game=game, order=order)
 
 
-def make_game(*args, **kwargs):
-    return Game()
+def make_game(name):
+    return Game.objects.create(name=name)
 
 
 class GameFactory:
     def __init__(self, maker):
         self.maker = maker
 
-    def create_game(self, *args, **kwargs):
-        game = self.maker(*args, **kwargs)
+    def create_game(self, args):
+        game = self.maker(args[1])
         game.save()
         return game
