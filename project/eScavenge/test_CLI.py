@@ -669,9 +669,9 @@ class TestSnapShot(TestCase):
             total_time_list.append(total_time)
             team_points.append(team.points)
         stat_str_team_1 = "Team: Team1\nYou Are On Landmark 2\nTime Taken For Landmarks: {}\nTotal Points: {}\n".format(
-            total_time_list[0], team_points[0])
+            str(total_time_list[0]).split(".")[0], team_points[0])
         stat_str_team_2 = "Team: Team2\nYou Are On Landmark 2\nTime Taken For Landmarks: {}\nTotal Points: {}\n".format(
-            total_time_list[1], team_points[1])
+            str(total_time_list[1]).split(".")[0], team_points[1])
         final_stat_str = stat_str_team_1 + stat_str_team_2
         self.assertEqual(final_stat_str, self.cli.command("snapshot", GM), "Failed to get snapshot!!")
 
