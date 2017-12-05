@@ -164,6 +164,8 @@ class Game(models.Model):
         return True
 
     def start(self):
+        if self.started:
+            return Errors.ALREADY_STARTED
         now = timezone.now()
         for team in self.teams.all():
             team.clue_time = now
@@ -172,6 +174,7 @@ class Game(models.Model):
         self.started = True
         self.full_clean()
         self.save()
+        return Errors.NO_ERROR
 
     def end(self):
         self.ended = True
