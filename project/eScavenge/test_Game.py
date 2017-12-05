@@ -14,7 +14,7 @@ TEST_FACTORY = GameFactory(make_game).create_game
 
 class TestSetPenaltyValue(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         self.game.started = False
         self.game.save()
 
@@ -40,7 +40,7 @@ class TestSetPenaltyValue(TestCase):
 
 class TestSetPenaltyTime(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         self.game.started = False
         self.game.save()
 
@@ -65,7 +65,7 @@ class TestSetPenaltyTime(TestCase):
 
 class TestAddTeam(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         self.game.started = False
         self.game.save()
 
@@ -85,7 +85,7 @@ class TestAddTeam(TestCase):
 
 class TestRemoveTeam(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         self.game.started = False
         self.game.save()
         TeamFactory.get_team("Team1", "1232", self.game)
@@ -110,7 +110,7 @@ class TestRemoveTeam(TestCase):
 
 class TestStartGame(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         self.game.started = False
 
     def test_start_game(self):
@@ -120,7 +120,7 @@ class TestStartGame(TestCase):
 
 class TestAddLandmark(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         self.game.started = False
         self.game.save()
 
@@ -143,7 +143,7 @@ class TestAddLandmark(TestCase):
 
 class TestEditLandmarkOrder(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         self.game.started = False
         self.game.ended = False
         self.game.save()
@@ -198,7 +198,7 @@ class TestEditLandmarkOrder(TestCase):
 
 class TestModifyLandmark(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         self.game.save()
         LandmarkFactory().get_landmark("lm1", "Chicago", "Where the Bears play", "Soldier Field", self.game, 0)
 
@@ -233,7 +233,7 @@ class TestModifyLandmark(TestCase):
 
 class TestModifyTeam(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         self.game.save()
         TeamFactory.get_team("Team1", "1234", self.game)
 
@@ -270,7 +270,7 @@ class TestModifyTeam(TestCase):
 
 class TestEndGame(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         self.game.started = True
 
     def test_end_game_command(self):
@@ -281,7 +281,7 @@ class TestEndGame(TestCase):
 
 class TestDeleteLandmarks(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         self.game.started = False
         self.game.save()
 
@@ -320,7 +320,7 @@ class TestDeleteLandmarks(TestCase):
 
 class TestAddLandmark2(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         self.game.save()
 
     def test_add_landmark(self):
@@ -342,7 +342,7 @@ class TestAddLandmark2(TestCase):
 
 class TestGameTeam(TestCase):
     def setUp(self):
-        self.game = GameFactory(make_game).create_game()
+        self.game = GameFactory(make_game).create_game('test')
         self.team = TeamFactory.get_team("Dummy", "password", self.game)
         l1 = LandmarkFactory().get_landmark("lm1", "The Place we drink coffee and read books",
                                             "What is the name of the statue out front?", "three disks", self.game, 0)
@@ -542,7 +542,7 @@ class TestGameTeam(TestCase):
 
 class TestAnswerQuit(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         TeamFactory.get_team('abc', 'def', self.game)
         TeamFactory.get_team('ghi', 'jkl', self.game)
         LandmarkFactory().get_landmark("lm1", 'clue1', 'question1', 'answer1', self.game, 0)
@@ -585,7 +585,7 @@ class TestAnswerQuit(TestCase):
 
 class TestGameSnapShot(TestCase):
     def setUp(self):
-        self.game = TEST_FACTORY()
+        self.game = TEST_FACTORY('test')
         self.game.save()
         LandmarkFactory().get_landmark("lm1", "c1", "q1", "a1", self.game, 0)
         LandmarkFactory().get_landmark("lm2", "c2", "q2", "a2", self.game, 1)

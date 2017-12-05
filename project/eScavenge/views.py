@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from .CLI import CLI, COMMANDS
-from .models import Team
+from .models import Game, GMFactory, Team
 
-cli = CLI(COMMANDS)
+GM = GMFactory().get_gm()
 
 
 def index(request):
@@ -11,8 +11,8 @@ def index(request):
 
 def validate(request):
     message = "XXX"
-    if request.POST["huntUser"] == cli.game_maker.username:
-        if cli.game_maker.login(request.POST['huntUser'], request.POST['password']) is None:
+    if request.POST["huntUser"] == GM.username:
+        if GM.login(request.POST['huntUser'], request.POST['password']) is None:
             message = "Invalid password"
     else:
         try:
@@ -29,6 +29,12 @@ def validate(request):
 
 
 def terminal(request):
+    cli = CLI(COMMANDS)
+    cli.game_maker = GM
+    if request.POST['huntUser'] != GM.username:
+        cli.game = Team.objects.get(username=request.POST['huntUser']).game
+    else:
+        cli.game = GM.game
     output = cli.command(request.POST["command"], request.POST['huntUser'])
     context = {"huntUser": request.POST["huntUser"], "output": output}
     return render(request, "terminal.html", context)

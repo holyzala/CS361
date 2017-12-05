@@ -4,7 +4,7 @@ from django.utils import timezone
 
 from .StringConst import *
 from .Errors import Errors
-from .models import GameFactory, make_game, GMFactory, Team
+from .models import Game, GameFactory, make_game, GMFactory, Team
 
 
 def need_admin(func):
@@ -50,9 +50,9 @@ def login(self, args):
 def add_team(self, args):
     try:
         if self.game is None:
-            return team_add_fail
+            return "no game"
         if args[1] == self.game_maker.username:
-            return team_add_fail
+            return "not admin"
         added = self.game.add_team(args[1], args[2])
     except IndexError:
         return invalid_param
@@ -115,12 +115,21 @@ def end(self, _):
 
 
 @need_admin
-def create(self, _):
+def create(self, args):
     if not self.game or not self.game.started or self.game.ended:
-        self.game = GameFactory(make_game).create_game()
-        self.game.save()
+        try:
+            self.game = self.game_maker.game = GameFactory(make_game).create_game(args)
+            self.game.save()
+        except IntegrityError:
+            return "Game already exists"
         return "Game Created"
     return "Game Failed"
+
+
+@need_admin
+def load(self, args):
+    self.game = self.game_maker.game = Game.objects.get(name=args[1])
+    return "Game loaded"
 
 
 @need_admin
@@ -327,7 +336,7 @@ def edit_penalty_time(self, args):
 
 
 COMMANDS = {"login": login, "addteam": add_team, "addlandmark": add_landmark, "removeteam": remove_team, "start": start,
-            "end": end, "create": create, "editteam": edit_team, "removelandmark": remove_landmark,
+            "end": end, "create": create, "editteam": edit_team, "removelandmark": remove_landmark, "load": load,
             "getclue": get_clue, "editlandmark": edit_landmark, "answer": answer_question, "giveup": quit_question,
             "getstats": get_stats, "editlandmarkorder": edit_landmark_order, "editpenaltyvalue" : edit_penalty_value,
             "editpenaltytime": edit_penalty_time, "snapshot": get_snapshot, "getlandmarksindex": get_landmarks_index,
@@ -346,6 +355,8 @@ class CLI:
             self.current_user = self.game_maker
         else:
             self.current_user = Team.objects.get(username=name)
+        if not self.game:
+            self.game = self.current_user.game
         inp = shlex.split(inp)
         try:
             return self.commands[inp[0].lower()](self, inp)

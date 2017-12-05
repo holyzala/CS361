@@ -13,7 +13,7 @@ GM = "gamemaker"
 class TestEditTeams(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 239103", GM))
         self.assertEqual(team_add, self.cli.command("addteam Team2 Rocks", GM))
 
@@ -56,7 +56,7 @@ class TestEditTeams(TestCase):
 class TestAddTeam(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
 
     def test_add_team_is_gm(self):
         self.assertEqual(team_add, self.cli.command("addteam Team1 1234", GM), team_add_fail)
@@ -72,7 +72,8 @@ class TestAddTeam(TestCase):
 
     def test_add_team_before_game_created(self):
         self.cli.game = None
-        self.assertEqual(team_add_fail, self.cli.command("addteam Team1 1234", GM),
+        self.cli.game_maker.game = None
+        self.assertEqual("no game", self.cli.command("addteam Team1 1234", GM),
                          "add team only after game is created")
 
     def test_add_team_bad_args(self):
@@ -82,7 +83,7 @@ class TestAddTeam(TestCase):
 class TestRemoveTeam(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(team_add, self.cli.command("addteam Team2 02ka", GM), "setup failed")
         self.assertEqual(team_add, self.cli.command("addteam Team3 192j", GM), "setup failed")
@@ -108,7 +109,7 @@ class TestRemoveTeam(TestCase):
 class TestStartGame(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(team_add, self.cli.command("addteam Team2 02ka", GM), "setup failed")
         self.assertEqual(landmark_add,
@@ -128,7 +129,7 @@ class TestStartGame(TestCase):
 class TestEndGame(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual("Game Created", self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual("Game Created", self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
 
     def test_end_game_is_gm(self):
@@ -147,28 +148,28 @@ class TestCreate(TestCase):
 
     def test_create_is_gm(self):
         self.assertEqual(None, self.cli.game)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to Create Game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to Create Game")
 
     def test_create_in_progress_game(self):
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to Create Game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to Create Game")
         self.assertEqual(game_started, self.cli.command("start", GM), "Failed to Start Game")
-        self.assertEqual(game_failed, self.cli.command("create", GM), "Creation occurred with Game in Progress")
+        self.assertEqual(game_failed, self.cli.command("create test", GM), "Creation occurred with Game in Progress")
 
     def test_create_double_game(self):
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to Create Game")
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to Create Game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to Create Game")
+        self.assertEqual("Game already exists", self.cli.command("create test", GM), "Failed to Create Game")
 
     def test_create_after_end_game(self):
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to Create Game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to Create Game")
         self.assertEqual(game_started, self.cli.command("start", GM), "Failed to Start Game")
         self.assertEqual(game_ended, self.cli.command("end", GM), "Failed to End Game")
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to Create Game after Ending")
+        self.assertEqual(game_create, self.cli.command("create test2", GM), "Failed to Create Game after Ending")
 
 
 class TestChangePointPenalty(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to Create Game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to Create Game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
 
     def test_change_points_is_admin(self):
@@ -184,7 +185,7 @@ class TestChangePointPenalty(TestCase):
 class TestAddLandmark(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to Create Game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to Create Game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
 
     def test_add_landmark_is_gm(self):
@@ -208,6 +209,7 @@ class TestAddLandmark(TestCase):
 
     def test_add_landmark_before_game_created(self):
         self.cli.game = None
+        self.cli.game_maker.game = None
         self.assertEqual(landmark_add_fail,
                          self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
                          "add landmark only after game is created")
@@ -219,7 +221,7 @@ class TestAddLandmark(TestCase):
 class TestRemoveLandmark(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
@@ -250,7 +252,7 @@ class TestRemoveLandmark(TestCase):
 class TestEditLandmarkOrder(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
@@ -298,7 +300,7 @@ class TestEditLandmarkOrder(TestCase):
 class TestGetLandmarksIndex(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam team1 1234", GM), "setup failed")
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "L1" "New York" "Gift given by the French" "Statue of Liberty"',
@@ -323,7 +325,7 @@ class TestGetLandmarksIndex(TestCase):
 class TestEditLandmark(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
@@ -382,7 +384,7 @@ class TestEditLandmark(TestCase):
 class TestGetClue(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
@@ -408,7 +410,7 @@ class TestGetClue(TestCase):
 class TestGetQuestion(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam team1 1234", GM), "Setup failed")
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "New York" "Large Lady" "What is gift given by the French?" "Statue of Liberty"', GM),
@@ -428,7 +430,7 @@ class TestGetQuestion(TestCase):
 class TestQuitQuestion(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
@@ -457,7 +459,7 @@ class TestQuitQuestion(TestCase):
     def test_quit(self):
         self.cli.current_user = Team.objects.get(username="Team1")
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("Question Quit, Your Next Question: \n{}".format(question),
+        self.assertEqual(f"Question Quit, Your Next Question: \n{question}",
                          self.cli.command("giveup Team1 1526", "Team1"), "Could not quit question with proper login")
 
     def test_quit_bad_args(self):
@@ -468,7 +470,7 @@ class TestQuitQuestion(TestCase):
 class TestGetStatus(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(team_add, self.cli.command("addteam Team2 1526", GM), "setup failed")
         self.assertEqual(landmark_add,
@@ -523,7 +525,7 @@ class TestGetStatus(TestCase):
 class TestAnswerQuestion(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(team_add, self.cli.command("addteam Team2 1526", GM), "setup failed")
         self.assertEqual(landmark_add, self.cli.command(
@@ -549,43 +551,43 @@ class TestAnswerQuestion(TestCase):
 
     def test_answer_incorrect(self):
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark].question
-        self.assertEqual("Incorrect Answer! The Question Was: \n{}".format(question),
+        self.assertEqual(f"Incorrect Answer! The Question Was: \n{question}",
                          self.cli.command("answer 'this is so very wrong'", "Team1"),
                          "Incorrect answer did not print correct response")
 
     def test_answer_correct(self):
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
 
     def test_answer_correcttwice(self):
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer Grind", "Team1"), "Correct answer did not print correct response")
 
     def test_answer_last_question(self):
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer Grind", "Team1"), "Correct answer did not print correct response")
         self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer 'Last'", "Team1"),
                          "Correct answer did not print correct response")
 
     def test_answer_pass_last_question(self):
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer Grind", "Team1"), "Correct answer did not print correct response")
         self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer Last", "Team1"),
                          "Correct answer did not print correct response")
@@ -594,43 +596,43 @@ class TestAnswerQuestion(TestCase):
 
     def test_answer_right_wrong_right(self):
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark].question
-        self.assertEqual("Incorrect Answer! The Question Was: \n{}".format(question),
+        self.assertEqual(f"Incorrect Answer! The Question Was: \n{question}",
                          self.cli.command("answer 'this is so very wrong'", "Team1"),
                          "Incorrect answer did not print correct response")
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer 'Grind'", "Team1"), "Correct answer did not print correct response")
 
     def test_answer_team1_team2(self):
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
         self.cli.current_user = Team.objects.get(username="Team2")
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer 'Statue of Liberty'", "Team2"),
                          "Correct answer did not print correct response")
 
     def test_answer_correctteam1_incorrectteam2(self):
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer 'Grind'", "Team1"), "Correct answer did not print correct response")
         self.cli.current_user = Team.objects.get(username="Team2")
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark].question
-        self.assertEqual("Incorrect Answer! The Question Was: \n{}".format(question),
+        self.assertEqual(f"Incorrect Answer! The Question Was: \n{question}",
                          self.cli.command("answer 'this is so very wrong'", "Team2"),
                          "Incorrect answer did not print correct response")
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format(question),
+        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer 'Statue of Liberty'", "Team2"),
                          "Correct answer did not print correct response")
 
@@ -638,7 +640,7 @@ class TestAnswerQuestion(TestCase):
 class TestSnapShot(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
-        self.assertEqual(game_create, self.cli.command("create", GM), "Failed to create game")
+        self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(team_add, self.cli.command("addteam Team2 1526", GM), "setup failed")
         self.assertEqual(landmark_add,
@@ -650,10 +652,10 @@ class TestSnapShot(TestCase):
 
     def test_snapshot_multiple_teams(self):
         self.assertEqual(game_started, self.cli.command("start", GM), "Failed to start game.")
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format("Place we purchase coffee from"),
+        self.assertEqual("That is Correct! The Next Question is: \nPlace we purchase coffee from",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
-        self.assertEqual("That is Correct! The Next Question is: \n{}".format("Place we purchase coffee from"),
+        self.assertEqual("That is Correct! The Next Question is: \nPlace we purchase coffee from",
                          self.cli.command("answer 'Statue of Liberty'", "Team2"),
                          "Correct answer did not print correct response")
         self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer 'Grind'", "Team2"),
@@ -666,10 +668,10 @@ class TestSnapShot(TestCase):
                 total_time += t.time_delta
             total_time_list.append(total_time)
             team_points.append(team.points)
-        stat_str_team_1 = "Team: Team1\nYou Are On Landmark 2\nTime Taken For Landmarks: "\
-                          + str(total_time_list[0]) +"\nTotal Points: "+str(team_points[0])+"\n"
-        stat_str_team_2 = "Team: Team2\nYou Are On Landmark 2\nTime Taken For Landmarks: " \
-                          + str(total_time_list[1]) + "\nTotal Points: " + str(team_points[1]) + "\n"
+        stat_str_team_1 = "Team: Team1\nYou Are On Landmark 2\nTime Taken For Landmarks: {}\nTotal Points: {}\n".format(
+            total_time_list[0], team_points[0])
+        stat_str_team_2 = "Team: Team2\nYou Are On Landmark 2\nTime Taken For Landmarks: {}\nTotal Points: {}\n".format(
+            total_time_list[1], team_points[1])
         final_stat_str = stat_str_team_1 + stat_str_team_2
         self.assertEqual(final_stat_str, self.cli.command("snapshot", GM), "Failed to get snapshot!!")
 
