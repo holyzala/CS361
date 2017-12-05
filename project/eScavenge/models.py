@@ -256,12 +256,12 @@ class Game(models.Model):
                 total_time += t.time_delta
             if current_team.current_landmark < len(self.landmarks.all()):
                 stat_str = "Team: {}\nYou Are On Landmark {}\nTime Taken For Landmarks: {}\nTotal Points: {}\n"
-                stringList.append(stat_str.format(current_team.username, current_team.current_landmark + 1, total_time,
-                                                  current_team.points))
+                stringList.append(stat_str.format(current_team.username, current_team.current_landmark + 1,
+                                                  str(total_time).split(".")[0], current_team.points))
             else:  # on last landmark
                 stat_str = "Team: {}\nYou Are On Landmark {}\nTime Taken For Landmarks: {}\nTotal Points: {}\n"
-                stringList.append(stat_str.format(current_team.username, current_team.current_landmark, total_time,
-                                                  current_team.points))
+                stringList.append(stat_str.format(current_team.username, current_team.current_landmark,
+                                                  str(total_time).split(".")[0], current_team.points))
 
         return Errors.NO_ERROR, ''.join(stringList)
 
