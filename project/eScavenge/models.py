@@ -164,14 +164,17 @@ class Game(models.Model):
         return True
 
     def start(self):
-        now = timezone.now()
-        for team in self.teams.all():
-            team.clue_time = now
-            team.full_clean()
-            team.save()
-        self.started = True
-        self.full_clean()
-        self.save()
+        if not self.started:
+            now = timezone.now()
+            for team in self.teams.all():
+                team.clue_time = now
+                team.full_clean()
+                team.save()
+            self.started = True
+            self.full_clean()
+            self.save()
+            return Errors.GAME_STARTED
+        return Errors.ALREADY_STARTED
 
     def end(self):
         self.ended = True

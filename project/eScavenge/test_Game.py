@@ -114,8 +114,13 @@ class TestStartGame(TestCase):
         self.game.started = False
 
     def test_start_game(self):
+        self.assertEqual(Errors.GAME_STARTED, self.game.start(), "game already started")
+        self.assertTrue(self.game.started, "game in progress value not set")
+
+    def test_start_game_game_already_running(self):
         self.game.start()
         self.assertTrue(self.game.started, "game in progress value not set")
+        self.assertEqual(Errors.ALREADY_STARTED, self.game.start(), "game already started")
 
 
 class TestAddLandmark(TestCase):

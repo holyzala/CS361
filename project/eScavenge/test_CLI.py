@@ -122,6 +122,10 @@ class TestStartGame(TestCase):
     def test_start_game_is_not_gm(self):
         self.assertEqual(permission_denied, self.cli.command("start", "Team1"), "Only admin can not start a Game")
 
+    def test_start_game_game_already_started(self):
+        self.assertEqual(game_started, self.cli.command("start", GM), "Failed to start game")
+        self.assertEqual(game_already_started, self.cli.command("start", GM), "Failed to start game")
+
     def test_start_team_bad_args(self):
         self.assertEqual(invalid_param, self.cli.command("", GM), invalid_param)
 

@@ -100,10 +100,11 @@ def remove_landmark(self, args):
 
 @need_admin
 def start(self, _):
-    self.game.start()
-    if self.game.started:
+    ret = self.game.start()
+    if ret == Errors.GAME_STARTED:
         return game_started
-    return "Failed to start Game"
+    if ret == Errors.ALREADY_STARTED:
+        return game_already_started
 
 
 @need_admin
@@ -268,6 +269,7 @@ def quit_question(self, args):
     elif rtn == Errors.NO_GAME:
         return no_game_running
     return "Question Quit, Your Next Question: \n{}".format(self.game.get_team_landmark(self.current_user).question)
+
 
 
 def get_stats(self, args):
