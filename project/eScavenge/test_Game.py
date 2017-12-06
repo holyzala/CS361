@@ -359,10 +359,8 @@ class TestGameTeam(TestCase):
         self.team.clue_time = timezone.now()
         now = self.team.clue_time + datetime.timedelta(hours=1, minutes=4, seconds=25)
         self.game.started = True
-        self.assertEqual(self.game.get_status(now, self.team.username), 'Points:0;You Are On Landmark:1;' +
-                         'Current Landmark Elapsed Time:1:04:25;Time Taken For Landmarks:0:00:00',
-                         'get_status did not print the proper stats!')
-
+        stat_str = 'You are in place {} of {} teams\nPoints:{}\n;You are on Landmark:{} of {}\nCurrent Landmark Elapsed Time:{}\nTotal Time Taken:{}'
+        self.assertEqual(self.game.get_status(now, self.team.username),stat_str.format(1,1,0,1,3,"1:04:25","1:04:25"))
     def test_get_landmarks_index(self):
         landmarks = "0: lm1\n"
         landmarks += "1: lm2\n"
@@ -556,7 +554,8 @@ class TestAnswerQuit(TestCase):
         temp.clue_time = timezone.now()
         temp.save()
         now = temp.clue_time - datetime.timedelta(hours=1)
-        self.assertEqual('Points:0;You Are On Landmark:1;Current Landmark Elapsed Time:0:00:00;Time Taken For Landmarks:0:00:00',
+        stat_str = 'You are in place {} of {} teams\nPoints:{}\n;You are on Landmark:{} of {}\nCurrent Landmark Elapsed Time:{}\nTotal Time Taken:{}'
+        self.assertEqual(stat_str.format(1,2,0,1,3,"0:00:00","0:00:00"),
                          self.game.get_status(now, 'abc'),
                          'get_status did not print the proper stats!')
 
