@@ -1,5 +1,3 @@
-import datetime
-
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.test import TestCase
@@ -182,10 +180,12 @@ class TestChangePointPenalty(TestCase):
         self.assertEqual(point_change, self.cli.command("setpointpenalty 10", GM), "Admin couldn't change points")
 
     def test_change_points_no_admin(self):
-        self.assertEqual(permission_denied, self.cli.command("setpointpenalty 10", "Team1"), "Non-admin user changing points")
+        self.assertEqual(permission_denied, self.cli.command("setpointpenalty 10", "Team1"),
+                         "Non-admin user changing points")
 
     def test_change_points_invalid(self):
-        self.assertEqual("Invalid parameters", self.cli.command("setpointpenalty random", GM), "Invalid parameters accepted")
+        self.assertEqual("Invalid parameters", self.cli.command("setpointpenalty random", GM),
+                         "Invalid parameters accepted")
 
 
 class TestAddLandmark(TestCase):
@@ -201,8 +201,7 @@ class TestAddLandmark(TestCase):
 
     def test_add_landmark_not_gm(self):
         self.assertEqual(permission_denied,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"',
-                                          "Team1"),
+                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', "Team1"),
                          "Only admin can add landmarks")
 
     def test_add_landmark_duplicate(self):
@@ -336,8 +335,7 @@ class TestEditLandmark(TestCase):
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
                          landmark_add_fail)
-        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"',
-                                                        GM),
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM),
                          landmark_add_fail)
 
     def test_edit_landmark_is_gm(self):
@@ -441,8 +439,7 @@ class TestQuitQuestion(TestCase):
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
                          landmark_add_fail)
-        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"',
-                                                        GM),
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM),
                          landmark_add_fail)
         self.assertEqual(game_started, self.cli.command("start", GM), "Failed to start game.")
 
@@ -482,8 +479,7 @@ class TestGetStatus(TestCase):
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
                          landmark_add_fail)
-        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"',
-                                                        GM),
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM),
                          landmark_add_fail)
         self.assertEqual(game_started, self.cli.command("start", GM), "Failed to start game.")
 
@@ -509,8 +505,9 @@ class TestGetStatus(TestCase):
                                          str(tt + current_time_calc).split(".")[0]),
                          self.cli.command("getstats Team1", "Team1"), "Admin Couldn't user get stats")
 
-        self.assertEqual(stat_str.format(1,2,self.cli.current_user.points, self.cli.current_user.current_landmark+1,2,
-                                         str(current_time_calc).split(".")[0],str(tt +  current_time_calc).split(".")[0]),
+        self.assertEqual(stat_str.format(1, 2, self.cli.current_user.points, self.cli.current_user.current_landmark+1,
+                                         2, str(current_time_calc).split(".")[0],
+                                         str(tt + current_time_calc).split(".")[0]),
                          self.cli.command("getstats", "Team1"), "Admin Couldn't user get stats")
 
     def test_user(self):
@@ -532,7 +529,8 @@ class TestGetStatus(TestCase):
                          "Get Stats wroked with noone logged in")
 
     def test_bad_args(self):
-        self.assertEqual("Invalid parameters", self.cli.command("getstats Team1 blah", "Team1"), "CLI took improper args")
+        self.assertEqual("Invalid parameters", self.cli.command("getstats Team1 blah", "Team1"),
+                         "CLI took improper args")
 
 
 class TestAnswerQuestion(TestCase):
@@ -544,7 +542,7 @@ class TestAnswerQuestion(TestCase):
         self.assertEqual(landmark_add, self.cli.command(
             'addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM), landmark_add_fail)
         self.assertEqual(landmark_add, self.cli.command(
-            'addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"',GM),landmark_add_fail)
+            'addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM),landmark_add_fail)
         self.assertEqual(landmark_add, self.cli.command(
             'addlandmark "ldm3" "Last Mark" "The Last Answer" "Last"', GM), landmark_add_fail)
         self.assertEqual(game_started, self.cli.command("start", GM), "Failed to start game.")
@@ -659,8 +657,7 @@ class TestSnapShot(TestCase):
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
                          landmark_add_fail)
-        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"',
-                                                        GM),
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM),
                          landmark_add_fail)
 
     def test_snapshot_multiple_teams(self):
