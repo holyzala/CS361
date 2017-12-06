@@ -3,6 +3,8 @@ from datetime import timedelta
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models, IntegrityError
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from .Errors import Errors
@@ -77,7 +79,7 @@ class Game(models.Model):
         if self.started:
             return False
         try:
-            LandmarkFactory.get_landmark(name, clue, question, answer, self, len(self.landmarks.all()))
+            LandmarkFactory.get_landmark(name, clue, question, answer, self, self.landmarks.all().count())
         except IntegrityError:
             return False
         return True
@@ -232,26 +234,25 @@ class Game(models.Model):
             team.penalty_count = 0
             team.full_clean()
             team.save()
-            if len(self.landmarks.all()) == team.current_landmark:
+            if self.landmarks.all().count() == team.current_landmark:
                 return Errors.FINAL_ANSWER
             return Errors.NO_ERROR
 
     def get_status(self, now, username):
         current_team = self.teams.get(username=username)
         current_time_calc = max(timedelta(0), now - current_team.clue_time)
-        total_time = timedelta(days=0, hours=0, minutes=0, seconds=0)
-        for t in current_team.time_log.all():
-            total_time += t.time_delta
-        scoreboard = self.teams.order_by("-points")
-        place = 0
-        for p in scoreboard:
-            place+=1
-            if (p.username == current_team.username):
-                break
-        if current_team.current_landmark <= len(self.landmarks.all()):
-            stat_str = 'You are in place {} of {} teams\nPoints:{}\n;You are on Landmark:{} of {}\nCurrent Landmark Elapsed Time:{}\nTotal Time Taken:{}'
-            return stat_str.format(place,len(self.teams.all()),current_team.points, current_team.current_landmark+1, len(self.landmarks.all()),
-                                   str(current_time_calc).split(".")[0],str(total_time + current_time_calc).split(".")[0])
+        total_time = current_team.time_log.aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
+        place = self.teams.filter(points__gt=current_team.points).count() + 1
+        if current_team.current_landmark <= self.landmarks.all().count():
+            stat_str = ('You are in place {} of {} teams\n'
+                        'Points:{}\n'
+                        'You are on Landmark:{} of {}\n'
+                        'Current Landmark Elapsed Time:{}\n'
+                        'Total Time Taken:{}')
+            return stat_str.format(place, self.teams.all().count(), current_team.points,
+                                   current_team.current_landmark+1, self.landmarks.all().count(),
+                                   str(current_time_calc).split(".")[0],
+                                   str(total_time + current_time_calc).split(".")[0])
         return f'Final Points: {current_team.points}'
 
     def get_snapshot(self):
@@ -260,10 +261,8 @@ class Game(models.Model):
         stringList = []
 
         for current_team in self.teams.all():
-            total_time = timedelta(days=0, hours=0, minutes=0, seconds=0)
-            for t in current_team.time_log.all():
-                total_time += t.time_delta
-            if current_team.current_landmark < len(self.landmarks.all()):
+            total_time = current_team.time_log.aggregate(test=Coalesce(Sum("time_delta"), 0))['test']
+            if current_team.current_landmark < self.landmarks.all().count():
                 stat_str = "Team: {}\nYou Are On Landmark {}\nTime Taken For Landmarks: {}\nTotal Points: {}\n"
                 stringList.append(stat_str.format(current_team.username, current_team.current_landmark + 1,
                                                   str(total_time).split(".")[0], current_team.points))

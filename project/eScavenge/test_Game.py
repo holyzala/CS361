@@ -363,8 +363,14 @@ class TestGameTeam(TestCase):
         self.team.clue_time = timezone.now()
         now = self.team.clue_time + datetime.timedelta(hours=1, minutes=4, seconds=25)
         self.game.started = True
-        stat_str = 'You are in place {} of {} teams\nPoints:{}\n;You are on Landmark:{} of {}\nCurrent Landmark Elapsed Time:{}\nTotal Time Taken:{}'
-        self.assertEqual(self.game.get_status(now, self.team.username),stat_str.format(1,1,0,1,3,"1:04:25","1:04:25"))
+        stat_str = ('You are in place {} of {} teams\n'
+                    'Points:{}\n'
+                    'You are on Landmark:{} of {}\n'
+                    'Current Landmark Elapsed Time:{}\n'
+                    'Total Time Taken:{}')
+        self.assertEqual(self.game.get_status(now, self.team.username),
+                         stat_str.format(1, 1, 0, 1, 3, "1:04:25", "1:04:25"))
+
     def test_get_landmarks_index(self):
         landmarks = "0: lm1\n"
         landmarks += "1: lm2\n"
@@ -539,7 +545,7 @@ class TestGameTeam(TestCase):
         self.assertEqual(self.team.clue_time, now, "Clue Time Did Not Update!")
         temp = self.team.time_log.first()
         self.assertEqual(temp.time_delta, now - before_time,
-                         "Time Log Did Not Save The Correct Time")  # This may not work properly
+                         "Time Log Did Not Save The Correct Time")
 
 
 class TestAnswerQuit(TestCase):
@@ -556,11 +562,17 @@ class TestAnswerQuit(TestCase):
     def test_get_status_negative_time(self):
         temp = self.game.teams.get(username='abc')
         temp.clue_time = timezone.now()
+        temp.points = 20
         temp.save()
         now = temp.clue_time - datetime.timedelta(hours=1)
-        stat_str = 'You are in place {} of {} teams\nPoints:{}\n;You are on Landmark:{} of {}\nCurrent Landmark Elapsed Time:{}\nTotal Time Taken:{}'
-        self.assertEqual(stat_str.format(1,2,0,1,3,"0:00:00","0:00:00"),
-                         self.game.get_status(now, 'abc'),
+        stat_str = ('You are in place {} of {} teams\n'
+                    'Points:{}\n'
+                    'You are on Landmark:{} of {}\n'
+                    'Current Landmark Elapsed Time:{}\n'
+                    'Total Time Taken:{}')
+        self.assertEqual(stat_str.format(1, 2, 20, 1, 3, "0:00:00", "0:00:00"), self.game.get_status(now, 'abc'),
+                         'get_status did not print the proper stats!')
+        self.assertEqual(stat_str.format(2, 2, 0, 1, 3, "0:00:00", "0:00:00"), self.game.get_status(now, 'ghi'),
                          'get_status did not print the proper stats!')
 
     def test_answer_question_negative_time(self):
