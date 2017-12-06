@@ -496,15 +496,15 @@ class TestGetStatus(TestCase):
         tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
         for t in self.cli.game.teams.get(username="Team1").time_log.all():
             tt += t
-        currenttimecalc = (timezone.now() - self.cli.game.teams.get(username="Team1").clue_time)
-        stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
+        current_time_calc = (timezone.now() - self.cli.game.teams.get(username="Team1").clue_time)
+        stat_str = 'You are in place {} of {} teams\nPoints:{}\n;You are on Landmark:{} of {}\nCurrent Landmark Elapsed Time:{}\nTotal Time Taken:{}'
         self.cli.current_user = Team.objects.get(username="Team1")
-        self.assertEqual(stat_str.format(self.cli.current_user.points, self.cli.current_user.current_landmark+1,
-                                         str(currenttimecalc).split(".")[0], tt),
+        self.assertEqual(stat_str.format(1,2,self.cli.current_user.points, self.cli.current_user.current_landmark+1,2,
+                                         str(current_time_calc).split(".")[0],str(tt + current_time_calc).split(".")[0]),
                          self.cli.command("getstats Team1", "Team1"), "Admin Couldn't user get stats")
 
-        self.assertEqual(stat_str.format(self.cli.current_user.points, self.cli.current_user.current_landmark+1,
-                                         str(currenttimecalc).split(".")[0], tt),
+        self.assertEqual(stat_str.format(1,2,self.cli.current_user.points, self.cli.current_user.current_landmark+1,2,
+                                         str(current_time_calc).split(".")[0],str(tt +  current_time_calc).split(".")[0]),
                          self.cli.command("getstats", "Team1"), "Admin Couldn't user get stats")
 
     def test_user(self):
@@ -512,11 +512,11 @@ class TestGetStatus(TestCase):
         for t in self.cli.game.teams.get(username="Team1").time_log.all():
             tt += t
         current_time_calc = (timezone.now() - self.cli.game.teams.get(username="Team1").clue_time)
-        stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
-        self.assertEqual(stat_str.format(self.cli.game.get_team("Team1").points,
-                                         self.cli.game.get_team("Team1").current_landmark + 1,
-                                         str(current_time_calc).split(".")[0], tt),
-                         self.cli.command("getstats Team1", GM), "Admin Couldn't get user stats")
+        stat_str = 'You are in place {} of {} teams\nPoints:{}\n;You are on Landmark:{} of {}\nCurrent Landmark Elapsed Time:{}\nTotal Time Taken:{}'
+        self.cli.current_user = Team.objects.get(username="Team1")
+        self.assertEqual(stat_str.format(1,2,self.cli.current_user.points, self.cli.current_user.current_landmark+1,2,
+                                         str(current_time_calc).split(".")[0],str(tt +  current_time_calc).split(".")[0]),
+                        self.cli.command("getstats Team1", "Team1"), "User Couldn't user get stats")
 
     def test_not_user(self):
         self.assertEqual("You cannot see another users stats", self.cli.command("getstats Team1", "Team2"),

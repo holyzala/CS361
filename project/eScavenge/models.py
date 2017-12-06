@@ -242,10 +242,16 @@ class Game(models.Model):
         total_time = timedelta(days=0, hours=0, minutes=0, seconds=0)
         for t in current_team.time_log.all():
             total_time += t.time_delta
+        scoreboard = self.teams.order_by("-points")
+        place = 0
+        for p in scoreboard:
+            place+=1
+            if (p.username == current_team.username):
+                break
         if current_team.current_landmark <= len(self.landmarks.all()):
-            stat_str = 'Points:{};You Are On Landmark:{};Current Landmark Elapsed Time:{};Time Taken For Landmarks:{}'
-            return stat_str.format(current_team.points, current_team.current_landmark+1,
-                                   str(current_time_calc).split(".")[0], total_time)
+            stat_str = 'You are in place {} of {} teams\nPoints:{}\n;You are on Landmark:{} of {}\nCurrent Landmark Elapsed Time:{}\nTotal Time Taken:{}'
+            return stat_str.format(place,len(self.teams.all()),current_team.points, current_team.current_landmark+1, len(self.landmarks.all()),
+                                   str(current_time_calc).split(".")[0],str(total_time + current_time_calc).split(".")[0])
         return f'Final Points: {current_team.points}'
 
     def get_snapshot(self):
