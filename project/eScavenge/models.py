@@ -79,7 +79,7 @@ class Game(models.Model):
         if self.started:
             return False
         try:
-            LandmarkFactory.get_landmark(name, clue, question, answer, self, self.landmarks.all().count())
+            LandmarkFactory.get_landmark(name, clue, question, answer, self)
         except IntegrityError:
             return False
         return True
@@ -89,18 +89,14 @@ class Game(models.Model):
             return False
         try:
             self.landmarks.get(name=name).delete()
-            for i, landmark in enumerate(self.landmarks.all().order_by("order")):
-                landmark.order = i
-                landmark.full_clean()
-                landmark.save()
         except Landmark.DoesNotExist:
             return False
         return True
 
     def get_landmarks_index(self):
         landmarks = ""
-        for landmark in self.landmarks.all().order_by("order"):
-            landmarks += f"{landmark.order}: {landmark.name}\n"
+        for i, landmark in enumerate(self.landmarks.all()):
+            landmarks += f"{i}: {landmark.name}\n"
         return landmarks
 
     def modify_landmark(self, oldname, name=None, clue=None, question=None, answer=None):
@@ -125,23 +121,10 @@ class Game(models.Model):
         if self.started or self.ended:
             return Errors.CAN_ONLY_EDIT_ORDER_WHEN_GAME_IS_NEW
         try:
-            mover = self.landmarks.get(order=oldindex)
-            mover.order = newindex
-            mover.save()
-            for i, landmark in enumerate(self.landmarks.all().order_by("order")):
-                if (i < oldindex and i < newindex) or (i > oldindex and i > newindex):
-                    continue
-                if landmark == mover:
-                    continue
-                if newindex < oldindex != i:
-                    landmark.order += 1
-                elif oldindex < newindex:
-                    landmark.order -= 1
-                else:
-                    continue
-                landmark.full_clean()
-                landmark.save()
-        except models.ObjectDoesNotExist:
+            order = list(self.get_landmark_order())
+            order.insert(newindex, order.pop(oldindex))
+            self.set_landmark_order(order)
+        except IndexError:
             return Errors.LANDMARK_INDEX
         return Errors.NO_ERROR
 
@@ -315,7 +298,9 @@ class Landmark(models.Model):
     question = models.TextField()
     answer = models.TextField()
     game = models.ForeignKey(Game, on_delete=models.CASCADE, null=True, related_name='landmarks')
-    order = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0)])
+
+    class Meta:
+        order_with_respect_to = 'game'
 
     def check_answer(self, answer):
         return self.answer.lower() == answer.lower()
@@ -334,7 +319,7 @@ class GMFactory:
     def get_gm(self):
         return self.GameMaker()
 
-    class GameMaker():
+    class GameMaker:
         def __init__(self):
             self.username = "gamemaker"
             self.__password = "1234"
@@ -352,8 +337,8 @@ class GMFactory:
 
 class LandmarkFactory:
     @staticmethod
-    def get_landmark(name, clue, question, answer, game, order):
-        return Landmark.objects.create(name=name, clue=clue, question=question, answer=answer, game=game, order=order)
+    def get_landmark(name, clue, question, answer, game):
+        return Landmark.objects.create(name=name, clue=clue, question=question, answer=answer, game=game)
 
 
 def make_game(name):
