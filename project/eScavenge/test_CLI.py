@@ -1,5 +1,7 @@
 import datetime
 
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from django.test import TestCase
 from django.utils import timezone
 
@@ -492,15 +494,19 @@ class TestGetStatus(TestCase):
 
         self.assertEqual(no_game_running, self.cli.command("getstats", "Team1"),
                          "Get Stats wroked with noone logged in")
+
     def test_admin(self):
-        tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
-        for t in self.cli.game.teams.get(username="Team1").time_log.all():
-            tt += t
-        current_time_calc = (timezone.now() - self.cli.game.teams.get(username="Team1").clue_time)
-        stat_str = 'You are in place {} of {} teams\nPoints:{}\n;You are on Landmark:{} of {}\nCurrent Landmark Elapsed Time:{}\nTotal Time Taken:{}'
-        self.cli.current_user = Team.objects.get(username="Team1")
-        self.assertEqual(stat_str.format(1,2,self.cli.current_user.points, self.cli.current_user.current_landmark+1,2,
-                                         str(current_time_calc).split(".")[0],str(tt + current_time_calc).split(".")[0]),
+        user = self.cli.game.teams.get(username='Team1')
+        tt = user.time_log.all().aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
+        current_time_calc = (timezone.now() - user.clue_time)
+        stat_str = ('You are in place {} of {} teams\n'
+                    'Points:{}\n'
+                    'You are on Landmark:{} of {}\n'
+                    'Current Landmark Elapsed Time:{}\n'
+                    'Total Time Taken:{}')
+        self.assertEqual(stat_str.format(1, 2, user.points, user.current_landmark+1, 2,
+                                         str(current_time_calc).split(".")[0],
+                                         str(tt + current_time_calc).split(".")[0]),
                          self.cli.command("getstats Team1", "Team1"), "Admin Couldn't user get stats")
 
         self.assertEqual(stat_str.format(1,2,self.cli.current_user.points, self.cli.current_user.current_landmark+1,2,
@@ -508,15 +514,18 @@ class TestGetStatus(TestCase):
                          self.cli.command("getstats", "Team1"), "Admin Couldn't user get stats")
 
     def test_user(self):
-        tt = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
-        for t in self.cli.game.teams.get(username="Team1").time_log.all():
-            tt += t
-        current_time_calc = (timezone.now() - self.cli.game.teams.get(username="Team1").clue_time)
-        stat_str = 'You are in place {} of {} teams\nPoints:{}\n;You are on Landmark:{} of {}\nCurrent Landmark Elapsed Time:{}\nTotal Time Taken:{}'
-        self.cli.current_user = Team.objects.get(username="Team1")
-        self.assertEqual(stat_str.format(1,2,self.cli.current_user.points, self.cli.current_user.current_landmark+1,2,
-                                         str(current_time_calc).split(".")[0],str(tt +  current_time_calc).split(".")[0]),
-                        self.cli.command("getstats Team1", "Team1"), "User Couldn't user get stats")
+        user = self.cli.game.teams.get(username='Team1')
+        tt = user.time_log.all().aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
+        current_time_calc = (timezone.now() - user.clue_time)
+        stat_str = ('You are in place {} of {} teams\n'
+                    'Points:{}\n'
+                    'You are on Landmark:{} of {}\n'
+                    'Current Landmark Elapsed Time:{}\n'
+                    'Total Time Taken:{}')
+        self.assertEqual(stat_str.format(1, 2, user.points, user.current_landmark+1, 2,
+                                         str(current_time_calc).split(".")[0],
+                                         str(tt + current_time_calc).split(".")[0]),
+                         self.cli.command("getstats Team1", "Team1"), "User Couldn't user get stats")
 
     def test_not_user(self):
         self.assertEqual("You cannot see another users stats", self.cli.command("getstats Team1", "Team2"),
@@ -667,9 +676,7 @@ class TestSnapShot(TestCase):
         total_time_list = []
         team_points = []
         for team in self.cli.game.teams.all():
-            total_time = datetime.timedelta(days=0, hours=0, minutes=0, seconds=0)
-            for t in team.time_log.all():
-                total_time += t.time_delta
+            total_time = team.time_log.aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
             total_time_list.append(total_time)
             team_points.append(team.points)
         stat_str_team_1 = "Team: Team1\nYou Are On Landmark 2\nTime Taken For Landmarks: {}\nTotal Points: {}\n".format(
