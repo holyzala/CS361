@@ -171,6 +171,8 @@ class Game(models.Model):
             return Errors.NO_GAME
         if not team.login(team.username, password):
             return Errors.INVALID_LOGIN
+        if self.landmarks.all().count() <= team.current_landmark:
+            return Errors.LANDMARK_INDEX
         team.current_landmark += 1
         temp = None
         try:
@@ -186,6 +188,8 @@ class Game(models.Model):
         team.penalty_count = 0
         team.full_clean()
         team.save()
+        if self.landmarks.all().count() == team.current_landmark:
+            return Errors.FINAL_ANSWER
         return Errors.NO_ERROR
 
     def answer_question(self, now, team, answer):
@@ -243,9 +247,17 @@ class Game(models.Model):
                         'Current Landmark Elapsed Time:{}\n'
                         'Total Time Taken:{}')
             return stat_str.format(place, self.teams.all().count(), current_team.points,
+                        current_team.current_landmark, self.landmarks.all().count(),
+                        str(current_time_calc).split(".")[0],
+                        str(total_time + current_time_calc).split(".")[0])
+        if current_team.current_landmark > self.landmarks.all().count(): #When The game is done
+            stat_str = ('You are in place {} of {} teams\n'
+                        'Points:{}\n'
+                        'You are on Landmark:{} of {}\n'
+                        'Total Time Taken:{}')
+            return stat_str.format(place, self.teams.all().count(), current_team.points,
                                    current_team.current_landmark, self.landmarks.all().count(),
-                                   str(current_time_calc).split(".")[0],
-                                   str(total_time + current_time_calc).split(".")[0])
+                                   str(total_time).split(".")[0])
         return f'Final Points: {current_team.points}'
 
     def get_snapshot(self):

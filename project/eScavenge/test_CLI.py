@@ -469,7 +469,13 @@ class TestQuitQuestion(TestCase):
         self.assertEqual("Proper Format giveup <username> <password>", self.cli.command("giveup teamp", "Team1"),
                          "Not enough args did not show correct message")
 
-
+    #def test_quit_last(self):
+     #    self.cli.current_user = Team.objects.get(username="Team1")
+      #   self.cli.current_user.current_landmark = 2
+         
+       #  self.assertEqual("Qu",
+        #                 self.cli.command("giveup Team1 1526", "Team1"), "Could not quit question with proper login")
+        
 class TestGetStatus(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
