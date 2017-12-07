@@ -589,8 +589,16 @@ class TestAnswerQuestion(TestCase):
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer Grind", "Team1"), "Correct answer did not print correct response")
-        self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer 'Last'", "Team1"),
+        stat_str = ('You are in place {} of {} teams\n'
+                    'Points:{}\n'
+                    'You are on Landmark:{} of {}\n'
+                    'Current Landmark Elapsed Time:{}\n'
+                    'Total Time Taken:{}')
+        self.assertEqual("That is correct! You have completed the hunt! Here are your final stats:\n" + stat_str.format(1,2,300,3,3,"0:00:00","0:00:00"), self.cli.command("answer 'Last'", "Team1"),
                          "Correct answer did not print correct response")
+        
+        #self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer 'Last'", "Team1"),
+         #                "Correct answer did not print correct response")
 
     def test_answer_pass_last_question(self):
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
@@ -600,8 +608,15 @@ class TestAnswerQuestion(TestCase):
         question = self.cli.game.landmarks.all()[self.cli.current_user.current_landmark+1].question
         self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
                          self.cli.command("answer Grind", "Team1"), "Correct answer did not print correct response")
-        self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer Last", "Team1"),
+        stat_str = ('You are in place {} of {} teams\n'
+                    'Points:{}\n'
+                    'You are on Landmark:{} of {}\n'
+                    'Current Landmark Elapsed Time:{}\n'
+                    'Total Time Taken:{}')
+        self.assertEqual("That is correct! You have completed the hunt! Here are your final stats:\n" + stat_str.format(1,2,300,3,3,"0:00:00","0:00:00"), self.cli.command("answer 'Last'", "Team1"),
                          "Correct answer did not print correct response")
+        #self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer Last", "Team1"),
+         #                "Correct answer did not print correct response")
         self.assertEqual("There are no more landmarks!", self.cli.command("answer 'Last'", "Team1"),
                          "Correct answer did not print correct response")
 
@@ -668,7 +683,12 @@ class TestSnapShot(TestCase):
         self.assertEqual("That is Correct! The Next Question is: \nPlace we purchase coffee from",
                          self.cli.command("answer 'Statue of Liberty'", "Team2"),
                          "Correct answer did not print correct response")
-        self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer 'Grind'", "Team2"),
+        stat_str = ('You are in place {} of {} teams\n'
+                    'Points:{}\n'
+                    'You are on Landmark:{} of {}\n'
+                    'Current Landmark Elapsed Time:{}\n'
+                    'Total Time Taken:{}')
+        self.assertEqual("That is correct! You have completed the hunt! Here are your final stats:\n" + stat_str.format(1,2,200,2,2,"0:00:00","0:00:00"), self.cli.command("answer 'Grind'", "Team2"),
                          "Correct answer did not print correct response")
         total_time_list = []
         team_points = []

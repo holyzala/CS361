@@ -226,7 +226,7 @@ class Game(models.Model):
         current_time_calc = max(timedelta(0), now - current_team.clue_time)
         total_time = current_team.time_log.aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
         place = self.teams.filter(points__gt=current_team.points).count() + 1
-        if current_team.current_landmark <= self.landmarks.all().count():
+        if current_team.current_landmark < self.landmarks.all().count():
             stat_str = ('You are in place {} of {} teams\n'
                         'Points:{}\n'
                         'You are on Landmark:{} of {}\n'
@@ -234,6 +234,16 @@ class Game(models.Model):
                         'Total Time Taken:{}')
             return stat_str.format(place, self.teams.all().count(), current_team.points,
                                    current_team.current_landmark+1, self.landmarks.all().count(),
+                                   str(current_time_calc).split(".")[0],
+                                   str(total_time + current_time_calc).split(".")[0])
+        if current_team.current_landmark == self.landmarks.all().count(): #When on final landmark, no need to add 1 to landmark index on print
+            stat_str = ('You are in place {} of {} teams\n'
+                        'Points:{}\n'
+                        'You are on Landmark:{} of {}\n'
+                        'Current Landmark Elapsed Time:{}\n'
+                        'Total Time Taken:{}')
+            return stat_str.format(place, self.teams.all().count(), current_team.points,
+                                   current_team.current_landmark, self.landmarks.all().count(),
                                    str(current_time_calc).split(".")[0],
                                    str(total_time + current_time_calc).split(".")[0])
         return f'Final Points: {current_team.points}'
