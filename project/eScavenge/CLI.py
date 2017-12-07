@@ -309,7 +309,8 @@ def answer_question(self, args):
     elif correct_answer == Errors.NO_GAME:
         return no_game_running
     elif correct_answer == Errors.FINAL_ANSWER:
-        return "That is Correct! There are no more landmarks!"
+        finstr = "That is correct! You have completed the hunt! Here are your final stats:\n{}"
+        return finstr.format(self.game.get_status(timezone.now(), self.current_user.username))
     elif correct_answer == Errors.LANDMARK_INDEX:
         return "There are no more landmarks!"
     return "Incorrect Answer! The Question Was: \n{}".format(self.game.get_team_landmark(self.current_user).question)
