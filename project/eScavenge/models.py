@@ -300,7 +300,7 @@ class Team(models.Model):
     username = models.TextField(primary_key=True)
     password = models.TextField()
     points = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0)])
-    current_landmark = models.ForeignKey(Landmark, blank=True, null=True)
+    current_landmark = models.ForeignKey(Landmark, on_delete=models.CASCADE, blank=True, null=True)
     penalty_count = models.IntegerField(default=0)
     clue_time = models.DateTimeField(default=timezone.now)
     game = models.ForeignKey(Game, on_delete=models.CASCADE, blank=True, null=True, related_name='teams')
