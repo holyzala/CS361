@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from .CLI import CLI, COMMANDS
-from .models import Game, GMFactory, Team
+from .models import GMFactory, Team
 
 GM = GMFactory().get_gm()
 
 
 def index(request):
-    return render(request, 'index.html', {"message":""})
+    return render(request, 'index.html', {"message": ""})
 
 
 def validate(request):

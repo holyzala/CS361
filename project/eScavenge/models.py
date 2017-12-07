@@ -32,9 +32,6 @@ class Game(models.Model):
         except Team.DoesNotExist:
             return None
 
-    def get_team_landmark(self, team):
-        return team.current_landmark
-
     def get_team_question(self, team):
         if not self.started or self.ended:
             return no_game_running
