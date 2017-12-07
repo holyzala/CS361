@@ -268,6 +268,11 @@ def quit_question(self, args):
         return permission_denied
     elif rtn == Errors.NO_GAME:
         return no_game_running
+    elif rtn == Errors.FINAL_ANSWER:
+        finstr = "Question quit! You have completed the hunt! Here are your final stats:\n{}"
+        return finstr.format(self.game.get_status(timezone.now(), self.current_user.username))
+    elif rtn == Errors.LANDMARK_INDEX:
+        return "There are no more questions!"
     return "Question Quit, Your Next Question: \n{}".format(self.game.get_team_landmark(self.current_user).question)
 
 

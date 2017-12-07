@@ -580,6 +580,7 @@ class TestQuitAndStatsProper(TestCase):
         temp = self.game.teams.get(username='abc')
         temp.points = 20
         temp.clue_time = timezone.now()
+        temp.landmark_index = 2
         temp.save()
         temp = self.game.teams.get(username='ghi')
         temp.points = 30
@@ -616,8 +617,16 @@ class TestQuitAndStatsProper(TestCase):
                          datetime.timedelta(days=0, hours=0, minutes=0, seconds=0),
                          "Time Log did not Save The Correct Time")
         self.assertEqual(self.game.teams.get(username='abc').clue_time, now, "Clue Time Did Not Update!")
-
-
+    def test_quit_last_question(self):
+        temp = self.game.teams.get(username='abc')
+        temp.current_landmark = 2
+        self.assertEqual(Errors.FINAL_ANSWER,self.game.quit_question(timezone.now(),temp,"def"),"quit_question did not notice it was the final question")
+        self.assertEqual(temp.current_landmark,3,"Quit did not properly increase landmark")
+    def test_quit_question_no_more(self):
+        temp = self.game.teams.get(username='abc')
+        temp.current_landmark = 3
+        self.assertEqual(Errors.LANDMARK_INDEX,self.game.quit_question(timezone.now(),temp,"def"),"quit_question did not notice team has no more questions")
+        self.assertEqual(temp.current_landmark,3, "Quit incrimented landmark, even though there were none left")
 class TestGameSnapShot(TestCase):
     def setUp(self):
         self.game = TEST_FACTORY('test')
