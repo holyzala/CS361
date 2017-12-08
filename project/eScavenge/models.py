@@ -176,26 +176,28 @@ class Game(models.Model):
             return Errors.NO_GAME
         if not team.login(team.username, password):
             return Errors.INVALID_LOGIN
+        next = None
         try:
-            team.current_landmark = team.current_landmark.get_next_in_order()
+            next = team.current_landmark.get_next_in_order()
         except Landmark.DoesNotExist:
-            team.current_landmark = None
-            team.save()
-            return Errors.FINAL_ANSWER
+            pass
         except AttributeError:
             return Errors.LANDMARK_INDEX
         temp = None
         try:
-            temp = TimeDelta.objects.create(time_delta=now - team.clue_time, team=team)
+            temp = LandmarkStat.objects.create(time_delta=now - team.clue_time, team=team,
+                                               landmark=team.current_landmark, quit=True)
             temp.full_clean()
             temp.save()
         except ValidationError:
             temp.delete()
-            temp = TimeDelta.objects.create(time_delta=timedelta(0), team=team)
+            temp = LandmarkStat.objects.create(time_delta=timedelta(0), team=team, landmark=team.current_landmark,
+                                               quit=True)
             temp.full_clean()
             temp.save()
         team.clue_time = now
         team.penalty_count = 0
+        team.current_landmark = next
         team.full_clean()
         team.save()
         if not team.current_landmark:
@@ -212,18 +214,21 @@ class Game(models.Model):
         except AttributeError:
             return Errors.LANDMARK_INDEX
         temp = None
+        if self.timer:
+            team.penalty_count += int(((now - team.clue_time) / self.timer)) * self.penalty_time
+        points = max(0, self.landmark_points - team.penalty_count)
         try:
-            temp = TimeDelta.objects.create(time_delta=now-team.clue_time, team=team)
+            temp = LandmarkStat.objects.create(time_delta=now - team.clue_time, team=team,
+                                               landmark=team.current_landmark, points=points, quit=False)
             temp.full_clean()
             temp.save()
         except ValidationError:
             temp.delete()
-            temp = TimeDelta.objects.create(time_delta=timedelta(0), team=team)
+            temp = LandmarkStat.objects.create(time_delta=timedelta(0), team=team, landmark=team.current_landmark,
+                                               points=points, quit=False)
             temp.full_clean()
             temp.save()
-        if self.timer:
-            team.penalty_count += int(((now - team.clue_time) / self.timer)) * self.penalty_time
-        team.points += max(0, self.landmark_points - team.penalty_count)
+        team.points += points
         team.clue_time = now
         team.penalty_count = 0
         team.full_clean()
@@ -239,7 +244,7 @@ class Game(models.Model):
     def get_status(self, now, username):
         current_team = self.teams.get(username=username)
         current_time_calc = max(timedelta(0), now - current_team.clue_time)
-        total_time = current_team.time_log.aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
+        total_time = current_team.history.aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
         place = self.teams.filter(points__gt=current_team.points).count() + 1
         try:
             lm_place = list(self.get_landmark_order()).index(current_team.current_landmark.name) + 1
@@ -265,7 +270,7 @@ class Game(models.Model):
         stringList = []
 
         for current_team in self.teams.all():
-            total_time = current_team.time_log.aggregate(test=Coalesce(Sum("time_delta"), 0))['test']
+            total_time = current_team.history.aggregate(test=Coalesce(Sum("time_delta"), 0))['test']
             if current_team.current_landmark:
                 lm_place = list(self.get_landmark_order()).index(current_team.current_landmark.name) + 1
                 stat_str = "Team: {}\nYou Are On Landmark {}\nTime Taken For Landmarks: {}\nTotal Points: {}\n"
@@ -326,9 +331,12 @@ class Team(models.Model):
         return False
 
 
-class TimeDelta(models.Model):
+class LandmarkStat(models.Model):
     time_delta = models.DurationField(default=timedelta(0), validators=[MinValueValidator(timedelta(0))])
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, related_name='time_log')
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, related_name='history')
+    landmark = models.ForeignKey(Landmark, on_delete=models.CASCADE, related_name='stats')
+    points = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0)])
+    quit = models.BooleanField()
 
 
 class TeamFactory:

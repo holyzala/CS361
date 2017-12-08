@@ -6,7 +6,7 @@ from django.utils import timezone
 from .Errors import Errors
 from .models import GameFactory, make_game
 from .models import LandmarkFactory, Landmark
-from .models import TeamFactory, TimeDelta, Team
+from .models import TeamFactory, LandmarkStat, Team
 
 
 TEST_FACTORY = GameFactory(make_game).create_game
@@ -389,11 +389,11 @@ class TestAnswerStatusLimitedDB(TestCase):
         now = self.team.clue_time + datetime.timedelta(hours=18, minutes=54, seconds=53)
         self.assertEqual(Errors.INVALID_LOGIN, self.game.quit_question(now, self.team, "incorrectpasswerd"),
                          "Quit Question Returned True After Incorrect Password!")
-        self.assertEqual(self.team.points, 0, "Points Changed after Failing Give Up!")
-        self.assertEqual(self.team.current_landmark, self.game.landmarks.first(),
+        self.assertEqual(0, self.team.points, "Points Changed after Failing Give Up!")
+        self.assertEqual(self.game.landmarks.first(), self.team.current_landmark,
                          "Landmark Index Increased after Failed Password")
-        self.assertEqual(len(self.team.time_log.all()), 0, "Time log logged a new entry after failied password")
-        self.assertNotEqual(self.team.clue_time, now, "Clue Time Updated After Incorrect Password!")
+        self.assertEqual(0, self.team.history.all().count(), "Time log logged a new entry after failied password")
+        self.assertNotEqual(now, self.team.clue_time, "Clue Time Updated After Incorrect Password!")
 
     def test_quit_question(self):
         self.team.clue_time = timezone.now()
@@ -402,15 +402,17 @@ class TestAnswerStatusLimitedDB(TestCase):
         self.game.started = True
         self.assertTrue(self.game.quit_question(now, self.team, "password"),
                         "Quit Question Returned False After Correct Password!")
-        self.assertEqual(self.team.points, 0, "Points Changed after Giving Up!")
-        self.assertEqual(self.team.current_landmark, self.game.landmarks.all()[1],
+        self.assertEqual(0, self.team.points, "Points Changed after Giving Up!")
+        self.assertEqual(self.game.landmarks.all()[1], self.team.current_landmark,
                          "Landmark Index Did Not Properly Incriment")
         self.assertEqual(self.game.landmarks.all()[1], Team.objects.get(username="Dummy").current_landmark,
                          "Landmark index not updated in DB")
-        self.assertEqual(len(self.team.time_log.all()), 1, "Time log did not recieve new entry")
-        temp = self.team.time_log.first()
-        self.assertEqual(temp.time_delta, datetime.timedelta(days=0, hours=18, minutes=54, seconds=53),
-                         "Time Log Did Not Recieve The Correct Time")  # this may not work correctly
+        self.assertEqual(1, self.team.history.all().count(), "Time log did not recieve new entry")
+        temp = self.team.history.first()
+        self.assertEqual(datetime.timedelta(hours=18, minutes=54, seconds=53), temp.time_delta,
+                         "Time Log Did Not Recieve The Correct Time")
+        self.assertEqual(0, temp.points, "History points not correct")
+        self.assertTrue(temp.quit, "History quit field wrong")
         self.assertEqual(self.team.clue_time, now, "Clue Time Did Not Update!")
 
     def test_answer_question_correct_no_time(self):
@@ -424,10 +426,11 @@ class TestAnswerStatusLimitedDB(TestCase):
         self.assertEqual(150, Team.objects.get(username="Dummy").points, "Points not saved in DB")
         self.assertEqual(self.team.current_landmark, self.game.landmarks.all()[1],
                          "Landmark Index Did not Properly increment")
-        self.assertEqual(len(self.team.time_log.all()), 1, "Time Log Did Not recieve a new entry")
-        temp = self.team.time_log.first()
-        self.assertEqual(temp.time_delta, datetime.timedelta(days=0, hours=0, minutes=0, seconds=10),
-                         "Time Log Did Not Save The Correct Time")
+        self.assertEqual(len(self.team.history.all()), 1, "Time Log Did Not recieve a new entry")
+        temp = self.team.history.first()
+        self.assertEqual(datetime.timedelta(seconds=10), temp.time_delta, "Time Log Did Not Save The Correct Time")
+        self.assertEqual(150, temp.points, "History points not updated")
+        self.assertFalse(temp.quit, "History quit field wrong")
         self.assertEqual(self.team.clue_time, now, "Clue Time Did Not Update!")
 
     def test_answer_question_incorrect_no_time(self):
@@ -437,22 +440,23 @@ class TestAnswerStatusLimitedDB(TestCase):
         self.game.started = True
         self.assertEqual(Errors.WRONG_ANSWER, self.game.answer_question(now, self.team, "trash fire"),
                          "Incorrect Answer Returned True!")
-        self.assertEqual(self.team.points, 0, "Points did not increment correctly")
-        self.assertEqual(self.team.current_landmark, self.game.landmarks.all()[0],
+        self.assertEqual(0, self.team.points, "Points did not increment correctly")
+        self.assertEqual(self.game.landmarks.first(), self.team.current_landmark,
                          "Landmark Index Did not Properly increment")
-        self.assertEqual(len(self.team.time_log.all()), 0, "Time Log Did Not recieve a new entry")
-        self.assertNotEqual(self.team.clue_time, now, "Clue Time Updated After Incorrect Answer!")
+        self.assertEqual(0, len(self.team.history.all()), "Time Log Did Not recieve a new entry")
+        self.assertNotEqual(now, self.team.clue_time, "Clue Time Updated After Incorrect Answer!")
         # Attempt 2
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Correct Answer Returned False After Incorrect Guess!")
-        self.assertEqual(self.team.points, 140, "Points did not increment correctly")
+        self.assertEqual(140, self.team.points, "Points did not increment correctly")
         self.assertEqual(140, Team.objects.get(username="Dummy").points, "DB points not updated")
-        self.assertEqual(self.team.current_landmark, self.game.landmarks.all()[1],
+        self.assertEqual(self.game.landmarks.all()[1], self.team.current_landmark,
                          "Landmark Index Did not Properly increment")
-        self.assertEqual(len(self.team.time_log.all()), 1, "Time Log Did Not recieve a new entry")
-        temp = self.team.time_log.first()
-        self.assertEqual(temp.time_delta, datetime.timedelta(days=0, hours=0, minutes=0, seconds=10),
-                         "Time Log Did Not Save The Correct Time")
+        self.assertEqual(1, self.team.history.all().count(), "Time Log Did Not recieve a new entry")
+        temp = self.team.history.first()
+        self.assertEqual(datetime.timedelta(seconds=10), temp.time_delta, "Time Log Did Not Save The Correct Time")
+        self.assertEqual(140, temp.points, "History points not updated")
+        self.assertFalse(temp.quit, "History quit field wrong")
         self.assertEqual(self.team.clue_time, now, "Clue Time Did Not Update!")
 
     def test_answer_question_time_penalty(self):
@@ -462,14 +466,14 @@ class TestAnswerStatusLimitedDB(TestCase):
         self.game.started = True
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Returned False after Correct Answer!")
-        self.assertEqual(self.team.points, 130, "Points did not increment correctly")
+        self.assertEqual(130, self.team.points, "Points did not increment correctly")
         self.assertEqual(130, Team.objects.get(username="Dummy").points, "DB points not updated")
-        self.assertEqual(self.team.current_landmark, self.game.landmarks.all()[1],
+        self.assertEqual(self.game.landmarks.all()[1], self.team.current_landmark,
                          "Landmark Index Did not Properly increment")
-        self.assertEqual(len(self.team.time_log.all()), 1, "Time Log Did Not recieve a new entry")
-        temp = self.team.time_log.first()
-        self.assertEqual(temp.time_delta, datetime.timedelta(hours=0, minutes=00, seconds=16),
-                         "Time Log Did Not Save The Correct Time")
+        self.assertEqual(1, self.team.history.all().count(), "Time Log Did Not recieve a new entry")
+        temp = self.team.history.first()
+        self.assertEqual(datetime.timedelta(seconds=16), temp.time_delta, "Time Log Did Not Save The Correct Time")
+        self.assertEqual(130, temp.points, "History points not updated")
         self.assertEqual(self.team.clue_time, now, "Clue Time Did Not Update!")
 
     def test_answer_question_time_penalty2(self):
@@ -479,15 +483,16 @@ class TestAnswerStatusLimitedDB(TestCase):
         self.game.started = True
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Returned False After Correct Answer!")
-        self.assertEqual(self.team.points, 50, "Points did not increment correctly")
+        self.assertEqual(50, self.team.points, "Points did not increment correctly")
         self.assertEqual(50, Team.objects.get(username="Dummy").points, "DB points not updated")
-        self.assertEqual(self.team.current_landmark, self.game.landmarks.all()[1],
+        self.assertEqual(self.game.landmarks.all()[1], self.team.current_landmark,
                          "Landmark Index Did not Properly increment")
-        self.assertEqual(len(self.team.time_log.all()), 1, "Time Log Did Not recieve a new entry")
-        temp = self.team.time_log.first()
-        self.assertEqual(temp.time_delta, datetime.timedelta(hours=0, minutes=1, seconds=16),
+        self.assertEqual(1, self.team.history.all().count(), "Time Log Did Not recieve a new entry")
+        temp = self.team.history.first()
+        self.assertEqual(datetime.timedelta(minutes=1, seconds=16), temp.time_delta,
                          "Time Log Did Not Save The Correct Time")
-        self.assertEqual(self.team.clue_time, now, "Clue Time Did Not Update!")
+        self.assertEqual(50, temp.points, "History not updated properly")
+        self.assertEqual(now, self.team.clue_time, "Clue Time Did Not Update!")
 
     def test_answer_question_time_complex(self):
         self.team.clue_time = timezone.now()
@@ -496,22 +501,23 @@ class TestAnswerStatusLimitedDB(TestCase):
         self.game.started = True
         self.assertEqual(Errors.WRONG_ANSWER, self.game.answer_question(now, self.team, "two disks"),
                          "Returned True after Incorrect Answer!")
-        self.assertEqual(self.team.points, 0, "Points did not increment correctly")
-        self.assertEqual(self.team.current_landmark, self.game.landmarks.all()[0],
+        self.assertEqual(0, self.team.points, "Points did not increment correctly")
+        self.assertEqual(self.game.landmarks.first(), self.team.current_landmark,
                          "Landmark Index Did not Properly increment")
-        self.assertEqual(len(self.team.time_log.all()), 0, "Time Log Did Not recieve a new entry")
-        self.assertNotEqual(self.team.clue_time, now, "Clue Time Updated After Incorrect Answer!")
+        self.assertEqual(0, len(self.team.history.all()), "Time Log Did Not recieve a new entry")
+        self.assertNotEqual(now, self.team.clue_time, "Clue Time Updated After Incorrect Answer!")
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Correct Answer Returned False After Incorrect Answer and Wait!")
-        self.assertEqual(self.team.points, 40, "Points did not increment correctly")
+        self.assertEqual(40, self.team.points, "Points did not increment correctly")
         self.assertEqual(40, Team.objects.get(username="Dummy").points, "DB points not updated")
-        self.assertEqual(self.team.current_landmark, self.game.landmarks.all()[1],
+        self.assertEqual(self.game.landmarks.all()[1], self.team.current_landmark,
                          "Landmark Index Did not Properly increment")
-        self.assertEqual(len(self.team.time_log.all()), 1, "Time Log Did Not recieve a new entry")
-        temp = self.team.time_log.first()
-        self.assertEqual(temp.time_delta, datetime.timedelta(hours=0, minutes=1, seconds=16),
-                         "Time Log Did Not Save The Correct Time")  # This may not work properly
-        self.assertEqual(self.team.clue_time, now, "Clue Time Did Not Update!")
+        self.assertEqual(1, self.team.history.all().count(), "Time Log Did Not recieve a new entry")
+        temp = self.team.history.first()
+        self.assertEqual(datetime.timedelta(minutes=1, seconds=16), temp.time_delta,
+                         "Time Log Did Not Save The Correct Time")
+        self.assertEqual(40, temp.points, "History points not updated")
+        self.assertEqual(now, self.team.clue_time, "Clue Time Did Not Update!")
 
     def test_answer_question_time_max(self):
         self.team.clue_time = timezone.now()
@@ -520,13 +526,14 @@ class TestAnswerStatusLimitedDB(TestCase):
         self.game.started = True
         self.assertTrue(self.game.answer_question(now, self.team, "three disks"),
                         "Returned False after Correct Answer!")
-        self.assertEqual(self.team.points, 0, "Team Earned Negative Points, Thats not fair!")
-        self.assertEqual(self.team.current_landmark, self.game.landmarks.all()[1],
+        self.assertEqual(0, self.team.points, "Team Earned Negative Points, Thats not fair!")
+        self.assertEqual(self.game.landmarks.all()[1], self.team.current_landmark,
                          "Landmark Index Did not Properly increment")
-        self.assertEqual(len(self.team.time_log.all()), 1, "Time Log Did Not recieve a new entry")
-        temp = self.team.time_log.first()
-        self.assertEqual(temp.time_delta, datetime.timedelta(days=2, hours=8, minutes=0, seconds=15),
+        self.assertEqual(1, self.team.history.all().count(), "Time Log Did Not recieve a new entry")
+        temp = self.team.history.first()
+        self.assertEqual(datetime.timedelta(days=2, hours=8, seconds=15), temp.time_delta,
                          "Time Log did not Save The Correct Time")
+        self.assertEqual(0, temp.points, "History not updated")
         self.assertEqual(self.team.clue_time, now, "Clue Time Did Not Update!")
 
     def test_answer_question_incorrect_max(self):
@@ -539,14 +546,14 @@ class TestAnswerStatusLimitedDB(TestCase):
                              "Returned True after Incorrect Answer!")
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Returned False After Correct Answer!")
-        self.assertEqual(self.team.points, 0, "Team Earned Negative Points, Thats not fair!")
-        self.assertEqual(self.team.current_landmark, self.game.landmarks.all()[1],
+        self.assertEqual(0, self.team.points, "Team Earned Negative Points, Thats not fair!")
+        self.assertEqual(self.game.landmarks.all()[1], self.team.current_landmark,
                          "Landmark Index Did not Properly increment")
-        self.assertEqual(len(self.team.time_log.all()), 1, "Time Log Did Not recieve a new entry")
-        temp = self.team.time_log.first()
-        self.assertEqual(temp.time_delta, datetime.timedelta(days=0, hours=0, minutes=0, seconds=0),
-                         "Time Log did not Save The Correct Time")
-        self.assertEqual(self.team.clue_time, now, "Clue Time Did Not Update!")
+        self.assertEqual(1, self.team.history.all().count(), "Time Log Did Not recieve a new entry")
+        temp = self.team.history.first()
+        self.assertEqual(datetime.timedelta(), temp.time_delta, "Time Log did not Save The Correct Time")
+        self.assertEqual(0, temp.points, "History points wrong")
+        self.assertEqual(now, self.team.clue_time, "Clue Time Did Not Update!")
 
     def test_answer_question_incorrect_max_complex(self):
         self.team.clue_time = timezone.now()
@@ -559,15 +566,16 @@ class TestAnswerStatusLimitedDB(TestCase):
         before_time = self.team.clue_time
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.team, "three disks"),
                          "Returned False After Correct Answer!")
-        self.assertEqual(self.team.points, 0, "Team Earned Negative Points, Thats not fair!")
-        self.assertEqual(self.team.current_landmark, self.game.landmarks.all()[1],
+        self.assertEqual(0, self.team.points, "Team Earned Negative Points, Thats not fair!")
+        self.assertEqual(self.game.landmarks.all()[1], self.team.current_landmark,
                          "Landmark Index Did not Properly increment")
-        self.assertEqual(len(self.team.time_log.all()), 1, "Time Log Did Not recieve a new entry")
-        temp = self.team.time_log.first()
-        self.assertEqual(temp.time_delta, datetime.timedelta(days=0, hours=0, minutes=1, seconds=45),
+        self.assertEqual(1, self.team.history.all().count(), "Time Log Did Not recieve a new entry")
+        temp = self.team.history.first()
+        self.assertEqual(datetime.timedelta(minutes=1, seconds=45), temp.time_delta,
                          "Time Log did not Save The Correct Time")
-        self.assertEqual(self.team.clue_time, now, "Clue Time Did Not Update!")
-        temp = self.team.time_log.first()
+        self.assertEqual(0, temp.points, "History points not correct")
+        self.assertEqual(now, self.team.clue_time, "Clue Time Did Not Update!")
+        temp = self.team.history.first()
         self.assertEqual(temp.time_delta, now - before_time,
                          "Time Log Did Not Save The Correct Time")
 
@@ -626,7 +634,7 @@ class TestQuitAndStatsProper(TestCase):
         now = self.game.teams.get(username='abc').clue_time - datetime.timedelta(hours=10, minutes=35, seconds=15)
         self.assertEqual(Errors.NO_ERROR, self.game.answer_question(now, self.game.teams.get(username='abc'),
                                                                     "answer1"), "Answer failed")
-        self.assertEqual(self.game.teams.get(username='abc').time_log.all()[0].time_delta,
+        self.assertEqual(self.game.teams.get(username='abc').history.first().time_delta,
                          datetime.timedelta(days=0, hours=0, minutes=0, seconds=0),
                          "Time Log did not Save The Correct Time")
         self.assertEqual(self.game.teams.get(username='abc').clue_time, now, "Clue Time Did Not Update!")
@@ -638,9 +646,10 @@ class TestQuitAndStatsProper(TestCase):
         now = temp.clue_time - datetime.timedelta(hours=1)
         self.assertEqual(Errors.NO_ERROR, self.game.quit_question(now, self.game.teams.get(username='abc'), "def"),
                          "quit failed")
-        self.assertEqual(self.game.teams.get(username='abc').time_log.all()[0].time_delta,
-                         datetime.timedelta(days=0, hours=0, minutes=0, seconds=0),
-                         "Time Log did not Save The Correct Time")
+        history = self.game.teams.get(username='abc').history.first()
+        self.assertEqual(datetime.timedelta(), history.time_delta, "Time Log did not Save The Correct Time")
+        self.assertEqual(0, history.points, "History points not updated")
+        self.assertTrue(history.quit, "History quit field wrong")
         self.assertEqual(self.game.teams.get(username='abc').clue_time, now, "Clue Time Did Not Update!")
 
     def test_quit_last_question(self):
@@ -662,10 +671,10 @@ class TestGameSnapShot(TestCase):
     def setUp(self):
         self.game = TEST_FACTORY('test')
         self.game.save()
-        LandmarkFactory().get_landmark("lm1", "c1", "q1", "a1", self.game)
-        LandmarkFactory().get_landmark("lm2", "c2", "q2", "a2", self.game)
-        LandmarkFactory().get_landmark("lm3", "c3", "q3", "a3", self.game)
-        LandmarkFactory().get_landmark("lm4", "c4", "q4", "a4", self.game)
+        self.lm1 = LandmarkFactory().get_landmark("lm1", "c1", "q1", "a1", self.game)
+        self.lm2 = LandmarkFactory().get_landmark("lm2", "c2", "q2", "a2", self.game)
+        self.lm3 = LandmarkFactory().get_landmark("lm3", "c3", "q3", "a3", self.game)
+        self.lm4 = LandmarkFactory().get_landmark("lm4", "c4", "q4", "a4", self.game)
         TeamFactory().get_team("Team1", "1232", self.game)
 
     def test_snapshot_no_game_running(self):
@@ -680,9 +689,9 @@ class TestGameSnapShot(TestCase):
         clue_time2 = datetime.timedelta(hours=0, minutes=10, seconds=20)
         clue_time3 = datetime.timedelta(hours=0, minutes=2, seconds=0)
         temp = Team.objects.get(username="Team1")
-        TimeDelta.objects.create(time_delta=now-clue_time, team=temp)
-        TimeDelta.objects.create(time_delta=now-clue_time2, team=temp)
-        TimeDelta.objects.create(time_delta=now-clue_time3, team=temp)
+        LandmarkStat.objects.create(time_delta=now - clue_time, team=temp, landmark=self.lm1, quit=False)
+        LandmarkStat.objects.create(time_delta=now - clue_time2, team=temp, landmark=self.lm2, quit=False)
+        LandmarkStat.objects.create(time_delta=now - clue_time3, team=temp, landmark=self.lm3, quit=False)
         temp.current_landmark = self.game.landmarks.all()[2]
         temp.points = 10
         temp.full_clean()
@@ -702,22 +711,22 @@ class TestGameSnapShot(TestCase):
         clue_time2 = datetime.timedelta(hours=0, minutes=10, seconds=20)
         clue_time3 = datetime.timedelta(hours=0, minutes=2, seconds=0)
         temp = Team.objects.get(username="Team1")
-        TimeDelta.objects.create(time_delta=now-clue_time, team=temp)
-        TimeDelta.objects.create(time_delta=now-clue_time2, team=temp)
-        TimeDelta.objects.create(time_delta=now-clue_time3, team=temp)
+        LandmarkStat.objects.create(time_delta=now - clue_time, team=temp, landmark=self.lm1, quit=False)
+        LandmarkStat.objects.create(time_delta=now - clue_time2, team=temp, landmark=self.lm2, quit=False)
+        LandmarkStat.objects.create(time_delta=now - clue_time3, team=temp, landmark=self.lm3, quit=False)
         temp.current_landmark = self.game.landmarks.all()[2]
         temp.points = 10
         temp.full_clean()
         temp.save()
         temp = Team.objects.get(username="Team2")
-        TimeDelta.objects.create(time_delta=now-clue_time, team=temp)
-        TimeDelta.objects.create(time_delta=now-clue_time2, team=temp)
+        LandmarkStat.objects.create(time_delta=now - clue_time, team=temp, landmark=self.lm1, quit=False)
+        LandmarkStat.objects.create(time_delta=now - clue_time2, team=temp, landmark=self.lm2, quit=False)
         temp.current_landmark = self.game.landmarks.all()[1]
         temp.points = 5
         temp.full_clean()
         temp.save()
         temp = Team.objects.get(username="Team3")
-        TimeDelta.objects.create(time_delta=now-clue_time, team=temp)
+        LandmarkStat.objects.create(time_delta=now - clue_time, team=temp, landmark=self.lm1, quit=False)
         temp.current_landmark = self.game.landmarks.all()[0]
         temp.points = 0
         temp.full_clean()

@@ -473,10 +473,10 @@ class TestQuitQuestion(TestCase):
     #def test_quit_last(self):
      #    self.cli.current_user = Team.objects.get(username="Team1")
       #   self.cli.current_user.current_landmark = 2
-         
+
        #  self.assertEqual("Qu",
         #                 self.cli.command("giveup Team1 1526", "Team1"), "Could not quit question with proper login")
-        
+
 class TestGetStatus(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
@@ -500,7 +500,7 @@ class TestGetStatus(TestCase):
 
     def test_admin(self):
         user = self.cli.game.teams.get(username='Team1')
-        tt = user.time_log.all().aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
+        tt = user.history.all().aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
         current_time_calc = (timezone.now() - user.clue_time)
         stat_str = ('You are in place {} of {} teams\n'
                     'Points:{}\n'
@@ -519,7 +519,7 @@ class TestGetStatus(TestCase):
 
     def test_user(self):
         user = self.cli.game.teams.get(username='Team1')
-        tt = user.time_log.all().aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
+        tt = user.history.all().aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
         current_time_calc = (timezone.now() - user.clue_time)
         stat_str = ('You are in place {} of {} teams\n'
                     'Points:{}\n'
@@ -697,7 +697,7 @@ class TestSnapShot(TestCase):
         total_time_list = []
         team_points = []
         for team in self.cli.game.teams.all():
-            total_time = team.time_log.aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
+            total_time = team.history.aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
             total_time_list.append(total_time)
             team_points.append(team.points)
         stat_str_team_1 = "Team: Team1\nYou Are On Landmark 2\nTime Taken For Landmarks: {}\nTotal Points: {}\n".format(
