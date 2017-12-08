@@ -176,9 +176,9 @@ class Game(models.Model):
             return Errors.NO_GAME
         if not team.login(team.username, password):
             return Errors.INVALID_LOGIN
-        next = None
+        next_landmark = None
         try:
-            next = team.current_landmark.get_next_in_order()
+            next_landmark = team.current_landmark.get_next_in_order()
         except Landmark.DoesNotExist:
             pass
         except AttributeError:
@@ -197,7 +197,7 @@ class Game(models.Model):
             temp.save()
         team.clue_time = now
         team.penalty_count = 0
-        team.current_landmark = next
+        team.current_landmark = next_landmark
         team.full_clean()
         team.save()
         if not team.current_landmark:

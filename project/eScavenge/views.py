@@ -16,11 +16,11 @@ def validate(request):
             message = "Invalid password"
     else:
         try:
-            u = Team.objects.get(username=request.POST["huntUser"])
+            username = Team.objects.get(username=request.POST["huntUser"])
         except Team.DoesNotExist:
             message = "No user named " + request.POST["huntUser"]
         else:
-            if u.login(request.POST['huntUser'], request.POST['password']) is None:
+            if username.login(request.POST['huntUser'], request.POST['password']) is None:
                 message = "Invalid password"
     if message == "XXX":
         context = {"huntUser": request.POST["huntUser"]}

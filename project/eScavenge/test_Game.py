@@ -347,7 +347,7 @@ class TestAnswerStatusLimitedDB(TestCase):
     def setUp(self):
         self.game = GameFactory(make_game).create_game('test')
         self.team = TeamFactory.get_team("Dummy", "password", self.game)
-        self.team2 = TeamFactory.get_team("Dummy2","password", self.game)
+        self.team2 = TeamFactory.get_team("Dummy2", "password", self.game)
         self.team3 = TeamFactory.get_team("Dummy3", "passwird", self.game)
         LandmarkFactory().get_landmark("lm1", "The Place we drink coffee and read books",
                                        "What is the name of the statue out front?", "three disks", self.game)
