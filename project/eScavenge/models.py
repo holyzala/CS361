@@ -8,6 +8,7 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from .Errors import Errors
+from .StringConst import no_game_running
 
 
 class Game(models.Model):
@@ -31,11 +32,13 @@ class Game(models.Model):
         except Team.DoesNotExist:
             return None
 
-    def get_team_landmark(self, team):
-        return self.landmarks.all()[team.current_landmark]
-
     def get_team_question(self, team):
-        return self.landmarks.all()[team.current_landmark].question
+        if not self.started or self.ended:
+            return no_game_running
+        try:
+            return team.current_landmark.question
+        except AttributeError:
+            return "No more landmarks"
 
     def add_team(self, name, password):
         if self.started:
@@ -152,7 +155,9 @@ class Game(models.Model):
         if self.started:
             return Errors.ALREADY_STARTED
         now = timezone.now()
+        first_landmark = self.landmarks.first()
         for team in self.teams.all():
+            team.current_landmark = first_landmark
             team.clue_time = now
             team.full_clean()
             team.save()
@@ -171,9 +176,14 @@ class Game(models.Model):
             return Errors.NO_GAME
         if not team.login(team.username, password):
             return Errors.INVALID_LOGIN
-        if self.landmarks.all().count() <= team.current_landmark:
+        try:
+            team.current_landmark = team.current_landmark.get_next_in_order()
+        except Landmark.DoesNotExist:
+            team.current_landmark = None
+            team.save()
+            return Errors.FINAL_ANSWER
+        except AttributeError:
             return Errors.LANDMARK_INDEX
-        team.current_landmark += 1
         temp = None
         try:
             temp = TimeDelta.objects.create(time_delta=now - team.clue_time, team=team)
@@ -188,7 +198,7 @@ class Game(models.Model):
         team.penalty_count = 0
         team.full_clean()
         team.save()
-        if self.landmarks.all().count() == team.current_landmark:
+        if not team.current_landmark:
             return Errors.FINAL_ANSWER
         return Errors.NO_ERROR
 
@@ -196,69 +206,58 @@ class Game(models.Model):
         if not self.started or self.ended:
             return Errors.NO_GAME
         try:
-            lm = self.landmarks.all()[team.current_landmark]
-        except IndexError:
+            if not team.current_landmark.check_answer(answer):
+                team.penalty_count += self.penalty_value
+                return Errors.WRONG_ANSWER
+        except AttributeError:
             return Errors.LANDMARK_INDEX
-        if not lm.check_answer(answer):
-            team.penalty_count += self.penalty_value
-            return Errors.WRONG_ANSWER
-        else:
-            temp = None
-            try:
-                temp = TimeDelta.objects.create(time_delta=now-team.clue_time, team=team)
-                temp.full_clean()
-                temp.save()
-            except ValidationError:
-                temp.delete()
-                temp = TimeDelta.objects.create(time_delta=timedelta(0), team=team)
-                temp.full_clean()
-                temp.save()
-            team.current_landmark += 1
-            if self.timer:
-                team.penalty_count += int(((now - team.clue_time) / self.timer)) * self.penalty_time
-            team.points += max(0, self.landmark_points - team.penalty_count)
-            team.clue_time = now
-            team.penalty_count = 0
-            team.full_clean()
+        temp = None
+        try:
+            temp = TimeDelta.objects.create(time_delta=now-team.clue_time, team=team)
+            temp.full_clean()
+            temp.save()
+        except ValidationError:
+            temp.delete()
+            temp = TimeDelta.objects.create(time_delta=timedelta(0), team=team)
+            temp.full_clean()
+            temp.save()
+        if self.timer:
+            team.penalty_count += int(((now - team.clue_time) / self.timer)) * self.penalty_time
+        team.points += max(0, self.landmark_points - team.penalty_count)
+        team.clue_time = now
+        team.penalty_count = 0
+        team.full_clean()
+        try:
+            team.current_landmark = team.current_landmark.get_next_in_order()
+        except Landmark.DoesNotExist:
+            team.current_landmark = None
             team.save()
-            if self.landmarks.all().count() == team.current_landmark:
-                return Errors.FINAL_ANSWER
-            return Errors.NO_ERROR
+            return Errors.FINAL_ANSWER
+        team.save()
+        return Errors.NO_ERROR
 
     def get_status(self, now, username):
         current_team = self.teams.get(username=username)
         current_time_calc = max(timedelta(0), now - current_team.clue_time)
         total_time = current_team.time_log.aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
         place = self.teams.filter(points__gt=current_team.points).count() + 1
-        if current_team.current_landmark < self.landmarks.all().count():
+        try:
+            lm_place = list(self.get_landmark_order()).index(current_team.current_landmark.name) + 1
+        except AttributeError:
+            lm_place = self.landmarks.all().count()
+        if current_team.current_landmark:
             stat_str = ('You are in place {} of {} teams\n'
                         'Points:{}\n'
                         'You are on Landmark:{} of {}\n'
                         'Current Landmark Elapsed Time:{}\n'
                         'Total Time Taken:{}')
             return stat_str.format(place, self.teams.all().count(), current_team.points,
-                                   current_team.current_landmark+1, self.landmarks.all().count(),
+                                   lm_place, self.landmarks.all().count(),
                                    str(current_time_calc).split(".")[0],
                                    str(total_time + current_time_calc).split(".")[0])
-        if current_team.current_landmark == self.landmarks.all().count(): #When on final landmark, no need to add 1 to landmark index on print
-            stat_str = ('You are in place {} of {} teams\n'
-                        'Points:{}\n'
-                        'You are on Landmark:{} of {}\n'
-                        'Current Landmark Elapsed Time:{}\n'
-                        'Total Time Taken:{}')
-            return stat_str.format(place, self.teams.all().count(), current_team.points,
-                        current_team.current_landmark, self.landmarks.all().count(),
-                        str(current_time_calc).split(".")[0],
-                        str(total_time + current_time_calc).split(".")[0])
-        if current_team.current_landmark > self.landmarks.all().count(): #When The game is done
-            stat_str = ('You are in place {} of {} teams\n'
-                        'Points:{}\n'
-                        'You are on Landmark:{} of {}\n'
-                        'Total Time Taken:{}')
-            return stat_str.format(place, self.teams.all().count(), current_team.points,
-                                   current_team.current_landmark, self.landmarks.all().count(),
-                                   str(total_time).split(".")[0])
-        return f'Final Points: {current_team.points}'
+        return (f'You are in place {place} of {self.teams.all().count()} teams\n'
+                f'Total Time Taken: {str(total_time).split(".")[0]}\n'
+                f'Final Points: {current_team.points}')
 
     def get_snapshot(self):
         if not self.started or self.ended:
@@ -267,23 +266,41 @@ class Game(models.Model):
 
         for current_team in self.teams.all():
             total_time = current_team.time_log.aggregate(test=Coalesce(Sum("time_delta"), 0))['test']
-            if current_team.current_landmark < self.landmarks.all().count():
+            if current_team.current_landmark:
+                lm_place = list(self.get_landmark_order()).index(current_team.current_landmark.name) + 1
                 stat_str = "Team: {}\nYou Are On Landmark {}\nTime Taken For Landmarks: {}\nTotal Points: {}\n"
-                stringList.append(stat_str.format(current_team.username, current_team.current_landmark + 1,
+                stringList.append(stat_str.format(current_team.username, lm_place,
                                                   str(total_time).split(".")[0], current_team.points))
             else:  # on last landmark
                 stat_str = "Team: {}\nYou Are On Landmark {}\nTime Taken For Landmarks: {}\nTotal Points: {}\n"
-                stringList.append(stat_str.format(current_team.username, current_team.current_landmark,
+                stringList.append(stat_str.format(current_team.username, self.landmarks.all().count(),
                                                   str(total_time).split(".")[0], current_team.points))
 
         return Errors.NO_ERROR, ''.join(stringList)
+
+
+class Landmark(models.Model):
+    name = models.TextField(primary_key=True)
+    clue = models.TextField()
+    question = models.TextField()
+    answer = models.TextField()
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, null=True, related_name='landmarks')
+
+    class Meta:
+        order_with_respect_to = 'game'
+
+    def check_answer(self, answer):
+        return self.answer.lower() == answer.lower()
+
+    def __eq__(self, other):
+        return self.name == other.name
 
 
 class Team(models.Model):
     username = models.TextField(primary_key=True)
     password = models.TextField()
     points = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0)])
-    current_landmark = models.IntegerField(default=0)
+    current_landmark = models.ForeignKey(Landmark, on_delete=models.CASCADE, blank=True, null=True)
     penalty_count = models.IntegerField(default=0)
     clue_time = models.DateTimeField(default=timezone.now)
     game = models.ForeignKey(Game, on_delete=models.CASCADE, blank=True, null=True, related_name='teams')
@@ -312,23 +329,6 @@ class Team(models.Model):
 class TimeDelta(models.Model):
     time_delta = models.DurationField(default=timedelta(0), validators=[MinValueValidator(timedelta(0))])
     team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, related_name='time_log')
-
-
-class Landmark(models.Model):
-    name = models.TextField(primary_key=True)
-    clue = models.TextField()
-    question = models.TextField()
-    answer = models.TextField()
-    game = models.ForeignKey(Game, on_delete=models.CASCADE, null=True, related_name='landmarks')
-
-    class Meta:
-        order_with_respect_to = 'game'
-
-    def check_answer(self, answer):
-        return self.answer.lower() == answer.lower()
-
-    def __eq__(self, other):
-        return self.name == other.name
 
 
 class TeamFactory:

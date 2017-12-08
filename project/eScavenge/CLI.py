@@ -246,7 +246,7 @@ def edit_team(self, args):
 def get_clue(self, _):
     if not self.current_user or self.current_user.is_admin():
         return permission_denied
-    return self.game.get_team_landmark(self.current_user).clue
+    return self.current_user.current_landmark.clue
 
 
 def get_current_question(self, _):
@@ -273,7 +273,7 @@ def quit_question(self, args):
         return finstr.format(self.game.get_status(timezone.now(), self.current_user.username))
     elif rtn == Errors.LANDMARK_INDEX:
         return "There are no more questions!"
-    return "Question Quit, Your Next Question: \n{}".format(self.game.get_team_landmark(self.current_user).question)
+    return "Question Quit, Your Next Question: \n{}".format(self.current_user.current_landmark.question)
 
 
 
@@ -309,8 +309,7 @@ def answer_question(self, args):
         return "You're Not Playing!"
     correct_answer = self.game.answer_question(timezone.now(), self.current_user, args[1])
     if correct_answer == Errors.NO_ERROR:
-        return "That is Correct! The Next Question is: \n{}".format(
-            self.game.get_team_landmark(self.current_user).question)
+        return "That is Correct! The Next Question is: \n{}".format(self.current_user.current_landmark.question)
     elif correct_answer == Errors.NO_GAME:
         return no_game_running
     elif correct_answer == Errors.FINAL_ANSWER:
@@ -318,7 +317,7 @@ def answer_question(self, args):
         return finstr.format(self.game.get_status(timezone.now(), self.current_user.username))
     elif correct_answer == Errors.LANDMARK_INDEX:
         return "There are no more landmarks!"
-    return "Incorrect Answer! The Question Was: \n{}".format(self.game.get_team_landmark(self.current_user).question)
+    return "Incorrect Answer! The Question Was: \n{}".format(self.current_user.current_landmark.question)
 
 
 @need_admin
