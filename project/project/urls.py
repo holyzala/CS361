@@ -1,5 +1,4 @@
 """project URL Configuration
-
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.11/topics/http/urls/
 Examples:
@@ -15,11 +14,12 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from eScavenge import views
 
-urlpatterns = [
-    url(r'^$', views.index, name='login'),
+from project.eScavenge import views
+
+urlpatterns = {
+    url(r'^$', views.login, name='login'),
     url(r'^admin/', admin.site.urls),
     url(r'^terminal/', views.terminal, name='terminal'),
     url(r'^validate/', views.validate, name="validate", ),
-]
+}
