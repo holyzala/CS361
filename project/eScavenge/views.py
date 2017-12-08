@@ -11,19 +11,19 @@ def index(request):
 
 def validate(request):
     message = "XXX"
-    if request.POST["huntUser"] == GM.username:
-        if GM.login(request.POST['huntUser'], request.POST['password']) is None:
+    if request.POST["username"] == GM.username:
+        if GM.login(request.POST['username'], request.POST['password']) is None:
             message = "Invalid password"
     else:
         try:
-            u = Team.objects.get(username=request.POST["huntUser"])
+            u = Team.objects.get(username=request.POST["username"])
         except Team.DoesNotExist:
-            message = "No user named " + request.POST["huntUser"]
+            message = "No user named " + request.POST["username"]
         else:
-            if u.login(request.POST['huntUser'], request.POST['password']) is None:
+            if u.login(request.POST['username'], request.POST['password']) is None:
                 message = "Invalid password"
     if message == "XXX":
-        context = {"huntUser": request.POST["huntUser"]}
+        context = {"huntUser": request.POST["username"]}
         return render(request, "terminal.html", context)
     return render(request, "index.html", {"message": message})
 
