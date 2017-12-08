@@ -1,12 +1,12 @@
 from django.shortcuts import render
-from project.eScavenge.CLI import CLI, COMMANDS
-from project.eScavenge.models import GMFactory, Team
+from .CLI import CLI, COMMANDS
+from .models import GMFactory, Team
 
 GM = GMFactory().get_gm()
 
 
 def index(request):
-    return render(request, 'login.html', {"message": ""})
+    return render(request, 'index.html', {"message": ""})
 
 
 def validate(request):
@@ -24,8 +24,8 @@ def validate(request):
                 message = "Invalid password"
     if message == "XXX":
         context = {"huntUser": request.POST["huntUser"]}
-        return render(request, "validate.html", context)
-    return render(request, "login.html", {"message": message})
+        return render(request, "terminal.html", context)
+    return render(request, "index.html", {"message": message})
 
 
 def terminal(request):
@@ -37,4 +37,8 @@ def terminal(request):
         cli.game = GM.game
     output = cli.command(request.POST["command"], request.POST['huntUser'])
     context = {"huntUser": request.POST["huntUser"], "output": output}
-    return render(request, "login.html", context)
+    return render(request, "terminal.html", context)
+
+
+def login(request):
+    return render(request, "login.html")
