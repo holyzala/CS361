@@ -19,6 +19,7 @@ from eScavenge import views
 
 urlpatterns = [
     url(r'^$', views.login, name='login'),
+    url(r'^teamPage', views.teamPage, name='teamPage'),
     url(r'^admin/', admin.site.urls),
     url(r'^terminal/', views.terminal, name='terminal'),
     url(r'^validate/', views.validate, name="validate", ),

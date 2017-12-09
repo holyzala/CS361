@@ -24,8 +24,8 @@ def validate(request):
                 message = "Invalid password"
     if message == "XXX":
         context = {"huntUser": request.POST["username"]}
-        return render(request, "terminal.html", context)
-    return render(request, "index.html", {"message": message})
+        return render(request, "teamPage.html", context)
+    return render(request, "login.html", {"message": message})
 
 
 def terminal(request):
@@ -37,8 +37,11 @@ def terminal(request):
         cli.game = GM.game
     output = cli.command(request.POST["command"], request.POST['huntUser'])
     context = {"huntUser": request.POST["huntUser"], "output": output}
-    return render(request, "terminal.html", context)
+    return render(request, "teamPage.html", context)
 
 
 def login(request):
     return render(request, "login.html")
+
+def teamPage(request):
+    return render(request, "teamPage.html")

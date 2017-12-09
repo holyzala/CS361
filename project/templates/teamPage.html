@@ -1,19 +1,17 @@
-<!DOCTYPE html>
-<title>eScavenge Team Page</title>
+{% extends 'basic.html' %}
 
-<html>
-<head>
-		<link rel="stylesheet" href="style.css">
-</head>
+{% block title %} Team: {{ huntUser }} {% endblock %}
+{% block Nav-Bar %}
 
-<body>
-	<div class="Nav-Bar">
-		<a class="eScavenge">eScavenge!</a>
-    </div>
-   <div class="dropdown">
+	<a class="eScavenge">Game: {{ gamename }}</a>
+
+{% endblock %}
+{% block dropdown %}
+
+    <div class="dropdown">
 			<button class="dropbtn">{{huntUser}}</button>
 	   		<div class="dropdown-content">
-	   			<form action="/validate/" method="post">
+	   			<form action="/terminal/" method="post">
                     {% csrf_token %}
 	   			    <label id="usernamelabel" for="username">Change User name:</label>
 	   				<input type="text" id="username" name="username">
@@ -25,5 +23,4 @@
          		</form>
          	</div>
     </div>
-</body>
-</html>
+{% endblock %}

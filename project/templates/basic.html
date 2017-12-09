@@ -1,0 +1,21 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<title>{% block title %}{% endblock %}</title>
+
+<html>
+<head>
+		<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+	<div class="Nav-Bar">
+        {% block Nav-Bar %}
+        {% endblock %}
+    </div>
+    <div class="dropdown">
+        {% block dropdown %}
+        {% endblock %}
+    </div>
+</body>
+</html>
