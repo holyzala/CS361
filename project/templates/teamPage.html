@@ -3,27 +3,27 @@
 
 <html>
 <head>
-		<link rel="stylesheet" href="/static/loginstyle.css">
+		<link rel="stylesheet" href="style.css">
 </head>
 
-
 <body>
+	<div class="Nav-Bar">
+		<a class="eScavenge">eScavenge!</a>
+    </div>
    <div class="dropdown">
-			<button class="dropbtn">Login</button>
+			<button class="dropbtn">{{huntUser}}</button>
 	   		<div class="dropdown-content">
 	   			<form action="/validate/" method="post">
                     {% csrf_token %}
-	   			    <label id="usernamelabel" for="username">User:</label>
+	   			    <label id="usernamelabel" for="username">Change User name:</label>
 	   				<input type="text" id="username" name="username">
 	   				<br/>
-	   				<label id="passwordlabel" for="password">Password:</label>
+	   				<label id="passwordlabel" for="password">Change Password:</label>
 	   				<input type="text" id="password" name="password">
           			<br>
           			<input type="submit" id="splashSubmitButton" value="Submit">
          		</form>
          	</div>
     </div>
-
-   	<div class="knockout"><a class= "bigeScavenge">eScavenge</a></div>
 </body>
 </html>

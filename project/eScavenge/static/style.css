@@ -11,7 +11,9 @@ body{
     top: 0;
     width: 100%;
 }
-.Nav-Bar a {
+
+.eScavenge {
+
   font-family: Helvetica;
   border-radius: 20px;
   border-color: black;
@@ -30,6 +32,28 @@ body{
   text-decoration: none;
   font-size: 30px;
 }
+
+.help {
+
+  font-family: Helvetica;
+  border-radius: 20px;
+  border-color: black;
+  border-width: 2px;
+  float: right;
+  width:auto;
+  border:none;
+  outline:none;
+  display: block;
+  color: #f2f2f2;
+  text-shadow: 0px 4px 3px rgba(0,0,0,1.0),
+             0px 8px 13px rgba(0,0,0,0.1),
+             0px 18px 23px rgba(0,0,0,0.1);
+  text-align: center;
+  padding: 20px 20px;
+  text-decoration: none;
+  font-size: 20px;
+}
+
 
 
 .dropbtn {
@@ -54,7 +78,7 @@ body{
     display: none;
     position: absolute;
     background-color: #8aff8e;
-    min-width: 180px;
+    min-width: 150px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
      font-family:Helvetica;
