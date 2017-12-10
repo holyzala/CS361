@@ -297,9 +297,6 @@ class Landmark(models.Model):
     def check_answer(self, answer):
         return self.answer.lower() == answer.lower()
 
-    def __eq__(self, other):
-        return self.name == other.name
-
 
 class Team(models.Model):
     username = models.TextField(primary_key=True)
@@ -309,9 +306,6 @@ class Team(models.Model):
     penalty_count = models.IntegerField(default=0)
     clue_time = models.DateTimeField(default=timezone.now)
     game = models.ForeignKey(Game, on_delete=models.CASCADE, blank=True, null=True, related_name='teams')
-
-    def __eq__(self, other):
-        return self.username == other.username
 
     def login(self, username, password):
         if username != self.username or password != self.password:
