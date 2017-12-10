@@ -1,0 +1,26 @@
+{% extends 'basic.html' %}
+
+{% block title %} Team: {{ huntUser }} {% endblock %}
+{% block Nav-Bar %}
+
+	<a class="eScavenge">Game: {{ gamename }}</a>
+
+{% endblock %}
+{% block dropdown %}
+
+    <div class="dropdown">
+			<button class="dropbtn">{{huntUser}}</button>
+	   		<div class="dropdown-content">
+	   			<form action="/terminal/" method="post">
+                    {% csrf_token %}
+	   			    <label id="usernamelabel" for="username">Change User name:</label>
+	   				<input type="text" id="username" name="username">
+	   				<br/>
+	   				<label id="passwordlabel" for="password">Change Password:</label>
+	   				<input type="text" id="password" name="password">
+          			<br>
+          			<input type="submit" id="splashSubmitButton" value="Submit">
+         		</form>
+         	</div>
+    </div>
+{% endblock %}
