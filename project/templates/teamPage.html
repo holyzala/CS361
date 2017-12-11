@@ -1,9 +1,10 @@
 {% extends 'basic.html' %}
+{% load filters %}
 
 {% block title %} Team: {{ huntUser }} {% endblock %}
 {% block Nav-Bar %}
 
-	<a class="eScavenge">Game: {{ gamename }}</a>
+    <a class="eScavenge">Game: {{ huntUser| getTeamGame }}</a>
 
 {% endblock %}
 {% block dropdown %}
@@ -23,4 +24,48 @@
          		</form>
          	</div>
     </div>
+{% endblock %}
+{% block command-box %}
+    <div class="gameInfo">
+            <p class="landmarkname">{{ huntUser| getLandmarkName }}
+            <p class="landmarkclue">{{ huntUser| getLandmarkClue }}
+            <p class="landmarkquestion">{{ huntUser| getLandmarkQuestion }}
+    </div>
+    <div class="userInteraction">
+        <form action="/validate/" method="post">
+            {% csrf_token %}
+            <input type="text" id="commandline" name="commandline">
+        </form>
+        <form action="/validate/" method="post">
+            {% csrf_token %}
+            <input type="submit" id="answerQuestion" value="Answer Question">
+        </form>
+        <form action="/validate/" method="post">
+                {% csrf_token %}
+            <input type="submit" id="quitQuestion" value="Quit Question">
+        </form>
+    </div>
+    <p>{{ output }}</p>
+{% endblock %}
+{% block side-bar %}
+{% endblock %}
+
+{% block leaderboard %}
+    <tr>
+        <th>Team Name</th>
+        <th>Team Points</th>
+    </tr>
+        {% for username in teamlist %}
+            <tr>
+            <td>{{ username }}</td>
+            <td>{{ username | getTeamPoints }}</td>
+            </tr>
+        {% endfor %}
+
+{% endblock %}
+{% block scroll-answered %}
+    <div class="scroll-bar"></div>
+    {% for landmark in landmarkanswered_list %}
+
+    {% endfor %}
 {% endblock %}

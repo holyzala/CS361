@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'eScavenge.apps.EscavengeConfig',
 ]
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -65,6 +66,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': { # Adding this section should work around the issue.
+                'staticfiles' : 'django.templatetags.static',
+            },
         },
     },
 ]
