@@ -112,8 +112,8 @@ class TestStartGame(TestCase):
         self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(team_add, self.cli.command("addteam Team2 02ka", GM), "setup failed")
-        self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                                        '"Statue of Liberty"', GM),
                          landmark_add_fail)
 
     def test_start_game_is_gm(self):
@@ -195,28 +195,28 @@ class TestAddLandmark(TestCase):
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
 
     def test_add_landmark_is_gm(self):
-        self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                                        '"Statue of Liberty"', GM),
                          landmark_add_fail)
 
     def test_add_landmark_not_gm(self):
-        self.assertEqual(permission_denied,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', "Team1"),
+        self.assertEqual(permission_denied, self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                                             '"Statue of Liberty"', "Team1"),
                          "Only admin can add landmarks")
 
     def test_add_landmark_duplicate(self):
-        self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                                        '"Statue of Liberty"', GM),
                          landmark_add_fail)
-        self.assertEqual(landmark_add_fail,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
+        self.assertEqual(landmark_add_fail, self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                                             '"Statue of Liberty"', GM),
                          "no duplicate landmarks")
 
     def test_add_landmark_before_game_created(self):
         self.cli.game = None
         self.cli.game_maker.game = None
-        self.assertEqual(landmark_add_fail,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
+        self.assertEqual(landmark_add_fail, self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                                             '"Statue of Liberty"', GM),
                          "add landmark only after game is created")
 
     def test_add_landmark_bad_args(self):
@@ -228,8 +228,8 @@ class TestRemoveLandmark(TestCase):
         self.cli = CLI(COMMANDS)
         self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
-        self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                                        '"Statue of Liberty"', GM),
                          landmark_add_fail)
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM),
@@ -259,14 +259,15 @@ class TestEditLandmarkOrder(TestCase):
         self.cli = CLI(COMMANDS)
         self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
-        self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                                        '"Statue of Liberty"', GM),
                          landmark_add_fail)
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM),
                          landmark_add_fail)
         self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "ldm3" "Los Angeles" "Where the Lakers play" "Staples Center"', GM),
+                         self.cli.command('addlandmark "ldm3" "Los Angeles" "Where the Lakers play" "Staples Center"',
+                                          GM),
                          landmark_add_fail)
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "ldm4" "Milwaukee" "Where the Brewers play" "Miller Park"', GM),
@@ -307,16 +308,14 @@ class TestGetLandmarksIndex(TestCase):
         self.cli = CLI(COMMANDS)
         self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam team1 1234", GM), "setup failed")
-        self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "L1" "New York" "Gift given by the French" "Statue of Liberty"',
-                                          GM),
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "L1" "New York" "Gift given by the French" '
+                                                        '"Statue of Liberty"', GM),
                          landmark_add_fail)
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "L2" "UWM" "Place we purchase coffee from" "Grind"', GM),
                          landmark_add_fail)
-        self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "L3" "Los Angeles" "Where the Lakers play" "Staples Center"',
-                                          GM),
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "L3" "Los Angeles" "Where the Lakers play" '
+                                                        '"Staples Center"', GM),
                          landmark_add_fail)
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "L4" "Milwaukee" "Where the Brewers play" "Miller Park"', GM),
@@ -332,16 +331,17 @@ class TestEditLandmark(TestCase):
         self.cli = CLI(COMMANDS)
         self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
-        self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                                        '"Statue of Liberty"', GM),
                          landmark_add_fail)
-        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM),
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" '
+                                                        '"Place we purchase coffee from" "Grind"', GM),
                          landmark_add_fail)
 
     def test_edit_landmark_is_gm(self):
         self.assertEqual(edit_landmark_success,
-                         self.cli.command('editlandmark "ldm2" clue "New York" question "Where the Beastie Boys were ' +
-                                          'going without sleep" answer "Brooklyn"', GM),
+                         self.cli.command('editlandmark "ldm2" clue "New York" question '
+                                          '"Where the Beastie Boys were going without sleep" answer "Brooklyn"', GM),
                          edit_landmark_fail)
 
     def test_edit_landmark_is_not_gm(self):
@@ -354,8 +354,10 @@ class TestEditLandmark(TestCase):
                          edit_landmark_fail)
 
     def test_edit_landmark_question_only(self):
-        self.assertEqual(edit_landmark_success, self.cli.command(
-            'editlandmark "ldm2" question "Where the Beastie Boys were going without sleep"', GM), edit_landmark_fail)
+        self.assertEqual(edit_landmark_success,
+                         self.cli.command('editlandmark "ldm2" question '
+                                          '"Where the Beastie Boys were going without sleep"', GM),
+                         edit_landmark_fail)
 
     def test_edit_landmark_answer_only(self):
         self.assertEqual(edit_landmark_success, self.cli.command('editlandmark "ldm2" answer "Brooklyn"', GM),
@@ -367,13 +369,15 @@ class TestEditLandmark(TestCase):
                          edit_landmark_fail)
 
     def test_edit_landmark_clue_and_question_only(self):
-        self.assertEqual(edit_landmark_success, self.cli.command(
-            'editlandmark "ldm2" clue "New York" question "Where the Beastie Boys were going without sleep"', GM),
+        self.assertEqual(edit_landmark_success,
+                         self.cli.command('editlandmark "ldm2" clue "New York" question '
+                                          '"Where the Beastie Boys were going without sleep"', GM),
                          edit_landmark_fail)
 
     def test_edit_landmark_question_and_answer_only(self):
-        self.assertEqual(edit_landmark_success, self.cli.command(
-            'editlandmark "ldm2" question "Where the Beastie Boys were going without sleep" answer "Brooklyn"', GM),
+        self.assertEqual(edit_landmark_success,
+                         self.cli.command('editlandmark "ldm2" question '
+                                          '"Where the Beastie Boys were going without sleep" answer "Brooklyn"', GM),
                          edit_landmark_fail)
 
     def test_edit_landmark_name_and_answer_only(self):
@@ -391,8 +395,8 @@ class TestGetClue(TestCase):
         self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
-                         "Failed to add landmark")
+                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                          '"Statue of Liberty"', GM), "Failed to add landmark")
         self.assertEqual(landmark_add,
                          self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM),
                          "Failed to add landmark")
@@ -417,11 +421,11 @@ class TestGetQuestion(TestCase):
         self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam team1 1234", GM), "Setup failed")
         self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "New York" "Large Lady" "What is gift given by the French?" "Statue of Liberty"', GM),
-                         "Failed to add landmark")
+                         self.cli.command('addlandmark "New York" "Large Lady" "What is gift given by the French?" '
+                                          '"Statue of Liberty"', GM), "Failed to add landmark")
         self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "UWM" "Public university in Milwuakee" "Where do we purchase coffee from?" "Grind"', GM),
-                         "Failed to add landmark")
+                         self.cli.command('addlandmark "UWM" "Public university in Milwuakee" '
+                                          '"Where do we purchase coffee from?" "Grind"', GM), "Failed to add landmark")
 
     def test_admin(self):
         self.assertEqual(permission_denied, self.cli.command("getquestion", GM), "Question returned for admin")
@@ -438,10 +442,10 @@ class TestQuitQuestion(TestCase):
         self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
-                         landmark_add_fail)
-        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM),
-                         landmark_add_fail)
+                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                          '"Statue of Liberty"', GM), landmark_add_fail)
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" '
+                                                        '"Grind"', GM), landmark_add_fail)
         self.assertEqual(game_started, self.cli.command("start", GM), "Failed to start game.")
 
     def test_game_ended(self):
@@ -470,13 +474,6 @@ class TestQuitQuestion(TestCase):
         self.assertEqual("Proper Format giveup <username> <password>", self.cli.command("giveup teamp", "Team1"),
                          "Not enough args did not show correct message")
 
-    #def test_quit_last(self):
-     #    self.cli.current_user = Team.objects.get(username="Team1")
-      #   self.cli.current_user.current_landmark = 2
-         
-       #  self.assertEqual("Qu",
-        #                 self.cli.command("giveup Team1 1526", "Team1"), "Could not quit question with proper login")
-        
 class TestGetStatus(TestCase):
     def setUp(self):
         self.cli = CLI(COMMANDS)
@@ -484,10 +481,10 @@ class TestGetStatus(TestCase):
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(team_add, self.cli.command("addteam Team2 1526", GM), "setup failed")
         self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
-                         landmark_add_fail)
-        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM),
-                         landmark_add_fail)
+                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                          '"Statue of Liberty"', GM), landmark_add_fail)
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" '
+                                                        '"Grind"', GM), landmark_add_fail)
         self.assertEqual(game_started, self.cli.command("start", GM), "Failed to start game.")
 
     def test_no_game(self):
@@ -500,7 +497,7 @@ class TestGetStatus(TestCase):
 
     def test_admin(self):
         user = self.cli.game.teams.get(username='Team1')
-        tt = user.time_log.all().aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
+        total_time = user.history.all().aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
         current_time_calc = (timezone.now() - user.clue_time)
         stat_str = ('You are in place {} of {} teams\n'
                     'Points:{}\n'
@@ -509,17 +506,17 @@ class TestGetStatus(TestCase):
                     'Total Time Taken:{}')
         self.assertEqual(stat_str.format(1, 2, user.points, 1, 2,
                                          str(current_time_calc).split(".")[0],
-                                         str(tt + current_time_calc).split(".")[0]),
+                                         str(total_time + current_time_calc).split(".")[0]),
                          self.cli.command("getstats Team1", "Team1"), "Admin Couldn't user get stats")
 
         self.assertEqual(stat_str.format(1, 2, self.cli.current_user.points, 1,
                                          2, str(current_time_calc).split(".")[0],
-                                         str(tt + current_time_calc).split(".")[0]),
+                                         str(total_time + current_time_calc).split(".")[0]),
                          self.cli.command("getstats", "Team1"), "Admin Couldn't user get stats")
 
     def test_user(self):
         user = self.cli.game.teams.get(username='Team1')
-        tt = user.time_log.all().aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
+        total_time = user.history.all().aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
         current_time_calc = (timezone.now() - user.clue_time)
         stat_str = ('You are in place {} of {} teams\n'
                     'Points:{}\n'
@@ -528,7 +525,7 @@ class TestGetStatus(TestCase):
                     'Total Time Taken:{}')
         self.assertEqual(stat_str.format(1, 2, user.points, 1, 2,
                                          str(current_time_calc).split(".")[0],
-                                         str(tt + current_time_calc).split(".")[0]),
+                                         str(total_time + current_time_calc).split(".")[0]),
                          self.cli.command("getstats Team1", "Team1"), "User Couldn't user get stats")
 
     def test_not_user(self):
@@ -546,10 +543,10 @@ class TestAnswerQuestion(TestCase):
         self.assertEqual(game_create, self.cli.command("create test", GM), "Failed to create game")
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(team_add, self.cli.command("addteam Team2 1526", GM), "setup failed")
-        self.assertEqual(landmark_add, self.cli.command(
-            'addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM), landmark_add_fail)
-        self.assertEqual(landmark_add, self.cli.command(
-            'addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM),landmark_add_fail)
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                                        '"Statue of Liberty"', GM), landmark_add_fail)
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" '
+                                                        '"Grind"', GM), landmark_add_fail)
         self.assertEqual(landmark_add, self.cli.command(
             'addlandmark "ldm3" "Last Mark" "The Last Answer" "Last"', GM), landmark_add_fail)
         self.assertEqual(game_started, self.cli.command("start", GM), "Failed to start game.")
@@ -601,10 +598,7 @@ class TestAnswerQuestion(TestCase):
                     'Final Points: {}')
         self.assertEqual("That is correct! You have completed the hunt! Here are your final stats:\n{}".format(
             stat_str.format(1, 2, "0:00:00", 300)), self.cli.command("answer 'Last'", "Team1"),
-            "Correct answer did not print correct response")
-
-        #self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer 'Last'", "Team1"),
-         #                "Correct answer did not print correct response")
+                         "Correct answer did not print correct response")
 
     def test_answer_pass_last_question(self):
         question = self.cli.current_user.current_landmark.get_next_in_order().question
@@ -619,9 +613,7 @@ class TestAnswerQuestion(TestCase):
                     'Final Points: {}')
         self.assertEqual("That is correct! You have completed the hunt! Here are your final stats:\n{}".format(
             stat_str.format(1, 2, "0:00:00", 300)), self.cli.command("answer 'Last'", "Team1"),
-            "Correct answer did not print correct response")
-        #self.assertEqual("That is Correct! There are no more landmarks!", self.cli.command("answer Last", "Team1"),
-         #                "Correct answer did not print correct response")
+                         "Correct answer did not print correct response")
         self.assertEqual("There are no more landmarks!", self.cli.command("answer 'Last'", "Team1"),
                          "Correct answer did not print correct response")
 
@@ -675,10 +667,11 @@ class TestSnapShot(TestCase):
         self.assertEqual(team_add, self.cli.command("addteam Team1 1526", GM), "setup failed")
         self.assertEqual(team_add, self.cli.command("addteam Team2 1526", GM), "setup failed")
         self.assertEqual(landmark_add,
-                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM),
+                         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" '
+                                          '"Statue of Liberty"', GM),
                          landmark_add_fail)
-        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM),
-                         landmark_add_fail)
+        self.assertEqual(landmark_add, self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" '
+                                                        '"Grind"', GM), landmark_add_fail)
 
     def test_snapshot_multiple_teams(self):
         self.assertEqual(game_started, self.cli.command("start", GM), "Failed to start game.")
@@ -693,11 +686,11 @@ class TestSnapShot(TestCase):
                     'Final Points: {}')
         self.assertEqual("That is correct! You have completed the hunt! Here are your final stats:\n{}".format(
             stat_str.format(1, 2, "0:00:00", 200)), self.cli.command("answer 'Grind'", "Team2"),
-            "Correct answer did not print correct response")
+                         "Correct answer did not print correct response")
         total_time_list = []
         team_points = []
         for team in self.cli.game.teams.all():
-            total_time = team.time_log.aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
+            total_time = team.history.aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
             total_time_list.append(total_time)
             team_points.append(team.points)
         stat_str_team_1 = "Team: Team1\nYou Are On Landmark 2\nTime Taken For Landmarks: {}\nTotal Points: {}\n".format(

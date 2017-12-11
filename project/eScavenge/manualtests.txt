@@ -7,8 +7,7 @@ Parts denoted with * are not actual commmands, but separate steps
 4. addlandmark n1 c1 q1 a1
 5. addlandmark n2 c2 q2 a2
 6. start
-7. *Log out
-8. *Log in as team1
+8. *Log in as team1 in another tab
 9. getstats  *Verify some small time has passed and on the first landmark and no points
 10. getclue
 11. getquestion
@@ -16,6 +15,5 @@ Parts denoted with * are not actual commmands, but separate steps
 13. answer a1  *should be right
 14. answer a2  *should be end of game for that team
 15. getstats  *should say game over somehow and score
-16. *Log out
-17. *Log in gamemaker
+17. *Switch to gamemaker tab
 18. snapshot
