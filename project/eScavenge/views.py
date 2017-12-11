@@ -23,7 +23,12 @@ def validate(request):
             if u.login(request.POST['username'], request.POST['password']) is None:
                 message = "Invalid password"
     if message == "XXX":
-        context = {"huntUser": request.POST["username"]}
+        teamlist = []
+        game_id = Team.objects.get(username=request.POST["username"]).game_id
+        for team in Team.objects.filter(game_id=game_id).order_by('-points'):
+            username = team.username
+            teamlist.append(username)
+        context = {"huntUser": request.POST["username"], "teamlist" : teamlist}
         return render(request, "teamPage.html", context)
     return render(request, "login.html", {"message": message})
 
