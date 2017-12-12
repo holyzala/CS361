@@ -1,0 +1,56 @@
+{% extends 'basic.html' %}
+
+{% block title %} EditLandmark: {{ getLandmarkName }} {% endblock %}
+{% block Nav-Bar %}
+
+    <a class="eScavenge">Game: {{ huntUser| getLandmarkName }}</a>
+
+{% endblock %}
+{% block dropdown %}
+
+    <div class="dropdown">
+			<button class="deletebutton">{{ delete }}</button>
+	   		<div class="dropdown-content">
+         	</div>
+    </div>
+{% endblock %}
+
+
+{% block command-box %}
+    <div class="gameInfo">
+            <p class="landmarkname">{{ EditLandmark }}
+    </div>
+    <div class="userInteraction">
+        <form action="/validate/" method="post">
+            {% csrf_token %}
+            <input type="text" id="commandline" name="commandline">
+        </form>
+        <form action="/validate/" method="post">
+            {% csrf_token %}
+            <input type="submit" id="answerQuestion" value="Answer Question">
+        </form>
+        <form action="/validate/" method="post">
+                {% csrf_token %}
+            <input type="submit" id="quitQuestion" value="Quit Question">
+        </form>
+    </div>
+    <p>{{ output }}</p>
+{% endblock %}
+
+
+{% block side-bar %}
+{% endblock %}
+
+{% block leaderboard %}
+    <tr>
+        <th>Team Name</th>
+        <th>Team Points</th>
+    </tr>
+        {% for username in teamlist %}
+            <tr>
+            <td>{{ username }}</td>
+            <td>{{ username | getTeamPoints }}</td>
+            </tr>
+        {% endfor %}
+
+{% endblock %}
