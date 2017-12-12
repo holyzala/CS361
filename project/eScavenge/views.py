@@ -1,12 +1,14 @@
 from django.shortcuts import render
 from .CLI import CLI, COMMANDS
 from .models import GMFactory, Team, LandmarkStat
+
 GM = GMFactory().get_gm()
 
-#def index(request)
+
+# def index(request)
 #    check session if has user, then return to teampage.html
- #   if no session
-  #      return render
+#   if no session
+#      return render
 
 
 def login(request):
@@ -17,7 +19,7 @@ def login(request):
                 message = "Invalid password"
             else:
                 request.session['username'] = request.POST["username"]
-                return render( request, 'gamemaker.html')
+                return render( request, 'gamemaker.html' )
         try:
             u = Team.objects.get( username=request.POST["username"] )
         except Team.DoesNotExist:
@@ -31,10 +33,11 @@ def login(request):
             teamlist = []
             for team in userpage.game.teams.order_by( '-points' ):
                 teamlist.append( team.username )
-            context = {'team': userpage, 'teamlist': teamlist}
+            teamhistory = userpage.history.all()
+            context = {'team': userpage, 'teamlist': teamlist, 'teamhistory': teamhistory}
             return render( request, 'teamPage.html', context )
-            return render( request, 'teamPage.html')
-    return render(request, 'login.html', {'message':message})
+    return render( request, 'login.html', {'message': message} )
+
 
 def teamPage(request):
     user = request.session.get( 'username' )
@@ -56,9 +59,9 @@ def teamPage(request):
             command += f' answer {request.POST.get( "commandline", None ) }'
         cli.command( command, user )
         context = {'command': command}
-    userpage = Team.objects.get( username=request.session.get( 'username' ))
+    userpage = Team.objects.get( username=request.session.get( 'username' ) )
     teamlist = []
     for team in userpage.game.teams.order_by( '-points' ):
         teamlist.append( team.username )
-    context = {'team': userpage, 'teamlist': teamlist, 'command' : command}
+    context = {'team': userpage, 'teamlist': teamlist, 'command': command}
     return render( request, 'teamPage.html', context )

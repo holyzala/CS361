@@ -3,34 +3,34 @@
 
 {% block title %} Team: {{ team }} {% endblock %}
 {% block Nav-Bar %}
-        <a class="eScavenge">Game: {{ team.game_id }}</a>
-            <p>{{ command }}</p>
+    <a class="eScavenge">Game: {{ team.game_id }}</a>
+    <p>{{ command }}</p>
 
 {% endblock %}
 {% block dropdown %}
 
     <div class="dropdown">
-			<button class="dropbtn">{{ team.username}}</button>
-	   		<div class="dropdown-content">
-	   			<form action="/teamPage/" method="post">
-                    {% csrf_token %}
-	   			    <label id="usernamelabel" for="changeusername">Change User name:</label>
-	   				<input type="text" id="changeusername" name="changeusername">
-	   				<br/>
-	   				<label id="passwordlabel" for="changepassword">Change Password:</label>
-	   				<input type="text" id="changepassword" name=changepassword">
-          			<br>
-          			<input type="submit" id="splashSubmitButton" name=changeteam value="Submit">
-                    <p>{{ output }}</p>
-         		</form>
-         	</div>
+        <button class="dropbtn">{{ team.username }}</button>
+        <div class="dropdown-content">
+            <form action="/teamPage/" method="post">
+                {% csrf_token %}
+                <label id="usernamelabel" for="changeusername">Change User name:</label>
+                <input type="text" id="changeusername" name="changeusername">
+                <br/>
+                <label id="passwordlabel" for="changepassword">Change Password:</label>
+                <input type="text" id="changepassword" name=changepassword">
+                <br>
+                <input type="submit" id="splashSubmitButton" name=changeteam value="Submit">
+                <p>{{ output }}</p>
+            </form>
+        </div>
     </div>
 {% endblock %}
 {% block command-box %}
     <div class="gameInfo">
-            <p class="landmarkname">{{ team.current_landmark.name }}
-            <p class="landmarkclue">{{ team.current_landmark.clue }}
-            <p class="landmarkquestion">{{ team.current_landmark.question}}
+        <p class="landmarkname">{{ team.current_landmark.name }}
+        <p class="landmarkclue">{{ team.current_landmark.clue }}
+        <p class="landmarkquestion">{{ team.current_landmark.question }}
     </div>
     <div class="userInteraction">
         <form action="/teamPage/" method="post">
@@ -39,46 +39,56 @@
             <input type="submit" id="answerQuestion" name="answerQuestion" value="Answer Question">
         </form>
         <form action="/teamPage/" method="post">
-                {% csrf_token %}
+            {% csrf_token %}
             <input type="submit" id="quitQuestion" name="quitQuestion" value="Quit Question">
         </form>
     </div>
 {% endblock %}
 
-    {% block leaderboard %}
-        <thead>
-            <tr>
-                <th><span class="text">Team Name</span></th>
-                <th><span class="text">Team Points</span></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for team in teamlist %}
-                <tr>
-                    <td>{{ team }}</td>
-                    <td>{{ team | getTeamPoints }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    {% endblock %}
 
-{% block scrollable %}
-    {% block answeredlandmarks %}
-         <thead>
-            <tr>
-                <th><span class="text">Landmark Name</span></th>
-                <th><span class="text">Landmark Points</span></th>
-                <th><span class="text">Landmark Time Taken</span></th>
-            </tr>
+{% block leaderboard %}
+    <table class="leaderboard">
+
+        <thead>
+        <tr>
+            <th><span class="text">Team Name</span></th>
+            <th><span class="text">Team Points</span></th>
+        </tr>
         </thead>
         <tbody>
-        {% for landmarkstat in landmarkstatlist %}
+        {% for team in teamlist %}
             <tr>
-                <td>{{ team.history.landmarkstat.landmark.name }}</td>
-                <td>{{ team.history.landmarkstat.points}}</td>
-                <td>{{ team.history.landmarkstat.time_delta}}</td>
+                <td>{{ team }}</td>
+                <td>{{ team | getTeamPoints }}</td>
             </tr>
         {% endfor %}
-        <tbody>
-    {% endblock %}
+        </tbody>
+    </table>
+
+{% endblock %}
+{% block scrollable %}
+    <div class="scrollable">
+
+        {% block answeredlandmarks %}
+            <table class="answeredlandmarks">
+
+                <thead>
+                <tr>
+                    <th><span class="text">Landmark Name</span></th>
+                    <th><span class="text">Landmark Points</span></th>
+                    <th><span class="text">Landmark Time Taken</span></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for stat in teamhistory %}
+                    <tr>
+                        <td>{{ stat.landmark.name }}</td>
+                        <td>{{ stat.points }}</td>
+                        <td>{{ stat.time_delta }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endblock %}
+    </div>
 {% endblock %}
