@@ -1,8 +1,0 @@
-{% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'Interface/style.css' %}" />
-<form method="post" action="/validate/">{% csrf_token %}
-    Name: <input type="text" size="20" id="huntUser" name="huntUser"/><br/>
-    Password: <input type="password" size="20" id="password" name="password"/><br/>
-    <input type="submit"/>
-</form>
-{{  message }}

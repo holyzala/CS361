@@ -4,8 +4,6 @@ body{
 }
 
 .Nav-Bar {
-    left:10px;
-    overflow: hidden;
     background-color: #006000;
     position: fixed;
     top: 0;
@@ -70,13 +68,11 @@ body{
 
 .dropdown {
     position: relative;
-
     display: inline-block;
     float:right;
 }
 
 .dropdown-content {
-    right: 1px;
     display: none;
     position: absolute;
     background-color: #8aff8e;
@@ -85,6 +81,7 @@ body{
     z-index: 1;
      font-family:Helvetica;
     border: 5px solid black;
+    right: 5px;
     padding:5px;
 }
 
@@ -149,8 +146,6 @@ p.landmarkquestion{
 }
 
 .command-box{
-    top: 10px;
-    left: 10px;
     height: 400px;
     width: 400px;
     box-shadow: 2px 8px #001100;
@@ -158,7 +153,7 @@ p.landmarkquestion{
     background-color: #00bb00;
     position: fixed;
     top: 15%;
-    left: 25%;
+    left: 35%;
     text-shadow: 0px 4px 3px rgba(0,0,0,1.0),
              0px 8px 13px rgba(0,0,0,0.1),
              0px 18px 23px rgba(0,0,0,0.1);
@@ -176,51 +171,70 @@ p.landmarkquestion{
     border: 5px solid black;
 }
 
-.side-bar{
-    background-color: #006000;
-    top: 10px;
-    left: 10px;
-    height: 480px;
-    width: 120px;
-    position: absolute;
-    top: 10%;
-    box-shadow: 4px 6px #003300;
-}
-
 table.leaderboard{
-    box-shadow: 4px 6px #003300;
-    border: 3px solid #000000;
-    background-color: #006000;
-    top: 10px;
+    display:table;
     right: 0px;
-    height: 100px;
     width: 300px;
     position: absolute;
-    top: 10%;
-}
-
-table.leaderboard tr {
     color: white;
-    text-align:center;
+    box-shadow: 4px 6px #003300;
     border: 3px solid #000000;
-}
+    background-color: #00bb00;
+    top: 11%;
 
-.scroll-answered{
+}
+ table.leaderboard thead, table.leaderboard tbody {
+        width: 100%;
+    }
+    table.leaderboard tbody {
+        overflow: auto;
+        height: 150px;
+    }
+    table.leaderboard tr {
+        width: 100%;
+        display: table;
+        text-align: center;
+    }
+    table.leaderboard th, table.leaderboard td {
+        width: 33%;
+    }
+
+.scrollable
+{
+    border: 1px solid black;
+    width: 100%;
+    height: 100px;
     background-color: #006000;
-    height: 115px;
-    width: 1354px;
-    border:1px solid black;
-    position:fixed;
-    left:10px;
-    bottom: 0;
-    box-shadow: 2px 4px #003300;
+    color:white;
+    position: absolute;
+    padding-bottom:20px;
+    padding-top: 5px;
+    bottom: 0px;
+    overflow: auto;
 }
 
-.scroll-answered a{
+.answeredlandmarks{
+    width:100%;
+}
+ table.answeredlandmarks tbody {
+     overflow: auto;
+
+ }
+    table.answeredlandmarks tr {
+        display: table;
+        width: 100%;
+        text-align: center;
+    }
+    table.answeredlandmarks th, table.answeredlandmarks td {
+        text-shadow: 0px 2px 3px rgba(0,0,0,1.0),
+             0px 3px 13px rgba(0,0,0,0.1),
+             0px 9px 23px rgba(0,0,0,0.1);
+        text-align: left;
+        width: 33%;
+    }
+
+table.answeredlandmarks td {
+    border-bottom: 1px solid black;
 
 }
-
-.scroll-bar{
-    direction:rtl;
-    overflow-x:scroll;
-}
+.answeredlandmarks tr:nth-child(even){background-color: #009900;}

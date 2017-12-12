@@ -1,71 +1,84 @@
 {% extends 'basic.html' %}
 {% load filters %}
 
-{% block title %} Team: {{ huntUser }} {% endblock %}
+{% block title %} Team: {{ team }} {% endblock %}
 {% block Nav-Bar %}
-
-    <a class="eScavenge">Game: {{ huntUser| getTeamGame }}</a>
+        <a class="eScavenge">Game: {{ team.game_id }}</a>
+            <p>{{ command }}</p>
 
 {% endblock %}
 {% block dropdown %}
 
     <div class="dropdown">
-			<button class="dropbtn">{{huntUser}}</button>
+			<button class="dropbtn">{{ team.username}}</button>
 	   		<div class="dropdown-content">
-	   			<form action="/terminal/" method="post">
+	   			<form action="/teamPage/" method="post">
                     {% csrf_token %}
-	   			    <label id="usernamelabel" for="username">Change User name:</label>
-	   				<input type="text" id="username" name="username">
+	   			    <label id="usernamelabel" for="changeusername">Change User name:</label>
+	   				<input type="text" id="changeusername" name="changeusername">
 	   				<br/>
-	   				<label id="passwordlabel" for="password">Change Password:</label>
-	   				<input type="text" id="password" name="password">
+	   				<label id="passwordlabel" for="changepassword">Change Password:</label>
+	   				<input type="text" id="changepassword" name=changepassword">
           			<br>
-          			<input type="submit" id="splashSubmitButton" value="Submit">
+          			<input type="submit" id="splashSubmitButton" name=changeteam value="Submit">
+                    <p>{{ output }}</p>
          		</form>
          	</div>
     </div>
 {% endblock %}
 {% block command-box %}
     <div class="gameInfo">
-            <p class="landmarkname">{{ huntUser| getLandmarkName }}
-            <p class="landmarkclue">{{ huntUser| getLandmarkClue }}
-            <p class="landmarkquestion">{{ huntUser| getLandmarkQuestion }}
+            <p class="landmarkname">{{ team.current_landmark.name }}
+            <p class="landmarkclue">{{ team.current_landmark.clue }}
+            <p class="landmarkquestion">{{ team.current_landmark.question}}
     </div>
     <div class="userInteraction">
-        <form action="/validate/" method="post">
+        <form action="/teamPage/" method="post">
             {% csrf_token %}
             <input type="text" id="commandline" name="commandline">
+            <input type="submit" id="answerQuestion" name="answerQuestion" value="Answer Question">
         </form>
-        <form action="/validate/" method="post">
-            {% csrf_token %}
-            <input type="submit" id="answerQuestion" value="Answer Question">
-        </form>
-        <form action="/validate/" method="post">
+        <form action="/teamPage/" method="post">
                 {% csrf_token %}
-            <input type="submit" id="quitQuestion" value="Quit Question">
+            <input type="submit" id="quitQuestion" name="quitQuestion" value="Quit Question">
         </form>
     </div>
-    <p>{{ output }}</p>
-{% endblock %}
-{% block side-bar %}
 {% endblock %}
 
-{% block leaderboard %}
-    <tr>
-        <th>Team Name</th>
-        <th>Team Points</th>
-    </tr>
-        {% for username in teamlist %}
+    {% block leaderboard %}
+        <thead>
             <tr>
-            <td>{{ username }}</td>
-            <td>{{ username | getTeamPoints }}</td>
+                <th><span class="text">Team Name</span></th>
+                <th><span class="text">Team Points</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for team in teamlist %}
+                <tr>
+                    <td>{{ team }}</td>
+                    <td>{{ team | getTeamPoints }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    {% endblock %}
+
+{% block scrollable %}
+    {% block answeredlandmarks %}
+         <thead>
+            <tr>
+                <th><span class="text">Landmark Name</span></th>
+                <th><span class="text">Landmark Points</span></th>
+                <th><span class="text">Landmark Time Taken</span></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for landmarkstat in landmarkstatlist %}
+            <tr>
+                <td>{{ team.history.landmarkstat.landmark.name }}</td>
+                <td>{{ team.history.landmarkstat.points}}</td>
+                <td>{{ team.history.landmarkstat.time_delta}}</td>
             </tr>
         {% endfor %}
-
-{% endblock %}
-{% block scroll-answered %}
-    <div class="scroll-bar"></div>
-    {% for landmark in landmarkanswered_list %}
-
-    {% endfor %}
+        <tbody>
+    {% endblock %}
 {% endblock %}

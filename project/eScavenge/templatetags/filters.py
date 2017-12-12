@@ -1,7 +1,7 @@
 
 from django import template
 from ..CLI import CLI, COMMANDS
-from ..models import GMFactory, Team, Landmark
+from ..models import GMFactory, Team, Landmark, LandmarkStat
 
 GM = GMFactory().get_gm()
 
@@ -18,25 +18,7 @@ def getTeamGame(username):
     return user.game_id
 
 @register.filter
-def getLandmarkName(username):
-    user = Team.objects.get(username=username)
-    landmark = user.current_landmark
-    return landmark.name
-
-@register.filter
-def getLandmarkQuestion(username):
-    user = Team.objects.get(username=username)
-    landmark = user.current_landmark
-    return landmark.question
-
-@register.filter
-def getLandmarkClue(username):
-    user = Team.objects.get(username=username)
-    landmark = user.current_landmark
-    return landmark.clue
-
-@register.filter
 def getTeamPoints(username):
-    user = Team.objects.get(username=username)
+    user = Team.objects.get( username=username )
     points = user.points
     return points

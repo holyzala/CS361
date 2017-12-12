@@ -21,17 +21,23 @@
         {% block command-box %}
         {% endblock %}
     </div>
-    <div class="side-bar">
-        {% block side-bar %}
-        {% endblock %}
-    </div>
-    <table class="table-row leaderboard">
+
+    <table class="leaderboard">
         {% block leaderboard %}
         {% endblock %}
     </table>
 
     <div class="scroll-answered">
         {% block scroll-answered %}
+    {% endblock %}
+    </div>
+
+    <div class="scrollable">
+        {% block scrollabe %}
+         <table class="answeredlandmarks">
+            {% block answeredlandmarks %}
+            {% endblock %}
+        </table>
         {% endblock %}
     </div>
 

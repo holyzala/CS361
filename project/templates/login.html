@@ -6,21 +6,22 @@
 		<link rel="stylesheet" href="/static/loginstyle.css">
 </head>
 
-
 <body>
    <div class="dropdown">
 			<button class="dropbtn">Login</button>
 	   		<div class="dropdown-content">
-	   			<form action="/validate/" method="post">
+	   			<form action="/" method="post">
                     {% csrf_token %}
 	   			    <label id="usernamelabel" for="username">User:</label>
-	   				<input type="text" id="username" name="username">
-	   				<br/>
+                    <input type="text" id="username" name="username">
 	   				<label id="passwordlabel" for="password">Password:</label>
-	   				<input type="text" id="password" name="password">
+
+                    <input type="password" id="password" name="password">
           			<br>
           			<input type="submit" id="splashSubmitButton" value="Submit">
+
          		</form>
+                <p>{{ message }}</p>
          	</div>
     </div>
 
