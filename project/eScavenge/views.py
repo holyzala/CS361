@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .CLI import CLI, COMMANDS
 from .models import GMFactory, Team
 
@@ -41,6 +41,9 @@ def teamPage(request):
     user = request.session.get('username')
     command = ''
     if request.method == 'POST':
+        if request.POST.get("logoutbutton"):
+            del request.session['username']
+            return redirect('/')
         if request.POST.get("changeteam"):
             command += 'editteam'
             if request.POST.get('changeusername'):
