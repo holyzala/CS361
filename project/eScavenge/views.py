@@ -43,18 +43,17 @@ def teamPage(request):
     if request.method == 'POST':
         if request.POST.get("changeteam"):
             command += 'editteam'
-            if 'changeteam' in request.POST:
+            if request.POST.get('changeusername'):
                 command += f' name { request.POST["changeusername"]  }'
-            if 'changepassword' in request.POST:
+            if request.POST.get('changepassword'):
                 command += f' password {request.POST["changepassword"] }'
-            del request.session['username']
-            request.session.modified = True
-            request.session['username'] = request.POST["changeusername"]
         elif request.POST.get("quitQuestion"):
             command += ' giveup'
         elif request.POST.get("answerQuestion"):
             command += f' answer {request.POST.get( "commandline", None ) }'
         CLI(COMMANDS).command(command, user)
+        if request.POST.get('changeusername'):
+            request.session['username'] = request.POST["changeusername"]
     userpage = Team.objects.get(username=request.session.get('username'))
     teamlist = userpage.game.teams.order_by('-points')
     teamhistory = userpage.history.all()
