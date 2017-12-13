@@ -58,8 +58,8 @@
         <tbody>
         {% for team in teamlist %}
             <tr>
-                <td>{{ team }}</td>
-                <td>{{ team | getTeamPoints }}</td>
+                <td>{{ team.username }}</td>
+                <td>{{ team.points }}</td>
             </tr>
         {% endfor %}
         </tbody>
