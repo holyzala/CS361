@@ -84,7 +84,7 @@
                     <tr>
                         <td>{{ stat.landmark.name }}</td>
                         <td>{{ stat.points }}</td>
-                        <td>{{ stat.time_delta }}</td>
+                        <td>{{ stat.time_delta | remove_milliseconds }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

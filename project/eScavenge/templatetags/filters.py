@@ -8,14 +8,8 @@ register = template.Library()
 
 
 @register.filter
-def getTeamGame(username):
-    try:
-        user = Team.objects.get( username=username )
-    except Team.DoesNotExist:
-        return "No Game Running"
-    if user.game_id is None:
-        return "No Game Running"
-    return user.game_id
+def remove_milliseconds(timedelta):
+    return str(timedelta).split('.')[0]
 
 
 @register.filter
