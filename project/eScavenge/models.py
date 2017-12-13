@@ -70,7 +70,6 @@ class Game(models.Model):
             if newpassword:
                 team.password = newpassword
             if newname:
-                team.delete()
                 team.username = newname
             team.full_clean()
             team.save()
@@ -299,7 +298,7 @@ class Landmark(models.Model):
 
 
 class Team(models.Model):
-    username = models.TextField(primary_key=True)
+    username = models.TextField(unique=True)
     password = models.TextField()
     points = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0)])
     current_landmark = models.ForeignKey(Landmark, on_delete=models.CASCADE, blank=True, null=True)

@@ -5,35 +5,36 @@
 
 <html>
 <head>
-		<link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
-	<div class="Nav-Bar">
-        {% block Nav-Bar %}
-        {% endblock %}
-    </div>
-    <div class="dropdown">
-        {% block dropdown %}
-        {% endblock %}
-    </div>
-    <div class="command-box">
-        {% block command-box %}
-        {% endblock %}
-    </div>
-    <div class="side-bar">
-        {% block side-bar %}
-        {% endblock %}
-    </div>
-    <table class="table-row leaderboard">
-        {% block leaderboard %}
-        {% endblock %}
-    </table>
+<div class="Nav-Bar">
+    {% block Nav-Bar %}
+    {% endblock %}
+</div>
+<div class="dropdown">
+    {% block dropdown %}
+    {% endblock %}
+</div>
+<div class="command-box">
+    {% block command-box %}
+    {% endblock %}
+</div>
 
-    <div class="scroll-answered">
-        {% block scroll-answered %}
-        {% endblock %}
-    </div>
+{% block leaderboard %}
+{% endblock %}
+
+
+
+<div class="scrollable">
+    {% block scrollabe %}
+        <table class="answeredlandmarks">
+            {% block answeredlandmarks %}
+            {% endblock %}
+        </table>
+    {% endblock %}
+</div>
 
 </body>
 </html>
