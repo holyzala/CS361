@@ -63,5 +63,6 @@ def teamPage(request):
     teamlist = []
     for team in userpage.game.teams.order_by( '-points' ):
         teamlist.append( team.username )
-    context = {'team': userpage, 'teamlist': teamlist, 'command': command}
+    teamhistory = userpage.history.all()
+    context = {'team': userpage, 'teamlist': teamlist, 'teamhistory':teamhistory, 'command': command}
     return render( request, 'teamPage.html', context )
