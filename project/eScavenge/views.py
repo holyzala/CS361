@@ -1,15 +1,18 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .CLI import CLI, COMMANDS
 from .models import GMFactory, Team
 
 GM = GMFactory().get_gm()
 
 
-# def index(request)
-#    check session if has user, then return to teampage.html
-#   if no session
-#      return render
-
+def index(request):
+    user = request.session.get( 'username' )
+    if user == None:
+        return render(request, 'login.html' )
+    else:
+        if user == GM.username:
+            return redirect("/gamemaker")
+    return redirect("/teamPage")
 
 def login(request):
     message = ""
@@ -41,6 +44,9 @@ def teamPage(request):
     user = request.session.get('username')
     command = ''
     if request.method == 'POST':
+        if request.POST.get("logoutbutton"):
+            del request.session['username']
+            return redirect('/')
         if request.POST.get("changeteam"):
             command += 'editteam'
             if request.POST.get('changeusername'):

@@ -1,11 +1,10 @@
 {% extends 'basic.html' %}
 {% load filters %}
 
-{% block title %} Team: {{ team }} {% endblock %}
+{% block title %} Team: {{ team.username }} {% endblock %}
 {% block Nav-Bar %}
     <a class="eScavenge">Game: {{ team.game_id }}</a>
     <p>{{ command }}</p>
-
 {% endblock %}
 {% block dropdown %}
 
@@ -21,6 +20,7 @@
                 <input type="text" id="changepassword" name="changepassword">
                 <br>
                 <input type="submit" id="splashSubmitButton" name=changeteam value="Submit">
+                <input type="submit" id="logoutbutton" name=logoutbutton value="Log Out">
                 <p>{{ output }}</p>
             </form>
         </div>
@@ -28,11 +28,25 @@
 {% endblock %}
 {% block command-box %}
     <div class="gameInfo">
+    {% if team.game.ended %}
+        <p style="color:white; text-align: center; font-size: 25px;">Final Game Stats</p>
+        <p style="color:white; text-align: center; font-size: 15px;">Points: {{ team.points }}</p>
+        <p style="color:white; text-align: center; font-size: 15px;">Total Time: {{ teamhistory | total_time | remove_milliseconds }}</p>
+    {% elif team.game.started %}
+        {% if team.current_landmark %}
         <p class="landmarkname">{{ team.current_landmark.name }}
         <p class="landmarkclue">{{ team.current_landmark.clue }}
         <p class="landmarkquestion">{{ team.current_landmark.question }}
+        <p style="color:white; position:absolute; bottom:25%; right: 35%">Total Time: {{ teamhistory | total_time | remove_milliseconds }}</p>
+            {% else %}
+            <p style="color:white; text-align: center; font-size: 25px;">Final Landmark Answered</p>
+            {% endif %}
+    {% else %}
+        <p style="color:white; font-size: 25px; position: absolute; right: 20%; bottom: 50%">Game Hasn't Started</p>
+    {% endif %}
     </div>
     <div class="userInteraction">
+        {% if team.game.started %}
         <form action="/teamPage/" method="post">
             {% csrf_token %}
             <input type="text" id="commandline" name="commandline">
@@ -42,14 +56,19 @@
             {% csrf_token %}
             <input type="submit" id="quitQuestion" name="quitQuestion" value="Quit Question">
         </form>
+            {% elif team.game.ended %}
+            <p style="color:white; text-align: center; font-size: 25px;">Game Over!</p>
+        {% endif %}
     </div>
 {% endblock %}
-
-
 {% block leaderboard %}
     <table class="leaderboard">
-
         <thead>
+        <th>Game Status:
+        {% if team.game.started %} In Progress
+        {% elif team.game.ended %} Game Over
+        {% else %} Not Started</th>
+        {% endif %}
         <tr>
             <th><span class="text">Team Name</span></th>
             <th><span class="text">Team Points</span></th>
