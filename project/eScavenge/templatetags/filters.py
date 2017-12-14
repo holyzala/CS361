@@ -1,10 +1,6 @@
 from django import template
 from ..models import GMFactory
-import datetime
-from django.utils.timezone import now
 from datetime import timedelta
-from django.db.models import Sum
-from django.db.models.functions import Coalesce
 
 GM = GMFactory().get_gm()
 
