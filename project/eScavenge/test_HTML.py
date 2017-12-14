@@ -153,6 +153,7 @@ class TestTeamAnswer(TestCase):
         self.cli.command('create game1', self.gm)
         current_game = Game.objects.get(name="game1")
         current_game.landmark_points = 100
+        current_game.penalty_value = 10
         current_game.save()
         self.cli.command('addteam team1 1234', self.gm)
         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', self.gm)
@@ -175,5 +176,8 @@ class TestTeamAnswer(TestCase):
         response = self.client.post('/teamPage/', {'commandline': 'WRONG ANSWER',
                                                    'answerQuestion': 'Answer Question'})
         self.assertContains(response, "New York")
-        expected_string = "<td></td>"
-        self.assertContains(response, "<td></td>")
+        response = self.client.post('/teamPage/', {'commandline': 'Statue of Liberty',
+                                                   'answerQuestion': 'Answer Question'})
+
+        print(response.content)
+        self.assertContains(response,"<td>90</td>", html=True)
