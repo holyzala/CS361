@@ -10,7 +10,7 @@
 <div class="dropdown">
     <button class="dropbtn">Login</button>
     <div class="dropdown-content">
-        <form action="/" method="post">
+        <form action="/login" method="post">
             {% csrf_token %}
             <label id="usernamelabel" for="username">User:</label>
             <input type="text" id="username" name="username">

@@ -18,7 +18,8 @@ from django.contrib import admin
 from eScavenge import views
 
 urlpatterns = [
-    url( r'^$', views.login, name='login' ),
+    url( r'^$', views.index, name='index' ),
+    url( r'^login', views.login, name='login' ),
     url( r'^teamPage/', views.teamPage, name='teamPage' ),
     url( r'^admin/', admin.site.urls ),
 ]

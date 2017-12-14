@@ -158,6 +158,7 @@ p.landmarkquestion {
     0px 8px 13px rgba(0, 0, 0, 0.1),
     0px 18px 23px rgba(0, 0, 0, 0.1);
     box-shadow: 2px 4px #003300;
+    text-align: center;
 }
 
 #noGame {
