@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from django.test import Client
 from django.test import TestCase
 from .CLI import CLI, COMMANDS
@@ -9,6 +10,14 @@ from functools import reduce
 class TestLogin(TestCase):
     def setUp(self):
         self.client = Client()
+
+    def test_post_index(self):
+        response = self.client.post('/')
+        self.assertEqual(HTTPStatus.METHOD_NOT_ALLOWED, response.status_code)
+
+    def test_get_login(self):
+        response = self.client.get('/login')
+        self.assertEqual(HTTPStatus.METHOD_NOT_ALLOWED, response.status_code)
 
     def test_get_login_page(self):
         response = self.client.get('/')
