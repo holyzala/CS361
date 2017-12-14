@@ -60,7 +60,7 @@ def teamPage(request):
         elif request.POST.get("quitQuestion"):
             command += ' giveup'
         elif request.POST.get("answerQuestion"):
-            command += f' answer {request.POST.get( "commandline", None ) }'
+            command += f' answer \'{request.POST.get( "commandline", None ) }\''
         CLI(COMMANDS).command(command, user)
         if request.POST.get('changeusername'):
             request.session['username'] = request.POST["changeusername"]
