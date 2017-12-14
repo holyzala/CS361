@@ -31,13 +31,13 @@
     {% if team.game.ended %}
         <p style="color:white; text-align: center; font-size: 25px;">Final Game Stats</p>
         <p style="color:white; text-align: center; font-size: 15px;">Points: {{ team.points }}</p>
-        <p style="color:white; text-align: center; font-size: 15px;">Total Time: {{ teamhistory | total_time}}</p>
+        <p style="color:white; text-align: center; font-size: 15px;">Total Time: {{ teamhistory | total_time | remove_milliseconds }}</p>
     {% elif team.game.started %}
         {% if team.current_landmark %}
         <p class="landmarkname">{{ team.current_landmark.name }}
         <p class="landmarkclue">{{ team.current_landmark.clue }}
         <p class="landmarkquestion">{{ team.current_landmark.question }}
-        <p style="color:white; position:absolute; bottom:25%; right: 35%">Total Time: {{ teamhistory | total_time}}</p>
+        <p style="color:white; position:absolute; bottom:25%; right: 35%">Total Time: {{ teamhistory | total_time | remove_milliseconds }}</p>
             {% else %}
             <p style="color:white; text-align: center; font-size: 25px;">Final Landmark Answered</p>
             {% endif %}
