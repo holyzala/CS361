@@ -9,3 +9,4 @@ class TestLogin(TestCase):
     def test_get_login_page(self):
         response = self.client.get('/')
         self.assertEqual(200, response.status_code, "Wrong status returned")
+
