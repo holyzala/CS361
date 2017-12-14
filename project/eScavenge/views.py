@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, HttpResponseRedirect
+from django.shortcuts import render, redirect
 from .CLI import CLI, COMMANDS
 from .models import GMFactory, Team
 
