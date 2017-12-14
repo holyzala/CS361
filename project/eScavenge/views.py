@@ -1,19 +1,22 @@
 from django.shortcuts import render, redirect
+from django.views.decorators.http import require_http_methods
 from .CLI import CLI, COMMANDS
 from .models import GMFactory, Team
 
 GM = GMFactory().get_gm()
 
 
+@require_http_methods(["GET"])
 def index(request):
     user = request.session.get( 'username' )
-    if user == None:
+    if user is None:
         return render(request, 'login.html' )
-    else:
-        if user == GM.username:
-            return redirect("/gamemaker")
+    if user == GM.username:
+        return redirect("/gamemaker")
     return redirect("/teamPage")
 
+
+@require_http_methods(["POST"])
 def login(request):
     message = ""
     if request.method == 'POST':
@@ -40,6 +43,7 @@ def login(request):
     return render(request, 'login.html', {'message': message})
 
 
+@require_http_methods(["GET", "POST"])
 def teamPage(request):
     user = request.session.get('username')
     command = ''
@@ -56,7 +60,7 @@ def teamPage(request):
         elif request.POST.get("quitQuestion"):
             command += ' giveup'
         elif request.POST.get("answerQuestion"):
-            command += f' answer {request.POST.get( "commandline", None ) }'
+            command += f' answer \'{request.POST.get( "commandline", None ) }\''
         CLI(COMMANDS).command(command, user)
         if request.POST.get('changeusername'):
             request.session['username'] = request.POST["changeusername"]
