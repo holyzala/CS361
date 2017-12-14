@@ -138,18 +138,11 @@ p.landmarkquestion {
     color: white;
 }
 
-.gameStatusCommand {
-    color: white;
-}
-
 .userInteraction {
     height: 80px;
     widgth: 100px;
     border: 5px solid black;
     box-shadow: 2px 4px #003300;
-}
-.gameStatusInteraction {
-    color: white;
 }
 
 .command-box {
