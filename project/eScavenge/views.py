@@ -58,7 +58,8 @@ def teamPage(request):
             if request.POST.get('changepassword'):
                 command += f' password {request.POST["changepassword"] }'
         elif request.POST.get("quitQuestion"):
-            command += ' giveup'
+            team = Team.objects.get(username=user)
+            command += f' giveup {user} {team.password}'
         elif request.POST.get("answerQuestion"):
             command += f' answer \'{request.POST.get( "commandline", None ) }\''
         CLI(COMMANDS).command(command, user)

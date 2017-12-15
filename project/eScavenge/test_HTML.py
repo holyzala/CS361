@@ -1,10 +1,13 @@
-from http import HTTPStatus
-from django.test import Client
-from django.test import TestCase
-from .CLI import CLI, COMMANDS
-from .models import GMFactory, Team, Game, Landmark
 from datetime import timedelta
 from functools import reduce
+from http import HTTPStatus
+
+from django.test import Client, TestCase
+
+from .CLI import CLI, COMMANDS
+from .models import Team, Game
+
+GM_NAME = "gamemaker"
 
 
 class TestLogin(TestCase):
@@ -29,9 +32,8 @@ class TestLogin(TestCase):
 
     def test_login_team(self):
         cli = CLI(COMMANDS)
-        gm = 'gamemaker'
-        cli.command('create game1', gm)
-        cli.command('addteam team1 1234', gm)
+        cli.command('create game1', GM_NAME)
+        cli.command('addteam team1 1234', GM_NAME)
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
         self.assertContains(response, '<title> Team: team1 </title>', html=True)
 
@@ -39,9 +41,8 @@ class TestLogin(TestCase):
 class TestTeamLogout(TestCase):
     def setUp(self):
         cli = CLI(COMMANDS)
-        gm = 'gamemaker'
-        cli.command('create game1', gm)
-        cli.command('addteam team1 1234', gm)
+        cli.command('create game1', GM_NAME)
+        cli.command('addteam team1 1234', GM_NAME)
         self.client = Client()
 
     def test_logout(self):
@@ -54,11 +55,10 @@ class TestTeamPageGameStart(TestCase):
     def setUp(self):
         self.client = Client()
         self.cli = CLI(COMMANDS)
-        self.gm = 'gamemaker'
-        self.cli.command('create game1', self.gm)
-        self.cli.command('addteam team1 1234', self.gm)
-        self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', self.gm)
-        self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', self.gm)
+        self.cli.command('create game1', GM_NAME)
+        self.cli.command('addteam team1 1234', GM_NAME)
+        self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM_NAME)
+        self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM_NAME)
 
     def test_game_not_started(self):
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
@@ -66,7 +66,7 @@ class TestTeamPageGameStart(TestCase):
         self.assertContains(response, "Game Status: Not Started", html=True)
 
     def test_game_started(self):
-        self.cli.command('start', self.gm)
+        self.cli.command('start', GM_NAME)
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
         self.assertContains(response, '<p class="landmarkname">ldm1\n        <p class="landmarkclue">New York\n        '
                                       '<p class="landmarkquestion">Gift given by the French\n        ')
@@ -76,11 +76,10 @@ class TestTeamPageLeadBoards(TestCase):
     def setUp(self):
         self.client = Client()
         self.cli = CLI(COMMANDS)
-        self.gm = 'gamemaker'
-        self.cli.command('create game1', self.gm)
-        self.cli.command('addteam team1 1234', self.gm)
-        self.cli.command('addteam team2 1234', self.gm)
-        self.cli.command('start', self.gm)
+        self.cli.command('create game1', GM_NAME)
+        self.cli.command('addteam team1 1234', GM_NAME)
+        self.cli.command('addteam team2 1234', GM_NAME)
+        self.cli.command('start', GM_NAME)
         team = Team.objects.get(username="team1")
         team.points = 120
         team.save()
@@ -90,50 +89,48 @@ class TestTeamPageLeadBoards(TestCase):
 
     def test_sort(self):
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
-        self.assertContains(response, '<td>team2</td>\n                <td>150</td>\n            </tr>\n        \n     '
-                                      '       <tr>\n                <td>team1</td>\n                <td>120</td>\n     '
-                                      '       </tr>')
+        self.assertContains(response, '<tr><td>team2</td><td>150</td></tr><tr><td>team1</td><td>120</td></tr>',
+                            html=True)
 
 
 class TestTeamLandmarkHistory(TestCase):
     def setUp(self):
         self.client = Client()
         self.cli = CLI(COMMANDS)
-        self.gm = 'gamemaker'
-        self.cli.command('create game1', self.gm)
-        self.cli.command('addteam team1 1234', self.gm)
-        self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', self.gm)
-        self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', self.gm)
+        self.cli.command('create game1', GM_NAME)
+        self.cli.command('addteam team1 1234', GM_NAME)
+        self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM_NAME)
+        self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM_NAME)
         current_game = Game.objects.get(name="game1")
         current_game.landmark_points = 100
         current_game.save()
-        self.cli.command('load game1', self.gm)
-        self.cli.command('start', self.gm)
+        self.cli.command('load game1', GM_NAME)
+        self.cli.command('start', GM_NAME)
         self.cli.command("answer 'Statue of Liberty'", "team1")
         self.cli.command("answer 'Grind'", "team1")
 
     def test_landmark_name(self):
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
         team = Team.objects.get(username="team1")
-        teamHistoryTimeDelta = team.history.values_list("landmark")
-        for x in teamHistoryTimeDelta:
-            expected_string = '<td>{}</td>'.format(x[0])
+        team_history_landmarks = team.history.values_list("landmark")
+        for landmark in team_history_landmarks:
+            expected_string = '<td>{}</td>'.format(landmark[0])
             self.assertContains(response, expected_string)
 
     def test_landmark_points(self):
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
         team = Team.objects.get(username="team1")
-        teamHistoryTimeDelta = team.history.values_list("points")
-        for x in teamHistoryTimeDelta:
-            expected_string = '<td>{}</td>'.format(x[0])
+        team_history_points = team.history.values_list("points")
+        for points in team_history_points:
+            expected_string = '<td>{}</td>'.format(points[0])
             self.assertContains(response, expected_string)
 
     def test_landmark_time_delta(self):
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
         team = Team.objects.get(username="team1")
-        teamHistoryTimeDelta = team.history.values_list("time_delta")
-        for x in teamHistoryTimeDelta:
-            expected_string = '<td>{}</td>'.format(str(x[0]).split('.')[0])
+        team_history_time = team.history.values_list("time_delta")
+        for time in team_history_time:
+            expected_string = '<td>{}</td>'.format(str(time[0]).split('.')[0])
             self.assertContains(response, expected_string)
 
 
@@ -141,12 +138,11 @@ class TestTeamTotalTime(TestCase):
     def setUp(self):
         self.client = Client()
         self.cli = CLI(COMMANDS)
-        self.gm = 'gamemaker'
-        self.cli.command('create game1', self.gm)
-        self.cli.command('addteam team1 1234', self.gm)
-        self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', self.gm)
-        self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', self.gm)
-        self.cli.command('start', self.gm)
+        self.cli.command('create game1', GM_NAME)
+        self.cli.command('addteam team1 1234', GM_NAME)
+        self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM_NAME)
+        self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM_NAME)
+        self.cli.command('start', GM_NAME)
         self.cli.command("answer 'Statue of Liberty'", "team1")
         self.cli.command("answer 'Grind'", "team1")
 
@@ -162,17 +158,16 @@ class TestTeamAnswer(TestCase):
     def setUp(self):
         self.client = Client()
         self.cli = CLI(COMMANDS)
-        self.gm = 'gamemaker'
-        self.cli.command('create game1', self.gm)
+        self.cli.command('create game1', GM_NAME)
         current_game = Game.objects.get(name="game1")
         current_game.landmark_points = 100
         current_game.penalty_value = 10
         current_game.save()
-        self.cli.command('load game1', self.gm)
-        self.cli.command('addteam team1 1234', self.gm)
-        self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', self.gm)
-        self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', self.gm)
-        self.cli.command('start', self.gm)
+        self.cli.command('load game1', GM_NAME)
+        self.cli.command('addteam team1 1234', GM_NAME)
+        self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM_NAME)
+        self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM_NAME)
+        self.cli.command('start', GM_NAME)
 
     def test_answer_correctly(self):
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
@@ -196,7 +191,7 @@ class TestTeamAnswer(TestCase):
         self.assertContains(response, expected_string, html=True)
         response = self.client.post('/teamPage/', {'commandline': 'Statue of Liberty',
                                                    'answerQuestion': 'Answer Question'})
-        self.assertContains(response,"<td>90</td>", html=True)
+        self.assertContains(response, "<td>90</td>", html=True)
 
     def test_answer_correct_followed_by_incorrect(self):
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
@@ -205,24 +200,19 @@ class TestTeamAnswer(TestCase):
         response = self.client.post('/teamPage/', {'commandline': 'Statue of Liberty',
                                                    'answerQuestion': 'Answer Question'})
         self.assertContains(response, "UWM")
-        expected_string = "Incorrect Answer! The Question Was: \n{}".format(Team.objects.get(username='team1').
-                                                                            current_landmark.question)
-        self.client.post('/teamPage/', {'commandline': 'WRONG ANSWER',
-                                                   'answerQuestion': 'Answer Question'})
+        team_landmark = Team.objects.get(username='team1').current_landmark
+        expected_string = "Incorrect Answer! The Question Was: \n{}".format(team_landmark.question)
+        self.client.post('/teamPage/', {'commandline': 'WRONG ANSWER', 'answerQuestion': 'Answer Question'})
         self.assertContains(response, expected_string, html=True)
-        self.client.post('/teamPage/', {'commandline': 'WRONG ANSWER',
-                                                   'answerQuestion': 'Answer Question'})
+        self.client.post('/teamPage/', {'commandline': 'WRONG ANSWER', 'answerQuestion': 'Answer Question'})
         self.assertContains(response, expected_string, html=True)
-        response = self.client.post('/teamPage/', {'commandline': 'Grind',
-                                                   'answerQuestion': 'Answer Question'})
+        response = self.client.post('/teamPage/', {'commandline': 'Grind', 'answerQuestion': 'Answer Question'})
         self.assertContains(response, "<td>80</td>", html=True)
 
     def test_answer_last_question(self):
         self.client.post('/login', {'username': 'team1', 'password': '1234'})
-        self.client.post('/teamPage/', {'commandline': 'Statue of Liberty',
-                                                   'answerQuestion': 'Answer Question'})
-        response = self.client.post('/teamPage/', {'commandline': 'Grind',
-                                                   'answerQuestion': 'Answer Question'})
+        self.client.post('/teamPage/', {'commandline': 'Statue of Liberty', 'answerQuestion': 'Answer Question'})
+        response = self.client.post('/teamPage/', {'commandline': 'Grind', 'answerQuestion': 'Answer Question'})
         self.assertContains(response, "Final Landmark Answered", html=True)
         self.assertContains(response, "<td>200</td>")
 
@@ -231,17 +221,16 @@ class TestTeamQuitQuestion(TestCase):
     def setUp(self):
         self.client = Client()
         self.cli = CLI(COMMANDS)
-        self.gm = 'gamemaker'
-        self.cli.command('create game1', self.gm)
+        self.cli.command('create game1', GM_NAME)
         current_game = Game.objects.get(name="game1")
         current_game.landmark_points = 100
         current_game.penalty_value = 10
         current_game.save()
-        self.cli.command('load game1', self.gm)
-        self.cli.command('addteam team1 1234', self.gm)
-        self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', self.gm)
-        self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', self.gm)
-        self.cli.command('start', self.gm)
+        self.cli.command('load game1', GM_NAME)
+        self.cli.command('addteam team1 1234', GM_NAME)
+        self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', GM_NAME)
+        self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', GM_NAME)
+        self.cli.command('start', GM_NAME)
 
     def test_quit_question(self):
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
@@ -255,7 +244,7 @@ class TestTeamQuitQuestion(TestCase):
         self.client.post('/login', {'username': 'team1', 'password': '1234'})
         self.client.post('/teamPage/', {'quitQuestion': 'Quit Question'})
         response = self.client.post('/teamPage/', {'quitQuestion': 'Quit Question'})
-        self.assertContains(response, "There are no more questions!")
+        self.assertContains(response, "Final Landmark Answered")
         self.assertContains(response, "<td>0</td>")
 
 
@@ -263,14 +252,13 @@ class TestTeamEdit(TestCase):
     def setUp(self):
         self.client = Client()
         self.cli = CLI(COMMANDS)
-        self.gm = 'gamemaker'
-        self.cli.command('create game1', self.gm)
+        self.cli.command('create game1', GM_NAME)
         current_game = Game.objects.get(name="game1")
         current_game.landmark_points = 100
         current_game.penalty_value = 10
         current_game.save()
-        self.cli.command('load game1', self.gm)
-        self.cli.command('addteam team1 1234', self.gm)
+        self.cli.command('load game1', GM_NAME)
+        self.cli.command('addteam team1 1234', GM_NAME)
 
     def test_edit_team_name(self):
         self.client.post('/login', {'username': 'team1', 'password': '1234'})
@@ -288,4 +276,3 @@ class TestTeamEdit(TestCase):
                                                    'changepassword': 'newpass'})
         self.assertContains(response, "teamx", html=True)
         self.assertEqual('newpass', Team.objects.get(username='teamx').password)
-
