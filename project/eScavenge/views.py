@@ -1,7 +1,9 @@
+from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
+
 from .CLI import CLI, COMMANDS
-from .models import GMFactory, Team, Landmark
+from .models import GMFactory, Team, Landmark, Game
 
 GM = GMFactory().get_gm()
 
@@ -25,7 +27,7 @@ def login(request):
                 message = "Invalid password"
             else:
                 request.session['username'] = request.POST["username"]
-                return render(request, 'gamemaker.html')
+                return redirect('/gamemaker')
         try:
             u = Team.objects.get(username=request.POST["username"])
         except Team.DoesNotExist:
@@ -51,8 +53,7 @@ def teamPage(request):
     output = ''
     if request.method == 'POST':
         if request.POST.get("logoutbutton"):
-            del request.session['username']
-            return redirect('/')
+            return redirect('/logout')
         if request.POST.get("changeteam"):
             command += 'editteam'
             if request.POST.get('changeusername'):
@@ -63,19 +64,24 @@ def teamPage(request):
             command += f'giveup {team.username} {team.password}'
         elif request.POST.get("answerQuestion"):
             command += f' answer {request.POST.get( "commandline", None ) }'
-        output = CLI(COMMANDS).command(command, user)
+            output = CLI(COMMANDS).command(command, user)
             team = Team.objects.get(username=user)
             command += f' giveup {user} {team.password}'
         elif request.POST.get("answerQuestion"):
             command += f' answer \'{request.POST.get( "commandline", None ) }\''
         CLI(COMMANDS).command(command, user)
         if request.POST.get('changeusername'):
-           request.session['username'] = request.POST["changeusername"]
+            request.session['username'] = request.POST["changeusername"]
     userpage = Team.objects.get(username=request.session.get('username'))
     teamlist = userpage.game.teams.order_by('-points')
     teamhistory = userpage.history.all()
     context = {'team': userpage, 'teamlist': teamlist, 'teamhistory': teamhistory, 'output': output}
     return render(request, 'teamPage.html', context)
+
+
+def logout(request):
+    del request.session['username']
+    return redirect('/')
 
 
 def editLandmark(request):
@@ -111,3 +117,13 @@ def editLandmark(request):
           cli.command(command, user)
 
     return render(request, 'editLandmark.html')
+
+
+@require_http_methods(['GET'])
+def game_page(request):
+    username = request.session.get('username')
+    if username != GM.username:
+        return HttpResponseForbidden()
+    context = {'username': username, 'games': Game.objects.all()}
+    return render(request, 'gamePage.html', context)
+

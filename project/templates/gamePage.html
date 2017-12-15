@@ -1,0 +1,118 @@
+{% extends 'basic.html' %}
+{% load filters %}
+
+{% block header %}
+    {#    <link rel="stylesheet" href="/static/style.css">#}
+{% endblock %}
+
+{% block title %} User: {{ username }} {% endblock %}
+{% block Nav-Bar %}
+    <select>
+        {% for game in games %}
+            <option value={{ game.name }}>{{ game.name }}</option>
+        {% endfor %}
+        <option value="newgame">New Game</option>
+    </select>
+    <p>{{ command }}</p>
+{% endblock %}
+{% block dropdown %}
+
+    <div class="dropdown">
+        <button class="dropbtn">{{ username }}</button>
+        <div class="dropdown-content">
+            <button id="logoutbutton"><a href="/logout">Log Out</a></button>
+        </div>
+    </div>
+{% endblock %}
+{% block command-box %}
+    {% for game in games %}
+        <form action="/saveGame/" method="post">
+            {% csrf_token %}
+            <table>
+                <tr>
+                    <td><label for="game_name">Name:</label></td>
+                    <td><input type="text" id="game_name" name="game_name" value={{ game.name }}></td>
+                </tr>
+                <tr>
+                    <td><label for="game_status">Status:</label></td>
+                    <td><select selected={{ game_status }}>
+                        <option value="notstarted">Not Started</option>
+                        <option value="running">Running</option>
+                        <option value="ended">Finished</option>
+                    </select></td>
+                </tr>
+                <tr>
+                    <td><label for="game_penalty_value">Wrong Answer Penalty:</label></td>
+                    <td><input type="number" id="game_penalty_value" name="game_penalty_value"
+                               value={{ game.penalty_value }}></td>
+                </tr>
+                <tr>
+                    <td><label for="game_penalty_time">Time Exceeded Penalty:</label></td>
+                    <td><input type="number" id="game_penalty_time" name="game_penalty_time"
+                               value={{ game.penalty_time }}></td>
+                </tr>
+                <tr>
+                    <td><label for="game_timer">Time Allowed:</label></td>
+                    <td><input type="text" id="game_timer" name="game_timer"
+                               value={{ game.timer | remove_milliseconds }}></td>
+                </tr>
+                <tr>
+                    <td><label for="game_points">Points Per Landmark:</label></td>
+                    <td><input type="number" id="game_points" name="game_points" value={{ game.landmark_points }}></td>
+                </tr>
+            </table>
+            <input type="submit" id="answerQuestion" name="answerQuestion" value="Answer Question">
+            <input type="submit" id="quitQuestion" name="quitQuestion" value="Quit Question">
+        </form>
+    {% endfor %}
+{% endblock %}
+{% block leaderboard %}
+    <table class="leaderboard">
+        <thead>
+        <th>Game Status:
+            {% if team.game.started %} In Progress
+            {% elif team.game.ended %} Game Over
+            {% else %} Not Started</th>
+            {% endif %}
+        <tr>
+            <th><span class="text">Team Name</span></th>
+            <th><span class="text">Team Points</span></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for team in teamlist %}
+            <tr>
+                <td>{{ team.username }}</td>
+                <td>{{ team.points }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+{% block scrollable %}
+    <div class="scrollable">
+
+        {% block answeredlandmarks %}
+            <table class="answeredlandmarks">
+
+                <thead>
+                <tr>
+                    <th><span class="text">Landmark Name</span></th>
+                    <th><span class="text">Landmark Points</span></th>
+                    <th><span class="text">Landmark Time Taken</span></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for stat in teamhistory %}
+                    <tr>
+                        <td>{{ stat.landmark.name }}</td>
+                        <td>{{ stat.points }}</td>
+                        <td>{{ stat.time_delta | remove_milliseconds }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endblock %}
+    </div>
+{% endblock %}
