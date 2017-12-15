@@ -36,6 +36,20 @@ class TestLogin(TestCase):
         self.assertContains(response, '<title> Team: team1 </title>', html=True)
 
 
+class TestTeamLogout(TestCase):
+    def setUp(self):
+        cli = CLI(COMMANDS)
+        gm = 'gamemaker'
+        cli.command('create game1', gm)
+        cli.command('addteam team1 1234', gm)
+        self.client = Client()
+
+    def test_logout(self):
+        self.client.post('/login', {'username': 'team1', 'password': '1234'})
+        response = self.client.post('/teamPage/', {'logoutbutton': 'Log out'})
+        self.assertRedirects(response, expected_url='/', status_code=302, target_status_code=200)
+
+
 class TestTeamPageGameStart(TestCase):
     def setUp(self):
         self.client = Client()
@@ -54,7 +68,6 @@ class TestTeamPageGameStart(TestCase):
     def test_game_started(self):
         self.cli.command('start', self.gm)
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
-        print(response.content)
         self.assertContains(response, '<p class="landmarkname">ldm1\n        <p class="landmarkclue">New York\n        '
                                       '<p class="landmarkquestion">Gift given by the French\n        ')
 
@@ -77,7 +90,6 @@ class TestTeamPageLeadBoards(TestCase):
 
     def test_sort(self):
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
-        print(response.content)
         self.assertContains(response, '<td>team2</td>\n                <td>150</td>\n            </tr>\n        \n     '
                                       '       <tr>\n                <td>team1</td>\n                <td>120</td>\n     '
                                       '       </tr>')
@@ -177,7 +189,11 @@ class TestTeamAnswer(TestCase):
         self.assertContains(response, "<td>0</td>", html=True)
         response = self.client.post('/teamPage/', {'commandline': 'WRONG ANSWER',
                                                    'answerQuestion': 'Answer Question'})
+
+        expected_string = "Incorrect Answer! The Question Was: \n{}".format(Team.objects.get(username='team1').
+                                                                            current_landmark.question)
         self.assertContains(response, "New York")
+        self.assertContains(response, expected_string, html=True)
         response = self.client.post('/teamPage/', {'commandline': 'Statue of Liberty',
                                                    'answerQuestion': 'Answer Question'})
         self.assertContains(response,"<td>90</td>", html=True)
@@ -189,10 +205,14 @@ class TestTeamAnswer(TestCase):
         response = self.client.post('/teamPage/', {'commandline': 'Statue of Liberty',
                                                    'answerQuestion': 'Answer Question'})
         self.assertContains(response, "UWM")
+        expected_string = "Incorrect Answer! The Question Was: \n{}".format(Team.objects.get(username='team1').
+                                                                            current_landmark.question)
         self.client.post('/teamPage/', {'commandline': 'WRONG ANSWER',
                                                    'answerQuestion': 'Answer Question'})
+        self.assertContains(response, expected_string, html=True)
         self.client.post('/teamPage/', {'commandline': 'WRONG ANSWER',
                                                    'answerQuestion': 'Answer Question'})
+        self.assertContains(response, expected_string, html=True)
         response = self.client.post('/teamPage/', {'commandline': 'Grind',
                                                    'answerQuestion': 'Answer Question'})
         self.assertContains(response, "<td>80</td>", html=True)
@@ -207,7 +227,7 @@ class TestTeamAnswer(TestCase):
         self.assertContains(response, "<td>200</td>")
 
 
-class TestTeamEdit(TestCase):
+class TestTeamQuitQuestion(TestCase):
     def setUp(self):
         self.client = Client()
         self.cli = CLI(COMMANDS)
@@ -220,3 +240,52 @@ class TestTeamEdit(TestCase):
         self.cli.command('load game1', self.gm)
         self.cli.command('addteam team1 1234', self.gm)
         self.cli.command('addlandmark "ldm1" "New York" "Gift given by the French" "Statue of Liberty"', self.gm)
+        self.cli.command('addlandmark "ldm2" "UWM" "Place we purchase coffee from" "Grind"', self.gm)
+        self.cli.command('start', self.gm)
+
+    def test_quit_question(self):
+        response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
+        self.assertContains(response, "New York")
+        self.assertContains(response, "<td>0</td>", html=True)
+        response = self.client.post('/teamPage/', {'quitQuestion': 'Quit Question'})
+        self.assertContains(response, "UWM")
+        self.assertContains(response, "<td>0</td>")
+
+    def test_quit_last_question(self):
+        self.client.post('/login', {'username': 'team1', 'password': '1234'})
+        self.client.post('/teamPage/', {'quitQuestion': 'Quit Question'})
+        response = self.client.post('/teamPage/', {'quitQuestion': 'Quit Question'})
+        self.assertContains(response, "There are no more questions!")
+        self.assertContains(response, "<td>0</td>")
+
+
+class TestTeamEdit(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.cli = CLI(COMMANDS)
+        self.gm = 'gamemaker'
+        self.cli.command('create game1', self.gm)
+        current_game = Game.objects.get(name="game1")
+        current_game.landmark_points = 100
+        current_game.penalty_value = 10
+        current_game.save()
+        self.cli.command('load game1', self.gm)
+        self.cli.command('addteam team1 1234', self.gm)
+
+    def test_edit_team_name(self):
+        self.client.post('/login', {'username': 'team1', 'password': '1234'})
+        response = self.client.post('/teamPage/', {'changeteam': 'Submit', 'changeusername': 'teamx'})
+        self.assertContains(response, "teamx", html=True)
+
+    def test_edit_team_pass(self):
+        self.client.post('/login', {'username': 'team1', 'password': '1234'})
+        self.client.post('/teamPage/', {'changeteam': 'Submit', 'changepassword': 'newpass'})
+        self.assertEqual('newpass', Team.objects.get(username='team1').password)
+
+    def test_edit_team_name_and_pass(self):
+        self.client.post('/login', {'username': 'team1', 'password': '1234'})
+        response = self.client.post('/teamPage/', {'changeteam': 'Submit', 'changeusername': 'teamx',
+                                                   'changepassword': 'newpass'})
+        self.assertContains(response, "teamx", html=True)
+        self.assertEqual('newpass', Team.objects.get(username='teamx').password)
+
