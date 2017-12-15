@@ -1,0 +1,17 @@
+body {
+    background-color: #71f457;
+    font-family: Helvetica;
+}
+.Nav-Bar {
+    background-color: #006000;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    box-shadow: 4px 6px #111111;
+    height: 100px;
+}
+
+.Nav-Bar h1{
+    margin-left: 20px;
+    color:white;
+}

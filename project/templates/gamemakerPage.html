@@ -1,0 +1,20 @@
+<html>
+<head>
+    <title>GameMaker Control Panel</title>
+    <link rel="stylesheet" href="/static/gmstyle.css">
+</head>
+<body>
+<div class="Nav-Bar">]
+    <h1>Game Maker Control Panel</h1>
+    <form action="/gamemakerPage/" method="post">
+        {% csrf_token %}
+       <select name = "gameObject">
+            {% for g in games %}
+            <option value='{{g.name}}'>{{game.name}}</option>}
+            {% endfor %}
+        </select> 
+        <input type="submit" id="selectGame" name="selectGame" value="Select Game">
+    </form>
+</div>
+</body>
+</html>

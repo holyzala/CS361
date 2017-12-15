@@ -70,3 +70,9 @@ def teamPage(request):
     teamhistory = userpage.history.all()
     context = {'team': userpage, 'teamlist': teamlist, 'teamhistory': teamhistory, 'command': command}
     return render(request, 'teamPage.html', context)
+
+def gamemakerPage(request):
+    #games = Game.objects.all();
+    #gamecontext = {'games' : games}
+    if(request.POST.get(""))
+    return render(request, "gamemakerPage.html")#,gamecontext)
