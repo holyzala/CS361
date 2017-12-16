@@ -15,3 +15,11 @@ body {
     margin-left: 20px;
     color:white;
 }
+
+#startGame{
+    background-color: greenyellow;
+}
+
+#endGame{
+    background-color: red;
+}

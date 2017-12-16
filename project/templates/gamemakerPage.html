@@ -4,17 +4,24 @@
     <link rel="stylesheet" href="/static/gmstyle.css">
 </head>
 <body>
-<div class="Nav-Bar">]
+<div class="Nav-Bar">
     <h1>Game Maker Control Panel</h1>
     <form action="/gamemakerPage/" method="post">
         {% csrf_token %}
-       <select name = "gameObject">
+       <select name = "gameObject" value="--select-">
             {% for g in games %}
-            <option value='{{g.name}}'>{{game.name}}</option>}
+            <option value={{g.name}}>{{g.name}}</option>}
             {% endfor %}
         </select> 
         <input type="submit" id="selectGame" name="selectGame" value="Select Game">
+        <br>
+        <input type ="submit" id="startGame" name = "startGame" value="Start Game">
+        <input type ="submit" id="endGame" name = "endGame" value="End Game">
+        <input type ="submit" id="gmlogout" name = "gmlogout" value= "Log Out">
     </form>
+</div>
+<div id="Wrapper">
+    
 </div>
 </body>
 </html>

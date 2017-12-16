@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 from .CLI import CLI, COMMANDS
-from .models import GMFactory, Team
+from .models import GMFactory, Team, Game
+from django.http import HttpResponseForbidden
 
 GM = GMFactory().get_gm()
 
@@ -12,7 +13,7 @@ def index(request):
     if user is None:
         return render(request, 'login.html' )
     if user == GM.username:
-        return redirect("/gamemaker")
+        return redirect("/gamemakerPage")
     return redirect("/teamPage")
 
 
@@ -25,7 +26,7 @@ def login(request):
                 message = "Invalid password"
             else:
                 request.session['username'] = request.POST["username"]
-                return render(request, 'gamemaker.html')
+                return redirect("/gamemakerPage")
         try:
             u = Team.objects.get(username=request.POST["username"])
         except Team.DoesNotExist:
@@ -72,7 +73,29 @@ def teamPage(request):
     return render(request, 'teamPage.html', context)
 
 def gamemakerPage(request):
-    #games = Game.objects.all();
-    #gamecontext = {'games' : games}
-    if(request.POST.get(""))
-    return render(request, "gamemakerPage.html")#,gamecontext)
+    cli = CLI(COMMANDS)
+    username = request.session.get('username')
+    if username != GM.username:
+        return HttpResponseForbidden()
+    games = Game.objects.all()
+    gamecontext = {'games' : games}
+    selectedGame = []
+    if (request.method == 'POST'):
+        if (request.POST.get("selectGame")):
+            selectedGame = Game.objects.get(name = request.POST["gameObject"])
+            return render(request, "gamemakerPage.html",gamecontext)
+        elif request.POST.get("gmlogout"):
+            del request.session['username']
+            return redirect('/')
+        elif request.POST.get("startGame"):
+            command = "load" + selectedGame.name
+            cli.command(command,"gamemaker")
+            cli.command("start","gamemaker")
+        elif request.POST.get("endGame"):
+            command = "load" + selectedGame.name
+            cli.command(command,"gamemaker")
+            cli.command("end","gamemaker")
+
+
+
+    return render(request, "gamemakerPage.html",context)
