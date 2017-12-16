@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .CLI import CLI, COMMANDS
-from .models import GMFactory, Team
+from .models import GMFactory, Team, Landmark
 
 GM = GMFactory().get_gm()
 
@@ -65,3 +65,38 @@ def teamPage(request):
     teamhistory = userpage.history.all()
     context = {'team': userpage, 'teamlist': teamlist, 'teamhistory': teamhistory, 'command': command}
     return render(request, 'teamPage.html', context)
+
+
+def editLandmark(request):
+#    landmark = request.GET['landmark']
+#    game = request.GET['game']
+    landmark = 'A1'
+    game = 'game1'
+    user = 'gamemaker'
+    gamecommand = "load " + game
+    cli = CLI(COMMANDS)
+    cli.command(gamecommand, user)
+    command = ''
+    if request.method == 'POST':
+      if request.POST.get('deletelandmark'):
+        command += 'removelandmark '
+        #if request.POST.get('landmarkname'):
+        command += f' {landmark}'
+        cli.command(command, user)
+
+      if request.POST.get('editLandmark'):
+          command += 'editlandmark '
+          command += f' { landmark }'
+          if request.POST.get('editLMname'):
+              command += f' name { request.POST["editLMname"] }'
+          if request.POST.get('editLMclue'):
+              command += f' clue { request.POST["editLMclue"] }'
+          if request.POST.get('editLMquestion'):
+              command += f' question { request.POST["editLMquestion"] }'
+          if request.POST.get('editLManswer'):
+              command += f' answer { request.POST["editLManswer"] }'
+          if request.POST.get('editLMgame'):
+              command += f' game { request.POST["editLMgame"] }'
+          cli.command(command, user)
+
+    return render(request, 'editLandmark.html')

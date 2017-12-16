@@ -1,40 +1,53 @@
 {% extends 'basic.html' %}
+{% load staticfiles %}
 
-{% block title %} EditLandmark: {{ getLandmarkName }} {% endblock %}
+{% block title %} EditLandmark: {{ landmark.name }} {% endblock %}
 {% block Nav-Bar %}
-
-    <a class="eScavenge">Game: {{ huntUser| getLandmarkName }}</a>
-
+    <a class="eScavenge">Game: {{ landmark.game.name }}</a>
 {% endblock %}
-{% block dropdown %}
 
-    <div class="dropdown">
-			<button class="deletebutton">{{ delete }}</button>
-	   		<div class="dropdown-content">
-         	</div>
+
+{% block dropdown %}
+    <div>
+        <form action="/editLandmark/" method="post">
+            {% csrf_token %}
+            <input type="submit", class="delbutton", name="deletelandmark", value="DELETE LANDMARK">
+        </form>
     </div>
 {% endblock %}
 
 
 {% block command-box %}
-    <div class="gameInfo">
-            <p class="landmarkname">{{ EditLandmark }}
+  <div class="editLandmark">
+    <p class="editlandmarktitle">EDIT LANDMARK</p>
+    <br>
+    {% if game.started %}
+        <p style="color:white; text-align: center; font-size: 25px;">The game has started.  No editing while game in progress.</p>
+    {% elif game.ended %}
+        <p style="color:white; text-align: center; font-size: 25px;">The game has ended.  No landmarks are editable</p>
+    {% else %}
+        <form action="/editLandmark/" method="post">
+        {% csrf_token %}
+            <p class="landarkeditlabels"><span>Landmark Name:</span>
+                <input type="text" class="editfield" name="editLMname">
+            </p>
+            <p class="landarkeditlabels"><span>Landmark Clue:</span>
+                <input type="text" class="editfield" name="editLMclue">
+            </p>
+            <p class="landarkeditlabels"><span>Landmark Question:</span>
+                <input type="text" class="editfield" name="editLMquestion">
+            </p>
+            <p class="landarkeditlabels"><span>Landmark Answer:</span>
+                <input type="text" class="editfield" name="editLManswer">
+            </p>
+            <p class="landarkeditlabels"><span>Game:</span>
+                <input type="text" class="editfield" name="editLMgame">
+            </p>
+            <br>
+            <input type="submit", class="editButton", name="editLandmark", value="Update">
+        </form>
+    {% endif %}
     </div>
-    <div class="userInteraction">
-        <form action="/validate/" method="post">
-            {% csrf_token %}
-            <input type="text" id="commandline" name="commandline">
-        </form>
-        <form action="/validate/" method="post">
-            {% csrf_token %}
-            <input type="submit" id="answerQuestion" value="Answer Question">
-        </form>
-        <form action="/validate/" method="post">
-                {% csrf_token %}
-            <input type="submit" id="quitQuestion" value="Quit Question">
-        </form>
-    </div>
-    <p>{{ output }}</p>
 {% endblock %}
 
 
@@ -42,15 +55,4 @@
 {% endblock %}
 
 {% block leaderboard %}
-    <tr>
-        <th>Team Name</th>
-        <th>Team Points</th>
-    </tr>
-        {% for username in teamlist %}
-            <tr>
-            <td>{{ username }}</td>
-            <td>{{ username | getTeamPoints }}</td>
-            </tr>
-        {% endfor %}
-
-{% endblock %}
+r{% endblock %}
