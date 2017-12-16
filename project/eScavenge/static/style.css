@@ -8,9 +8,25 @@ body {
     position: fixed;
     top: 0;
     width: 100%;
-    box-shadow: 4px 6px #111111;
+    box-shadow: 4px 6px #006000;
 }
 
+.outputBox{
+    font-weight: bold;
+    color: black;
+    text-align: center;
+    text-shadow: 0px 1px 3px rgba(255, 255, 255, 1.0),
+    0px 1px 13px rgba(255, 255, 255, 0.1),
+    0px 8px 23px rgba(255, 255, 255, 0.1);
+    background-color: #8aff8e;
+    box-shadow: 4px 6px #111111;
+    border-radius: 25px;
+    position: fixed;
+    top: 10px;
+    left: 33%;
+    height: 50px;
+    width: 450px;
+}
 .eScavenge {
     font-family: Helvetica;
     border-radius: 20px;
@@ -52,6 +68,17 @@ body {
     font-size: 20px;
 }
 
+.delbutton {
+  background-color: red;
+  color: black;
+
+  padding: 14px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 2px 4px #003300;
+}
+
 .dropbtn {
     background-color: #4CAF50;
     color: white;
@@ -61,7 +88,6 @@ body {
     border: none;
     cursor: pointer;
     box-shadow: 2px 4px #003300;
-
 }
 
 .dropdown {
@@ -124,19 +150,6 @@ body {
     width: 385px;
 }
 
-p.landmarkname {
-    font-size: 25px;
-    color: white;
-
-}
-
-p.landmarkclue {
-    color: white;
-}
-
-p.landmarkquestion {
-    color: white;
-}
 
 .userInteraction {
     height: 80px;
@@ -170,6 +183,7 @@ p.landmarkquestion {
     width: 390px;
     height: 300px;
     border: 5px solid black;
+
 }
 
 table.leaderboard {
@@ -247,4 +261,52 @@ table.answeredlandmarks td {
 
 .answeredlandmarks tr:nth-child(even) {
     background-color: #009900;
+}
+
+.editLandmark {
+    width: 390px;
+    height: 330px;
+    border: 5px solid black;
+}
+
+.submitEdit {
+    height: 50px;
+    widgth: 100px;
+    border: 5px solid black;
+    box-shadow: 2px 4px #003300;
+}
+
+.editButton {
+    background-color: yellow;
+    color: black;
+    font-weight: bold;
+
+    position: absolute;
+    bottom: 3%;
+    left: 39%;
+    height: 40px;
+    width: 90px;
+    padding: 14px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 2px 4px #003300;
+}
+
+.editlandmarktitle {
+  font-weight: bold;
+  color: white;
+  height: 10px;
+  font-size: xx-large;
+}
+
+.landarkeditlabels {
+  vertical-align: top;
+  height: 10px;
+  width: 200px;
+  resize: none;
+  display: inline-block;
+  color: white;
+  font-weight: bold;
+
 }

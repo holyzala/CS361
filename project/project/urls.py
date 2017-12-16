@@ -22,4 +22,5 @@ urlpatterns = [
     url( r'^login', views.login, name='login' ),
     url( r'^teamPage/', views.teamPage, name='teamPage' ),
     url( r'^admin/', admin.site.urls ),
+    url( r'^editLandmark/', views.editLandmark, name='editLandmark' ),
 ]
