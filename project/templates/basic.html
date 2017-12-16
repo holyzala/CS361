@@ -11,12 +11,16 @@
 <body>
 <div class="Nav-Bar">
     {% block Nav-Bar %}
+    {% block output %}
+    {% endblock %}
     {% endblock %}
 </div>
 <div class="dropdown">
     {% block dropdown %}
     {% endblock %}
 </div>
+
+
 <div class="command-box">
     {% block command-box %}
     {% endblock %}

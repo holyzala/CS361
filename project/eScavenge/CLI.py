@@ -269,11 +269,11 @@ def quit_question(self, args):
     elif rtn == Errors.NO_GAME:
         return no_game_running
     elif rtn == Errors.FINAL_ANSWER:
-        finstr = "Question quit! You have completed the hunt! Here are your final stats:\n{}"
-        return finstr.format(self.game.get_status(timezone.now(), self.current_user.username))
+        finstr = "Question quit!"
+        return finstr
     elif rtn == Errors.LANDMARK_INDEX:
         return "There are no more questions!"
-    return "Question Quit, Your Next Question: \n{}".format(self.current_user.current_landmark.question)
+    return "Question Quit"
 
 
 
@@ -309,15 +309,15 @@ def answer_question(self, args):
         return "You're Not Playing!"
     correct_answer = self.game.answer_question(timezone.now(), self.current_user, args[1])
     if correct_answer == Errors.NO_ERROR:
-        return "That is Correct! The Next Question is: \n{}".format(self.current_user.current_landmark.question)
+        return "That is Correct!"
     elif correct_answer == Errors.NO_GAME:
         return no_game_running
     elif correct_answer == Errors.FINAL_ANSWER:
-        finstr = "That is correct! You have completed the hunt! Here are your final stats:\n{}"
-        return finstr.format(self.game.get_status(timezone.now(), self.current_user.username))
+        finstr = "That is correct!"
+        return finstr
     elif correct_answer == Errors.LANDMARK_INDEX:
         return "There are no more landmarks!"
-    return "Incorrect Answer! The Question Was: \n{}".format(self.current_user.current_landmark.question)
+    return "Incorrect Answer!"
 
 
 @need_admin
