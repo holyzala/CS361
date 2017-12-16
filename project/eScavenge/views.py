@@ -46,7 +46,9 @@ def login(request):
 @require_http_methods(["GET", "POST"])
 def teamPage(request):
     user = request.session.get('username')
+    team = Team.objects.get( username=request.session.get( 'username' ) )
     command = ''
+    output = ''
     if request.method == 'POST':
         if request.POST.get("logoutbutton"):
             del request.session['username']
@@ -58,17 +60,21 @@ def teamPage(request):
             if request.POST.get('changepassword'):
                 command += f' password {request.POST["changepassword"] }'
         elif request.POST.get("quitQuestion"):
+            command += f'giveup {team.username} {team.password}'
+        elif request.POST.get("answerQuestion"):
+            command += f' answer {request.POST.get( "commandline", None ) }'
+        output = CLI(COMMANDS).command(command, user)
             team = Team.objects.get(username=user)
             command += f' giveup {user} {team.password}'
         elif request.POST.get("answerQuestion"):
             command += f' answer \'{request.POST.get( "commandline", None ) }\''
         CLI(COMMANDS).command(command, user)
         if request.POST.get('changeusername'):
-            request.session['username'] = request.POST["changeusername"]
+           request.session['username'] = request.POST["changeusername"]
     userpage = Team.objects.get(username=request.session.get('username'))
     teamlist = userpage.game.teams.order_by('-points')
     teamhistory = userpage.history.all()
-    context = {'team': userpage, 'teamlist': teamlist, 'teamhistory': teamhistory, 'command': command}
+    context = {'team': userpage, 'teamlist': teamlist, 'teamhistory': teamhistory, 'output': output}
     return render(request, 'teamPage.html', context)
 
 

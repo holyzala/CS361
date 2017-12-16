@@ -4,10 +4,13 @@
 {% block title %} Team: {{ team.username }} {% endblock %}
 {% block Nav-Bar %}
     <a class="eScavenge">Game: {{ team.game_id }}</a>
-    <p>{{ command }}</p>
+    {% block output %}
+        <div class="outputBox">
+        <p style="position: relative; bottom: 0px;">{{ output }}</p>
+        </div>
+    {% endblock %}
 {% endblock %}
 {% block dropdown %}
-
     <div class="dropdown">
         <button class="dropbtn">{{ team.username }}</button>
         <div class="dropdown-content">
@@ -21,25 +24,25 @@
                 <br>
                 <input type="submit" id="splashSubmitButton" name=changeteam value="Submit">
                 <input type="submit" id="logoutbutton" name=logoutbutton value="Log Out">
-                <p>{{ output }}</p>
             </form>
         </div>
     </div>
 {% endblock %}
+
 {% block command-box %}
     <div class="gameInfo">
     {% if team.game.ended %}
         <p style="color:white; text-align: center; font-size: 25px;">Final Game Stats</p>
         <p style="color:white; text-align: center; font-size: 15px;">Points: {{ team.points }}</p>
-        <p style="color:white; text-align: center; font-size: 15px;">Total Time: {{ teamhistory | total_time | remove_milliseconds }}</p>
+        <p style="text-align:center; position: absolute; bottom: 25%; right: 35%; color:white;">Total Time: {{ teamhistory | total_time | remove_milliseconds }}</p>
     {% elif team.game.started %}
         {% if team.current_landmark %}
-        <p class="landmarkname">{{ team.current_landmark.name }}
-        <p class="landmarkclue">{{ team.current_landmark.clue }}
-        <p class="landmarkquestion">{{ team.current_landmark.question }}
-        <p style="color:white; position:absolute; bottom:25%; right: 35%">Total Time: {{ teamhistory | total_time | remove_milliseconds }}</p>
+        <p style="padding: 10px; color: white">Question <br>{{ team.current_landmark.question }}</p>
+        <p style="padding: 10px; color: white">Clue <br>{{ team.current_landmark.clue }}</p>
+        <p style="text-align:center; position: absolute; bottom: 25%; right: 35%; color:white;">Total Time: {{ teamhistory | total_time | remove_milliseconds }}</p>
             {% else %}
-            <p style="color:white; text-align: center; font-size: 25px;">Final Landmark Answered</p>
+            <p style="color:white; text-align: center; font-size: 25px; padding: 100px">Final Landmark Answered</p>
+            <p style="text-align:center; position: absolute; bottom: 25%; right: 35%; color:white;">Total Time: {{ teamhistory | total_time | remove_milliseconds }}</p>
             {% endif %}
     {% else %}
         <p style="color:white; font-size: 25px; position: absolute; right: 20%; bottom: 50%">Game Hasn't Started</p>
@@ -49,6 +52,7 @@
         {% if team.game.started %}
         <form action="/teamPage/" method="post">
             {% csrf_token %}
+            {% if team.current_landmark != None %}
             <input type="text" id="commandline" name="commandline">
             <input type="submit" id="answerQuestion" name="answerQuestion" value="Answer Question">
         </form>
@@ -56,6 +60,7 @@
             {% csrf_token %}
             <input type="submit" id="quitQuestion" name="quitQuestion" value="Quit Question">
         </form>
+             {% endif %}
             {% elif team.game.ended %}
             <p style="color:white; text-align: center; font-size: 25px;">Game Over!</p>
         {% endif %}
