@@ -209,6 +209,8 @@ class Game(models.Model):
         try:
             if not team.current_landmark.check_answer(answer):
                 team.penalty_count += self.penalty_value
+                team.full_clean()
+                team.save()
                 return Errors.WRONG_ANSWER
         except AttributeError:
             return Errors.LANDMARK_INDEX
