@@ -174,6 +174,53 @@ body {
     text-align: center;
 }
 
+.editteamform label{
+    vertical-align: top;
+    font-size: 20px;
+    display: block;
+    color: white;
+    margin-left:33%;
+}
+
+.editteamform input{
+    display: block;
+    margin-top: 10px;
+    margin-left:33%;
+
+}
+
+.editteamtitle{
+    font-size: 35px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}
+
+.update{
+    background-color: yellow;
+    color: black;
+    font-weight: bold;
+    position: absolute;
+    bottom: 20%;
+    left: 6%;
+    height: 40px;
+    width: 90px;
+    padding: 14px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 2px 4px #003300;
+}
+
+.dropdown #deleteteam{
+    float: right;
+    width: 100%;
+    height: 50px;
+    margin-right: 20px;
+    background-color: red;
+    font-size: 25px;
+}
+
 #noGame {
     color: white;
 }

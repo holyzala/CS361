@@ -1,0 +1,38 @@
+{% extends 'basic.html' %}
+{% load filters %}
+
+{% block Nav-Bar %}
+
+    <a class="eScavenge">Team: {{ team }}</a>
+
+{% endblock %}
+
+{%  block dropdown %}
+    <form action="/editTeamAction/" method="post">
+        {% csrf_token %}
+        <label id="deleteLabel" for="deleteteam"></label>
+        <input type="submit" id="deleteteam" name="deleteteam" value="Delete Team">
+    </form>
+{% endblock %}
+
+{% block command-box %}
+     <p class="editteamtitle">EDIT TEAM</p>
+    <br>
+
+    <form action="/editTeamAction/" method="post" class="editteamform">
+            {% csrf_token %}
+            <label id="usernameLabelEdit" for="usernameedit">Change Username</label>
+            <input type="text" id="usernameedit" name="usernameedit">
+            <br/>
+            <label id="passwordLabelEdit" for="passwordedit">Change Password</label>
+            <input type="text" id="passwordedit" name="passwordedit">
+            <br/>
+            <input type="submit" class="update" name="update" value="Update">
+        </form>
+{% endblock %}
+
+{% block side-bar %}
+{% endblock %}
+
+{% block leaderboard %}
+r{% endblock %}
