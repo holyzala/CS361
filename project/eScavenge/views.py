@@ -12,9 +12,9 @@ GM = GMFactory().get_gm()
 
 @require_http_methods(["GET"])
 def index(request):
-    user = request.session.get( 'username' )
+    user = request.session.get('username')
     if user is None:
-        return render(request, 'login.html' )
+        return render(request, 'login.html')
     if user == GM.username:
         return redirect("/gamemaker")
     return redirect("/teamPage")
@@ -50,7 +50,7 @@ def login(request):
 @require_http_methods(["GET", "POST"])
 def teamPage(request):
     user = request.session.get('username')
-    team = Team.objects.get( username=request.session.get( 'username' ) )
+    team = Team.objects.get(username=request.session.get('username'))
     command = ''
     output = ''
     if request.method == 'POST':
@@ -87,36 +87,36 @@ def logout(request):
 
 
 def editLandmark(request):
-#    landmark = request.GET['landmark']
-#    game = request.GET['game']
-    landmark = 'A1'
-    game = 'game1'
+    landmark = request.GET['landmark']
+    game = request.GET['game']
+    # landmark = 'A1'
+    # game = 'game1'
     user = 'gamemaker'
     gamecommand = "load " + game
     cli = CLI(COMMANDS)
     cli.command(gamecommand, user)
     command = ''
     if request.method == 'POST':
-      if request.POST.get('deletelandmark'):
-        command += 'removelandmark '
-        #if request.POST.get('landmarkname'):
-        command += f' {landmark}'
-        cli.command(command, user)
+        if request.POST.get('deletelandmark'):
+            command += 'removelandmark '
+            # if request.POST.get('landmarkname'):
+            command += f' {landmark}'
+            cli.command(command, user)
 
-      if request.POST.get('editLandmark'):
-          command += 'editlandmark '
-          command += f' { landmark }'
-          if request.POST.get('editLMname'):
-              command += f' name { request.POST["editLMname"] }'
-          if request.POST.get('editLMclue'):
-              command += f' clue { request.POST["editLMclue"] }'
-          if request.POST.get('editLMquestion'):
-              command += f' question { request.POST["editLMquestion"] }'
-          if request.POST.get('editLManswer'):
-              command += f' answer { request.POST["editLManswer"] }'
-          if request.POST.get('editLMgame'):
-              command += f' game { request.POST["editLMgame"] }'
-          cli.command(command, user)
+        if request.POST.get('editLandmark'):
+            command += 'editlandmark '
+            command += f' { landmark }'
+            if request.POST.get('editLMname'):
+                command += f' name { request.POST["editLMname"] }'
+            if request.POST.get('editLMclue'):
+                command += f' clue { request.POST["editLMclue"] }'
+            if request.POST.get('editLMquestion'):
+                command += f' question { request.POST["editLMquestion"] }'
+            if request.POST.get('editLManswer'):
+                command += f' answer { request.POST["editLManswer"] }'
+            if request.POST.get('editLMgame'):
+                command += f' game { request.POST["editLMgame"] }'
+            cli.command(command, user)
 
     return render(request, 'editLandmark.html')
 
@@ -142,31 +142,36 @@ def save_game(request):
     username = request.session.get('username')
     if username != GM.username:
         return HttpResponseForbidden()
-    game_name = request.POST['game']
-    status = request.POST['game_status']
+
+    game_name = request.POST['game_name']
+    is_new = request.POST.get('NewSubmit')
+    if not is_new:
+        status = request.POST['game_status']
     penalty_value = request.POST['game_penalty_value']
     penalty_time = request.POST['game_penalty_time']
     timer = request.POST['game_timer']
     points = request.POST['game_points']
+    game = None
+    if not is_new:
+        game = Game.objects.get(name=game_name)
+        cur_status = 0
+        if game.started:
+            cur_status = 1
+        if game.ended:
+            cur_status = 2
 
-    game = Game.objects.get(name=game_name)
-    cur_status = 0
-    if game.started:
-        cur_status = 1
-    if game.ended:
-        cur_status = 2
-
-    if cur_status == 0 and status == 1:
-        cli = CLI(COMMANDS)
-        cli.command(f'load {game}', GM.username)
-        cli.command('start')
-    if cur_status != 2 and status == 2:
-        game.ended = True
-
+        if cur_status == 0 and status == 1:
+            cli = CLI(COMMANDS)
+            cli.command(f'load {game}', GM.username)
+            cli.command('start')
+        if cur_status != 2 and status == 2:
+            game.ended = True
+    else:
+        game = Game.objects.create(name=game_name, started=False, ended=False, penalty_value=0, penalty_time=0,
+                                   timer=None, landmark_points=0)
     game.penalty_time = penalty_time
     game.penalty_value = penalty_value
     game.landmark_points = points
-
     if timer != 'None':
         timer_split = timer.split(':')
         game.timer = timedelta(hours=int(timer_split[0]), minutes=int(timer_split[1]), seconds=int(timer_split[2]))

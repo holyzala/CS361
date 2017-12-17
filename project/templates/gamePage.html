@@ -28,7 +28,7 @@
         <form action="/saveGame/" id={{ game.name }} method="post">
             <div class="gameInfo">
                 {% csrf_token %}
-                <input type="hidden" name="game" value={{ game.name }}>
+                <input type="hidden" name="game_name" value={{ game.name }}>
                 <table>
                     <tr>
                         <td><label for="game_status">Status:</label></td>
@@ -91,13 +91,13 @@
                     </tr>
                     <tr>
                         <td><label for="game_points">Points Per Landmark:</label></td>
-                        <td><input type="number" min="0" id="game_points" name="game_points" value="0">
+                        <td><input type="number" min="0" id="game_points" name="game_points" value="100">
                         </td>
                     </tr>
                 </table>
             </div>
             <div class="userInteraction">
-                <input type="submit" id="submit" name="submit" value="Submit">
+                <input type="submit" id="submit" name="NewSubmit" value="Submit">
             </div>
         </form>
     {% endif %}
@@ -149,9 +149,7 @@
                     {% for landmark in game|get_all_landmarks %}
                         <tr>
                             <td>
-                                {% with "/landmarkEdit?name="|add:landmark.name as editUrl %}
-                                    <a href={{ editUrl }}>{{ landmark.name }}</a>
-                                {% endwith %}
+                                <a href="/editLandmark?landmark={{ landmark.name }}&game={{ game.name }}">{{ landmark.name }}</a>
                             </td>
 
                             <td>{{ landmark.clue }}</td>
@@ -159,7 +157,7 @@
                             <td>{{ landmark.answer }}</td>
                         </tr>
                     {% endfor %}
-                    <tr><td><button><a href="/editTeam?name=NewLandmark">Add a Landmark</a></button></td><td></td><td></td></tr>
+                    <tr><td><button><a href="/editLandmark?name=NewLandmark">Add a Landmark</a></button></td><td></td><td></td></tr>
                     </tbody>
                 </table>
             {% endif %}
