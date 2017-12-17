@@ -73,29 +73,65 @@ def teamPage(request):
     return render(request, 'teamPage.html', context)
 
 def gamemakerPage(request):
-    cli = CLI(COMMANDS)
     username = request.session.get('username')
+    message = ''
+    cli = CLI(COMMANDS)
+    hasmarks = False
     if username != GM.username:
         return HttpResponseForbidden()
-    games = Game.objects.all()
-    gamecontext = {'games' : games}
-    selectedGame = []
     if (request.method == 'POST'):
         if (request.POST.get("selectGame")):
-            selectedGame = Game.objects.get(name = request.POST["gameObject"])
-            return render(request, "gamemakerPage.html",gamecontext)
-        elif request.POST.get("gmlogout"):
+            request.session['curgame'] = request.POST["gameObject"]
+    if('curgame' in request.session.keys()):
+        curgame = request.session.get('curgame')
+        try:
+            gameteam = Game.objects.get(name = curgame).teams.all()
+            hasteams = True
+        except:
+            gameteam = []
+            hasteams = False
+            message = "No Teams Yet!"
+        try: 
+            gamemarks = Game.objects.get(name = curgame).landmarks.all()
+            hasmarks = True
+        except:
+            gamemarks = []
+            message = message + " No Landmarks Yet!"
+            hasmarks = False
+        gamestatus = "NOT WORKING YET"
+       # if (Game.objects.get(name = curgame).started is False and Game.objects.get(name = curgame).ended is False):
+       #     gamestatus = "Waiting To Start"
+       # elif (Game.objects.get(name = curgame).started is True and Game.objects.get(name = curgame).ended is True):
+       #     gamestatus = "Game Ended"
+       # elif(Game.objects.get(name = curgame).started is True and Game.objects.get(name = curgame).ended is False):
+       #     gamestatus = "Game is Running"
+       # else:
+       #     gamestatus = "Uknown Error"
+    else:
+        gamestatus = "No Game Selected"
+        curgame = False
+        gameteam = False
+        gamemarks = False
+    games = Game.objects.all()
+    if (request.method == 'POST'):
+        if request.POST.get("gmlogout"):
             del request.session['username']
+            del request.session['curgame']
             return redirect('/')
         elif request.POST.get("startGame"):
-            command = "load" + selectedGame.name
-            cli.command(command,"gamemaker")
-            cli.command("start","gamemaker")
+            if (curgame is False):
+                message = 'You have not selected a game yet!'
+            else:
+                command = "load " + curgame
+                cli.command(command,"gamemaker")
+                cli.command("start","gamemaker")
         elif request.POST.get("endGame"):
-            command = "load" + selectedGame.name
-            cli.command(command,"gamemaker")
-            cli.command("end","gamemaker")
+            if (curgame is False):
+                message = 'You have not selected a game yet!'
+            else:
+                command = "load " + curgame
+                cli.command(command,"gamemaker")
+                cli.command("end","gamemaker")
 
-
-
-    return render(request, "gamemakerPage.html",context)
+    gamecontext = {'games': games ,'curgame': curgame, 'message':message, 'gameteam': gameteam, 'gamemarks':gamemarks, 'gamestatus':gamestatus, 'hasmarks':hasmarks,'hasteams':hasteams}
+    return render(request, "gamemakerPage.html",gamecontext)

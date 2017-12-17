@@ -248,3 +248,10 @@ table.answeredlandmarks td {
 .answeredlandmarks tr:nth-child(even) {
     background-color: #009900;
 }
+#startGame{
+    background-color: greenyellow;
+}
+
+#endGame{
+    background-color: red;
+}

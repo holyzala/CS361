@@ -1,27 +1,55 @@
-<html>
-<head>
-    <title>GameMaker Control Panel</title>
-    <link rel="stylesheet" href="/static/gmstyle.css">
-</head>
-<body>
-<div class="Nav-Bar">
-    <h1>Game Maker Control Panel</h1>
-    <form action="/gamemakerPage/" method="post">
-        {% csrf_token %}
-       <select name = "gameObject" value="--select-">
-            {% for g in games %}
-            <option value={{g.name}}>{{g.name}}</option>}
-            {% endfor %}
-        </select> 
-        <input type="submit" id="selectGame" name="selectGame" value="Select Game">
-        <br>
-        <input type ="submit" id="startGame" name = "startGame" value="Start Game">
-        <input type ="submit" id="endGame" name = "endGame" value="End Game">
-        <input type ="submit" id="gmlogout" name = "gmlogout" value= "Log Out">
-    </form>
-</div>
-<div id="Wrapper">
+{% extends 'basic.html' %}
+{% load filters %}
+
+{% block title %} Game Maker Control Panel {% endblock %}
+{% block Nav-Bar %}
+    <a class="eScavenge">Game: {{ curgame}}</a>
+    <p>{{ message }}</p>
     
-</div>
-</body>
-</html>
+{% endblock %}
+{% block dropdown %}
+
+    <div class="dropdown">
+        <button class="dropbtn">Game Options</button>
+        <div class="dropdown-content">
+            <form action="/gamemakerPage/" method="post">
+                {% csrf_token %}
+                <select name = "gameObject" value="--select-">
+                    {% for g in games %}
+                    <option value={{g.name}}>{{g.name}}</option>}
+                    {% endfor %}
+                </select> 
+                <input type="submit" id="selectGame" name="selectGame" value="Select Game"></br></br>
+                <input style="background-color: rgb(56, 255, 89)" type ="submit" id="startGame" name = "startGame" value="Start Game">
+                <input style="background-color: red"type ="submit" id="endGame" name = "endGame" value="End Game"></br></br>
+                <input type ="submit" id="gmlogout" name = "gmlogout" value= "Log Out">
+            </form>
+        </div>
+    </div>
+{% endblock %}
+{% block command-box %}
+    <h3 style="color:white">Game Status:{{gamestatus}}</h3>
+    <form action="/editTeam/" method="post"></form>
+    {% csrf_token %}
+    <h3>Teams</h3>
+    <input style="align-self: left;" type ="submit" id="addTeam" name = "addTeam" value="New Team"></br>
+    {% if curgame is not false and gameteam is not False and hasteams is not False %}
+        {%for t in gameteam %}
+            <input type ="radio" name="selectTeam" value={{t.username}}><Strong>{{t.username}}</strong> | <strong>Current Landmark:</strong> {{t.current_landmark.name}} | <strong>Points:</strong> {{t.points}}</br>
+        {%endfor%}
+        <input type ="submit" id="editTeam" name="editTeam" Value="Edit Team">
+    {%endif%}
+    
+</form>
+<form action="/editLandmark/" method="post"></form>
+{% csrf_token %}
+<h3>Landmarks</h3>
+<input type ="submit" id="addMark" name = "addMark" value="New Landmark"></br>
+{% if curgame is not false and gamemarks is not False and hasmarks is not False %}
+    {%for l in gamemarks %}
+        <input type ="radio" name="selectTeam" value={{l.name}}>{{l.name}}</br>
+    {%endfor%}
+    <input type ="submit" id="editMark" name="editMark" Value="Edit Landmark">
+{%endif%}
+</form>
+{% endblock %} 
