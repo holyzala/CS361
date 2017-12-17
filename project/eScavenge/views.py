@@ -66,7 +66,7 @@ def teamPage(request):
             command += f'giveup {team.username} {team.password}'
         elif request.POST.get("answerQuestion"):
             command += f' answer \'{request.POST.get("commandline", None)}\''
-            output = CLI(COMMANDS).command(command, user)
+        output = CLI(COMMANDS).command(command, user)
         if request.POST.get('changeusername'):
             request.session['username'] = request.POST["changeusername"]
     userpage = Team.objects.get(username=request.session.get('username'))
