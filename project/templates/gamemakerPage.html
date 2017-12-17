@@ -33,11 +33,13 @@
     {% csrf_token %}
     <h3>Teams</h3>
     <input style="align-self: left;" type ="submit" id="addTeam" name = "addTeam" value="New Team"></br>
-    {% if curgame is not false and gameteam is not False and hasteams is not False %}
+    {% if curgame is not False %}
         {%for t in gameteam %}
             <input type ="radio" name="selectTeam" value={{t.username}}><Strong>{{t.username}}</strong> | <strong>Current Landmark:</strong> {{t.current_landmark.name}} | <strong>Points:</strong> {{t.points}}</br>
         {%endfor%}
+        {%if teamcount > 0%}
         <input type ="submit" id="editTeam" name="editTeam" Value="Edit Team">
+        {%endif%}
     {%endif%}
     
 </form>
@@ -45,11 +47,13 @@
 {% csrf_token %}
 <h3>Landmarks</h3>
 <input type ="submit" id="addMark" name = "addMark" value="New Landmark"></br>
-{% if curgame is not false and gamemarks is not False and hasmarks is not False %}
+{% if curgame is not False %}
     {%for l in gamemarks %}
         <input type ="radio" name="selectTeam" value={{l.name}}>{{l.name}}</br>
     {%endfor%}
+    {%if markcount > 0%}
     <input type ="submit" id="editMark" name="editMark" Value="Edit Landmark">
+    {%endif%}
 {%endif%}
 </form>
 {% endblock %} 

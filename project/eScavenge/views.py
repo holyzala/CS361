@@ -76,7 +76,6 @@ def gamemakerPage(request):
     username = request.session.get('username')
     message = ''
     cli = CLI(COMMANDS)
-    hasmarks = False
     if username != GM.username:
         return HttpResponseForbidden()
     if (request.method == 'POST'):
@@ -86,33 +85,31 @@ def gamemakerPage(request):
         curgame = request.session.get('curgame')
         try:
             gameteam = Game.objects.get(name = curgame).teams.all()
-            hasteams = True
         except:
             gameteam = []
-            hasteams = False
             message = "No Teams Yet!"
         try: 
             gamemarks = Game.objects.get(name = curgame).landmarks.all()
-            hasmarks = True
         except:
             gamemarks = []
             message = message + " No Landmarks Yet!"
-            hasmarks = False
         gamestatus = "NOT WORKING YET"
-       # if (Game.objects.get(name = curgame).started is False and Game.objects.get(name = curgame).ended is False):
-       #     gamestatus = "Waiting To Start"
-       # elif (Game.objects.get(name = curgame).started is True and Game.objects.get(name = curgame).ended is True):
-       #     gamestatus = "Game Ended"
-       # elif(Game.objects.get(name = curgame).started is True and Game.objects.get(name = curgame).ended is False):
-       #     gamestatus = "Game is Running"
-       # else:
-       #     gamestatus = "Uknown Error"
+        if (Game.objects.get(name = curgame).started is False and Game.objects.get(name = curgame).ended is False):
+            gamestatus = "Waiting To Start"
+        elif (Game.objects.get(name = curgame).started is True and Game.objects.get(name = curgame).ended is True):
+            gamestatus = "Game Ended"
+        elif(Game.objects.get(name = curgame).started is True and Game.objects.get(name = curgame).ended is False):
+            gamestatus = "Game is Running"
+        else:
+           gamestatus = "Uknown Error"
     else:
         gamestatus = "No Game Selected"
         curgame = False
         gameteam = False
         gamemarks = False
     games = Game.objects.all()
+    markcount = len(gamemarks)
+    teamcount = len(gameteam)
     if (request.method == 'POST'):
         if request.POST.get("gmlogout"):
             del request.session['username']
@@ -133,5 +130,5 @@ def gamemakerPage(request):
                 cli.command(command,"gamemaker")
                 cli.command("end","gamemaker")
 
-    gamecontext = {'games': games ,'curgame': curgame, 'message':message, 'gameteam': gameteam, 'gamemarks':gamemarks, 'gamestatus':gamestatus, 'hasmarks':hasmarks,'hasteams':hasteams}
+    gamecontext = {'games': games ,'curgame': curgame, 'message':message, 'gameteam': gameteam, 'gamemarks':gamemarks, 'gamestatus':gamestatus, 'markcount':markcount,'teamcount':teamcount}
     return render(request, "gamemakerPage.html",gamecontext)
