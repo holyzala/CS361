@@ -62,3 +62,46 @@ def teamPage(request):
     teamhistory = userpage.history.all()
     context = {'team': userpage, 'teamlist': teamlist, 'teamhistory': teamhistory, 'command': command}
     return render(request, 'teamPage.html', context)
+
+def editTeam(request):
+    context = {'team' : 'Team1'}
+    return render(request, "editTeam.html", context)
+
+def editTeamAction(request):
+    user = GM.username
+    cli = CLI(COMMANDS)
+    #user = request.session.get('username')
+    gamecommand = "load game1"
+
+    cli.command(gamecommand, user)
+
+    #if user is None or user != GM.username:
+        #return redirect('/')
+
+    if request.method == 'POST':
+        '''
+            #deleteInput = ''
+            #if request.POST['deleteteam']:
+                #deleteInput = 'removeteam ' <code for the current team>
+
+            #li.command(commandInput, user)
+        '''
+        deleteInput = 'removeteam'
+
+        if request.POST.get("deleteteam"):
+            deleteInput += ' team1'
+            cli.command(deleteInput, user)
+            return redirect('/')
+        
+
+        commandInput = 'editteam team1'
+
+        if request.POST["usernameedit"]:
+                commandInput += f' name {request.POST["usernameedit"]}'
+
+        if request.POST["passwordedit"]:
+                commandInput += f' password {request.POST["passwordedit"]}'
+
+        cli.command(commandInput, user)
+
+        return redirect('/')

@@ -21,4 +21,6 @@ urlpatterns = [
     url( r'^$', views.login, name='login' ),
     url( r'^teamPage/', views.teamPage, name='teamPage' ),
     url( r'^admin/', admin.site.urls ),
+    url( r'^editTeam/', views.editTeam, name='editTeam'),
+    url( r'^editTeamAction/', views.editTeamAction, name='editTeamAction')
 ]
