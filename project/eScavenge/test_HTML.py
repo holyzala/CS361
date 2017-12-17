@@ -68,7 +68,6 @@ class TestTeamPageGameStart(TestCase):
     def test_game_started(self):
         self.cli.command('start', GM_NAME)
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
-        print(response.content)
         self.assertContains(response, 'Clue <br>New York', html=True)
 
 
@@ -191,7 +190,6 @@ class TestTeamAnswer(TestCase):
         self.assertContains(response, expected_string, html=True)
         response = self.client.post('/teamPage/', {'commandline': 'Statue of Liberty',
                                                    'answerQuestion': 'Answer Question'})
-        print(response.content)
         self.assertContains(response, "<td>90</td>", html=True)
 
     def test_answer_correct_followed_by_incorrect(self):
