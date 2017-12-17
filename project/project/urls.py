@@ -23,5 +23,6 @@ urlpatterns = [
     url(r'^teamPage/', views.teamPage, name='teamPage'),
     url(r'^admin/', admin.site.urls),
     url(r'^gamemaker/', views.game_page, name='gamemaker'),
-    url(r'^logout', views.logout, name='logout')
+    url(r'^logout', views.logout, name='logout'),
+    url(r'^saveGame', views.save_game, name='savegame')
 ]

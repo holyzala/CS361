@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
@@ -124,6 +126,45 @@ def game_page(request):
     username = request.session.get('username')
     if username != GM.username:
         return HttpResponseForbidden()
-    context = {'username': username, 'games': Game.objects.all()}
+    context = {'username': username, 'games': Game.objects.all(), 'teamlist': Game.objects.first().teams.all()}
     return render(request, 'gamePage.html', context)
+
+
+@require_http_methods(['POST'])
+def save_game(request):
+    username = request.session.get('username')
+    if username != GM.username:
+        return HttpResponseForbidden()
+    game_name = request.POST['game']
+    status = request.POST['game_status']
+    penalty_value = request.POST['game_penalty_value']
+    penalty_time = request.POST['game_penalty_time']
+    timer = request.POST['game_timer']
+    points = request.POST['game_points']
+
+    game = Game.objects.get(name=game_name)
+    cur_status = 0
+    if game.started:
+        cur_status = 1
+    if game.ended:
+        cur_status = 2
+
+    if cur_status == 0 and status == 1:
+        cli = CLI(COMMANDS)
+        cli.command(f'load {game}', GM.username)
+        cli.command('start')
+    if cur_status != 2 and status == 2:
+        game.ended = True
+
+    game.penalty_time = penalty_time
+    game.penalty_value = penalty_value
+    game.landmark_points = points
+
+    if timer != 'None':
+        timer_split = timer.split(':')
+        game.timer = timedelta(hours=timer_split[0], minutes=timer_split[1], seconds=timer_split[2])
+    game.full_clean()
+    game.save()
+
+    return redirect('/')
 
