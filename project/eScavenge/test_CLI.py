@@ -410,7 +410,7 @@ class TestGetClue(TestCase):
 
     def test_after_answer(self):
         self.assertEqual(game_started, self.cli.command("start", GM), "Failed to start game.")
-        self.assertEqual("That is Correct! The Next Question is: \nPlace we purchase coffee from",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"), "Answer didn't work")
         self.assertEqual("UWM", self.cli.command("getclue", "Team1"), "Wrong clue returned")
 
@@ -467,7 +467,7 @@ class TestQuitQuestion(TestCase):
     def test_quit(self):
         self.cli.current_user = Team.objects.get(username="Team1")
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"Question Quit, Your Next Question: \n{question}",
+        self.assertEqual("Question Quit",
                          self.cli.command("giveup Team1 1526", "Team1"), "Could not quit question with proper login")
 
     def test_quit_bad_args(self):
@@ -566,96 +566,94 @@ class TestAnswerQuestion(TestCase):
 
     def test_answer_incorrect(self):
         question = self.cli.current_user.current_landmark.question
-        self.assertEqual(f"Incorrect Answer! The Question Was: \n{question}",
+        self.assertEqual("Incorrect Answer!",
                          self.cli.command("answer 'this is so very wrong'", "Team1"),
                          "Incorrect answer did not print correct response")
 
     def test_answer_correct(self):
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
 
     def test_answer_correcttwice(self):
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer Grind", "Team1"), "Correct answer did not print correct response")
 
     def test_answer_last_question(self):
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer Grind", "Team1"), "Correct answer did not print correct response")
         stat_str = ('You are in place {} of {} teams\n'
                     'Total Time Taken: {}\n'
                     'Final Points: {}')
-        self.assertEqual("That is correct! You have completed the hunt! Here are your final stats:\n{}".format(
-            stat_str.format(1, 2, "0:00:00", 300)), self.cli.command("answer 'Last'", "Team1"),
+        self.assertEqual("That is correct!", self.cli.command("answer 'Last'", "Team1"),
                          "Correct answer did not print correct response")
 
     def test_answer_pass_last_question(self):
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer Grind", "Team1"), "Correct answer did not print correct response")
         stat_str = ('You are in place {} of {} teams\n'
                     'Total Time Taken: {}\n'
                     'Final Points: {}')
-        self.assertEqual("That is correct! You have completed the hunt! Here are your final stats:\n{}".format(
-            stat_str.format(1, 2, "0:00:00", 300)), self.cli.command("answer 'Last'", "Team1"),
+        self.assertEqual("That is correct!", self.cli.command("answer 'Last'", "Team1"),
                          "Correct answer did not print correct response")
         self.assertEqual("There are no more landmarks!", self.cli.command("answer 'Last'", "Team1"),
                          "Correct answer did not print correct response")
 
     def test_answer_right_wrong_right(self):
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
         question = self.cli.current_user.current_landmark.question
-        self.assertEqual(f"Incorrect Answer! The Question Was: \n{question}",
+        self.assertEqual("Incorrect Answer!",
                          self.cli.command("answer 'this is so very wrong'", "Team1"),
                          "Incorrect answer did not print correct response")
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual(f"That is Correct!",
                          self.cli.command("answer 'Grind'", "Team1"), "Correct answer did not print correct response")
 
     def test_answer_team1_team2(self):
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual(f"That is Correct!",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
         self.cli.current_user = Team.objects.get(username="Team2")
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer 'Statue of Liberty'", "Team2"),
                          "Correct answer did not print correct response")
 
     def test_answer_correctteam1_incorrectteam2(self):
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer 'Grind'", "Team1"), "Correct answer did not print correct response")
         self.cli.current_user = Team.objects.get(username="Team2")
         question = self.cli.current_user.current_landmark.question
-        self.assertEqual(f"Incorrect Answer! The Question Was: \n{question}",
+        self.assertEqual("Incorrect Answer!",
                          self.cli.command("answer 'this is so very wrong'", "Team2"),
                          "Incorrect answer did not print correct response")
         question = self.cli.current_user.current_landmark.get_next_in_order().question
-        self.assertEqual(f"That is Correct! The Next Question is: \n{question}",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer 'Statue of Liberty'", "Team2"),
                          "Correct answer did not print correct response")
 
@@ -675,17 +673,16 @@ class TestSnapShot(TestCase):
 
     def test_snapshot_multiple_teams(self):
         self.assertEqual(game_started, self.cli.command("start", GM), "Failed to start game.")
-        self.assertEqual("That is Correct! The Next Question is: \nPlace we purchase coffee from",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer 'Statue of Liberty'", "Team1"),
                          "Correct answer did not print correct response")
-        self.assertEqual("That is Correct! The Next Question is: \nPlace we purchase coffee from",
+        self.assertEqual("That is Correct!",
                          self.cli.command("answer 'Statue of Liberty'", "Team2"),
                          "Correct answer did not print correct response")
         stat_str = ('You are in place {} of {} teams\n'
                     'Total Time Taken: {}\n'
                     'Final Points: {}')
-        self.assertEqual("That is correct! You have completed the hunt! Here are your final stats:\n{}".format(
-            stat_str.format(1, 2, "0:00:00", 200)), self.cli.command("answer 'Grind'", "Team2"),
+        self.assertEqual("That is correct!", self.cli.command("answer 'Grind'", "Team2"),
                          "Correct answer did not print correct response")
         total_time_list = []
         team_points = []

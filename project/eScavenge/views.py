@@ -46,7 +46,7 @@ def login(request):
 @require_http_methods(["GET", "POST"])
 def teamPage(request):
     user = request.session.get('username')
-    team = Team.objects.get( username=request.session.get( 'username' ) )
+    team = Team.objects.get(username=request.session.get('username'))
     command = ''
     output = ''
     if request.method == 'POST':
@@ -56,19 +56,14 @@ def teamPage(request):
         if request.POST.get("changeteam"):
             command += 'editteam'
             if request.POST.get('changeusername'):
-                command += f' name { request.POST["changeusername"]  }'
+                command += f' name {request.POST["changeusername"]}'
             if request.POST.get('changepassword'):
-                command += f' password {request.POST["changepassword"] }'
+                command += f' password {request.POST["changepassword"]}'
         elif request.POST.get("quitQuestion"):
             command += f'giveup {team.username} {team.password}'
         elif request.POST.get("answerQuestion"):
-            command += f' answer {request.POST.get( "commandline", None ) }'
+            command += f' answer \'{request.POST.get("commandline", None)}\''
         output = CLI(COMMANDS).command(command, user)
-            team = Team.objects.get(username=user)
-            command += f' giveup {user} {team.password}'
-        elif request.POST.get("answerQuestion"):
-            command += f' answer \'{request.POST.get( "commandline", None ) }\''
-        CLI(COMMANDS).command(command, user)
         if request.POST.get('changeusername'):
            request.session['username'] = request.POST["changeusername"]
     userpage = Team.objects.get(username=request.session.get('username'))
@@ -89,25 +84,23 @@ def editLandmark(request):
     cli.command(gamecommand, user)
     command = ''
     if request.method == 'POST':
-      if request.POST.get('deletelandmark'):
-        command += 'removelandmark '
-        #if request.POST.get('landmarkname'):
-        command += f' {landmark}'
-        cli.command(command, user)
-
-      if request.POST.get('editLandmark'):
-          command += 'editlandmark '
-          command += f' { landmark }'
-          if request.POST.get('editLMname'):
-              command += f' name { request.POST["editLMname"] }'
-          if request.POST.get('editLMclue'):
-              command += f' clue { request.POST["editLMclue"] }'
-          if request.POST.get('editLMquestion'):
-              command += f' question { request.POST["editLMquestion"] }'
-          if request.POST.get('editLManswer'):
-              command += f' answer { request.POST["editLManswer"] }'
-          if request.POST.get('editLMgame'):
-              command += f' game { request.POST["editLMgame"] }'
-          cli.command(command, user)
-
+        if request.POST.get('deletelandmark'):
+            command += 'removelandmark '
+            #if request.POST.get('landmarkname'):
+            command += f' {landmark}'
+            cli.command(command, user)
+        if request.POST.get('editLandmark'):
+            command += 'editlandmark '
+            command += f' { landmark }'
+            if request.POST.get('editLMname'):
+                command += f' name { request.POST["editLMname"] }'
+            if request.POST.get('editLMclue'):
+                command += f' clue { request.POST["editLMclue"] }'
+            if request.POST.get('editLMquestion'):
+                command += f' question { request.POST["editLMquestion"] }'
+            if request.POST.get('editLManswer'):
+                command += f' answer { request.POST["editLManswer"] }'
+            if request.POST.get('editLMgame'):
+                command += f' game { request.POST["editLMgame"] }'
+            cli.command(command, user)
     return render(request, 'editLandmark.html')

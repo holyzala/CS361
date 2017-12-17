@@ -1,6 +1,6 @@
+from http import HTTPStatus
 from datetime import timedelta
 from functools import reduce
-from http import HTTPStatus
 
 from django.test import Client, TestCase
 
@@ -68,8 +68,8 @@ class TestTeamPageGameStart(TestCase):
     def test_game_started(self):
         self.cli.command('start', GM_NAME)
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
-        self.assertContains(response, '<p class="landmarkname">ldm1\n        <p class="landmarkclue">New York\n        '
-                                      '<p class="landmarkquestion">Gift given by the French\n        ')
+        print(response.content)
+        self.assertContains(response, 'Clue <br>New York', html=True)
 
 
 class TestTeamPageLeadBoards(TestCase):
@@ -175,7 +175,8 @@ class TestTeamAnswer(TestCase):
         self.assertContains(response, "<td>0</td>", html=True)
         response = self.client.post('/teamPage/', {'commandline': 'Statue of Liberty',
                                                    'answerQuestion': 'Answer Question'})
-        self.assertContains(response, "UWM")
+        self.assertContains(response, "Clue <br>UWM", html=True)
+        self.assertContains(response, "That is Correct!", html=True)
         self.assertContains(response, "<td>100</td>", html=True)
 
     def test_answer_incorrectly(self):
@@ -185,12 +186,12 @@ class TestTeamAnswer(TestCase):
         response = self.client.post('/teamPage/', {'commandline': 'WRONG ANSWER',
                                                    'answerQuestion': 'Answer Question'})
 
-        expected_string = "Incorrect Answer! The Question Was: \n{}".format(Team.objects.get(username='team1').
-                                                                            current_landmark.question)
+        expected_string = "Incorrect Answer!"
         self.assertContains(response, "New York")
         self.assertContains(response, expected_string, html=True)
         response = self.client.post('/teamPage/', {'commandline': 'Statue of Liberty',
                                                    'answerQuestion': 'Answer Question'})
+        print(response.content)
         self.assertContains(response, "<td>90</td>", html=True)
 
     def test_answer_correct_followed_by_incorrect(self):
@@ -200,21 +201,20 @@ class TestTeamAnswer(TestCase):
         response = self.client.post('/teamPage/', {'commandline': 'Statue of Liberty',
                                                    'answerQuestion': 'Answer Question'})
         self.assertContains(response, "UWM")
-        team_landmark = Team.objects.get(username='team1').current_landmark
-        expected_string = "Incorrect Answer! The Question Was: \n{}".format(team_landmark.question)
-        self.client.post('/teamPage/', {'commandline': 'WRONG ANSWER', 'answerQuestion': 'Answer Question'})
+        expected_string = "Incorrect Answer!"
+        response = self.client.post('/teamPage/', {'commandline': 'WRONG ANSWER', 'answerQuestion': 'Answer Question'})
         self.assertContains(response, expected_string, html=True)
-        self.client.post('/teamPage/', {'commandline': 'WRONG ANSWER', 'answerQuestion': 'Answer Question'})
+        response = self.client.post('/teamPage/', {'commandline': 'WRONG ANSWER', 'answerQuestion': 'Answer Question'})
         self.assertContains(response, expected_string, html=True)
         response = self.client.post('/teamPage/', {'commandline': 'Grind', 'answerQuestion': 'Answer Question'})
-        self.assertContains(response, "<td>80</td>", html=True)
+        self.assertContains(response, "<td>80</td>", html=True) # needs to be 80, answered incorrectly twice (100-10-10)
 
     def test_answer_last_question(self):
         self.client.post('/login', {'username': 'team1', 'password': '1234'})
         self.client.post('/teamPage/', {'commandline': 'Statue of Liberty', 'answerQuestion': 'Answer Question'})
         response = self.client.post('/teamPage/', {'commandline': 'Grind', 'answerQuestion': 'Answer Question'})
         self.assertContains(response, "Final Landmark Answered", html=True)
-        self.assertContains(response, "<td>200</td>")
+        self.assertContains(response, "<td>200</td>") # something wrong with database, maybe missing a save somewhere
 
 
 class TestTeamQuitQuestion(TestCase):
@@ -276,3 +276,4 @@ class TestTeamEdit(TestCase):
                                                    'changepassword': 'newpass'})
         self.assertContains(response, "teamx", html=True)
         self.assertEqual('newpass', Team.objects.get(username='teamx').password)
+
