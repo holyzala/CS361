@@ -233,6 +233,7 @@ class Game(models.Model):
         team.clue_time = now
         team.penalty_count = 0
         team.full_clean()
+        team.save()
         try:
             team.current_landmark = team.current_landmark.get_next_in_order()
         except Landmark.DoesNotExist:
