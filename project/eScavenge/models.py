@@ -209,6 +209,8 @@ class Game(models.Model):
         try:
             if not team.current_landmark.check_answer(answer):
                 team.penalty_count += self.penalty_value
+                team.full_clean()
+                team.save()
                 return Errors.WRONG_ANSWER
         except AttributeError:
             return Errors.LANDMARK_INDEX
@@ -231,6 +233,7 @@ class Game(models.Model):
         team.clue_time = now
         team.penalty_count = 0
         team.full_clean()
+        team.save()
         try:
             team.current_landmark = team.current_landmark.get_next_in_order()
         except Landmark.DoesNotExist:
