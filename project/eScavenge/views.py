@@ -126,7 +126,14 @@ def game_page(request):
     username = request.session.get('username')
     if username != GM.username:
         return HttpResponseForbidden()
-    context = {'username': username, 'games': Game.objects.all(), 'teamlist': Game.objects.first().teams.all()}
+    game_name = request.session.get('game_name')
+    game = "NewGame"
+    teams = []
+    if game_name is not None and game_name != game:
+        game = Game.objects.get(name=game_name)
+        teams = game.teams.all()
+
+    context = {'username': username, 'game': game, 'teamlist': teams, 'games': Game.objects.all()}
     return render(request, 'gamePage.html', context)
 
 
@@ -162,9 +169,14 @@ def save_game(request):
 
     if timer != 'None':
         timer_split = timer.split(':')
-        game.timer = timedelta(hours=timer_split[0], minutes=timer_split[1], seconds=timer_split[2])
+        game.timer = timedelta(hours=int(timer_split[0]), minutes=int(timer_split[1]), seconds=int(timer_split[2]))
     game.full_clean()
     game.save()
 
     return redirect('/')
 
+
+@require_http_methods(['POST'])
+def choose_game(request):
+    request.session['game_name'] = request.POST['selected_game']
+    return redirect('/')
