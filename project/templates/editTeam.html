@@ -1,15 +1,19 @@
 {% extends 'basic.html' %}
 {% load filters %}
+{% block title %}
+    {{ teamName }}
+{% endblock %}
 {% block header %}
     <link rel="stylesheet" href="/static/gamepage.css">
 {% endblock %}
 {% block Nav-Bar %}
 
-    <a class="eScavenge">{% if teamName != 'NewTeam' %} Editing: {{ teamName }} {% else %} Creating New Team {% endif %}</a>
+    <a class="eScavenge">{% if teamName != 'NewTeam' %} Editing: {{ teamName }} {% else %} Creating New
+        Team {% endif %}</a>
 
 {% endblock %}
 
-{%  block dropdown %}
+{% block dropdown %}
     <form action="/editTeamAction/" method="post">
         {% csrf_token %}
         <label id="deleteLabel" for="deleteteam"></label>
@@ -21,39 +25,39 @@
 {% block command-box %}
     <form action="/editTeamAction/" method="post" class="editteamform">
         <div class="gameInfo">
-        {% if teamName != "NewTeam" %}
-     <p class="editteamtitle">Edit Team: {{ teamName }} </p>
-    {% else %}
-        <p class="editteamtitle">Add New Team</p>
-    {% endif %}
+            {% if teamName != "NewTeam" %}
+                <p class="editteamtitle">Edit Team: {{ teamName }} </p>
+            {% else %}
+                <p class="editteamtitle">Add New Team</p>
+            {% endif %}
             {% csrf_token %}
             {% if teamName != "NewTeam" %}
-            <label id="usernameLabelEdit" for="usernameedit">Change Username</label>
-            <input type="text" id="usernameedit" name="usernameedit" value={{ teamName }}>
-            <input type="hidden" name="old_name" value={{ teamName }}>
-            <br/>
-            <label id="passwordLabelEdit" for="passwordedit">Change Password</label>
-            <input type="text" id="passwordedit" name="passwordedit" value={{ teamName | getteampassword }}>
-            <br/>
+                <label id="usernameLabelEdit" for="usernameedit">Change Username</label>
+                <input type="text" id="usernameedit" name="usernameedit" value={{ teamName }}>
+                <input type="hidden" name="old_name" value={{ teamName }}>
+                <br/>
+                <label id="passwordLabelEdit" for="passwordedit">Change Password</label>
+                <input type="text" id="passwordedit" name="passwordedit" value={{ teamName | getteampassword }}>
+                <br/>
             {% else %}
-            <label id="usernameLabelEdit" for="usernameedit">Add Username</label>
-            <input type="text" id="usernameedit" name="usernameedit" pattern="\w+" required>
-            <input type="hidden" name="old_name" value={{ teamName }}>
-            <br/>
-            <label id="passwordLabelEdit" for="passwordedit">Add Password</label>
-            <input type="text" id="passwordedit" name="passwordedit" pattern="\w+" required>
-            <br/>
+                <label id="usernameLabelEdit" for="usernameedit">Add Username</label>
+                <input type="text" id="usernameedit" name="usernameedit" pattern="\w+" required>
+                <input type="hidden" name="old_name" value={{ teamName }}>
+                <br/>
+                <label id="passwordLabelEdit" for="passwordedit">Add Password</label>
+                <input type="text" id="passwordedit" name="passwordedit" pattern="\w+" required>
+                <br/>
             {% endif %}
-            </div>
-            <div class="userInteraction">
-                <input type="submit" id="usersubmit" name="usersubmit" value="Submit">
-            </div>
-        </form>
+        </div>
+        <div class="userInteraction">
+            <input type="submit" id="usersubmit" name="usersubmit" value="Submit">
+        </div>
+    </form>
 {% endblock %}
 
 {% block leaderboard %}
-      <div class="leftsidebar">
-     <div class="rightsidebar">
-     </div>
-     </div>
-r{% endblock %}
+    <div class="leftsidebar">
+        <div class="rightsidebar">
+        </div>
+    </div>
+{% endblock %}
