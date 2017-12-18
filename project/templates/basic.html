@@ -1,44 +1,44 @@
 {% load staticfiles %}
 {% spaceless %}
 
-<!DOCTYPE html>
-<title>{% block title %}{% endblock %}</title>
+    <!DOCTYPE html>
 
-<head>
-    {% block header %}
-    {% endblock %}
-</head>
+    <head>
+        <title>{% block title %}{% endblock %}</title>
+        {% block header %}
+        {% endblock %}
+    </head>
 
-<body>
-<div class="Nav-Bar">
-    {% block Nav-Bar %}
-    {% block output %}
-    {% endblock %}
-    {% endblock %}
-</div>
-<div class="dropdown">
-    {% block dropdown %}
-    {% endblock %}
-</div>
-
-
-<div class="command-box">
-    {% block command-box %}
-    {% endblock %}
-</div>
-
-{% block leaderboard %}
-{% endblock %}
-
-
-
-<div class="scrollable">
-    {% block scrollabe %}
-        <table class="answeredlandmarks">
-            {% block answeredlandmarks %}
+    <body>
+    <div class="Nav-Bar">
+        {% block Nav-Bar %}
+            {% block output %}
             {% endblock %}
-        </table>
+        {% endblock %}
+    </div>
+    <div class="dropdown">
+        {% block dropdown %}
+        {% endblock %}
+    </div>
+
+
+    <div class="command-box">
+        {% block command-box %}
+        {% endblock %}
+    </div>
+
+    {% block leaderboard %}
     {% endblock %}
-</div>
-</body>
+
+
+
+    <div class="scrollable">
+        {% block scrollabe %}
+            <table class="answeredlandmarks">
+                {% block answeredlandmarks %}
+                {% endblock %}
+            </table>
+        {% endblock %}
+    </div>
+    </body>
 {% endspaceless %}
