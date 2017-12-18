@@ -1,6 +1,8 @@
 {% extends 'basic.html' %}
 {% load filters %}
-
+    {% block header %}
+    <link rel="stylesheet" href="/static/style.css">
+    {% endblock %}
 {% block title %} Team: {{ team.username }} {% endblock %}
 {% block Nav-Bar %}
     <a class="eScavenge">Game: {{ team.game_id }}</a>

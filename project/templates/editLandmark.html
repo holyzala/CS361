@@ -1,6 +1,8 @@
 {% extends 'basic.html' %}
 {% load staticfiles %}
-
+{% block header %}
+    <link rel="stylesheet" href="/static/gamepage.css">
+{% endblock %}
 {% block title %} EditLandmark: {{ landmark.name }} {% endblock %}
 {% block Nav-Bar %}
     <a class="eScavenge">Game: {{ landmark.game.name }}</a>

@@ -8,6 +8,7 @@ body {
     position: fixed;
     top: 0;
     width: 100%;
+    height: 75px;
     box-shadow: 4px 6px #006000;
 }
 
@@ -47,6 +48,26 @@ body {
     font-size: 30px;
 }
 
+.selected_game{
+    border: none;
+    position: absolute;
+    top: 25%;
+    left: 1%;
+    text-align: center;
+    font-size: 15px;
+    height: 29px;
+    padding: 5px; /* If you add too much padding here, the options won't show in IE */
+    width: 108px;
+}
+
+#submitgame {
+    position: absolute;
+    top: 30%;
+    left: 10%;
+    box-shadow: 2px 4px #008d00;
+    background-color: #57cf5b;
+    color: white;
+}
 .help {
 
     font-family: Helvetica;
@@ -69,14 +90,14 @@ body {
 }
 
 .delbutton {
-  background-color: red;
-  color: black;
+    background-color: red;
+    color: black;
 
-  padding: 14px;
-  font-size: 14px;
-  border: none;
-  cursor: pointer;
-  box-shadow: 2px 4px #003300;
+    padding: 14px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 2px 4px #003300;
 }
 
 .dropbtn {
@@ -99,7 +120,6 @@ body {
 .dropdown-content {
     display: none;
     position: absolute;
-    background-color: #8aff8e;
     min-width: 150px;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
@@ -107,10 +127,17 @@ body {
     border: 5px solid black;
     right: 5px;
     padding: 5px;
+    background-color: #3e8e41;
+}
+
+.dropdown-content .logoutbutton{
+    background-color: #3e8e41;
+    text-align: center;
 }
 
 .dropdown-content a {
-    color: black;
+    background-color: #3e8e41;
+    color: white;
     font-family: Helvetica;
     padding: 14px 30px;
     text-decoration: none;
@@ -157,21 +184,32 @@ body {
     border: 5px solid black;
     box-shadow: 2px 4px #003300;
 }
-
+#submit{
+    position: absolute;
+    padding: 14px 50px;
+    bottom: 5%;
+    font-size: 15px;
+    left: 35%;
+    box-shadow: 2px 4px #008d00;
+    text-shadow: 0px 4px 3px rgba(0, 0, 0, 1.0),
+    0px 8px 13px rgba(0, 0, 0, 0.1),
+    0px 18px 23px rgba(0, 0, 0, 0.1);
+    background-color: #57cf5b;
+    color: white;
+}
 .command-box {
     height: 400px;
-    width: 400px;
+    width: 550px;
     box-shadow: 2px 8px #001100;
-    border: 3px solid #005000;
+    border: 3px solid #008d00;
     background-color: #00bb00;
     position: fixed;
     top: 15%;
-    left: 35%;
+    left: 30%;
     text-shadow: 0px 4px 3px rgba(0, 0, 0, 1.0),
     0px 8px 13px rgba(0, 0, 0, 0.1),
     0px 18px 23px rgba(0, 0, 0, 0.1);
     box-shadow: 2px 4px #003300;
-    text-align: center;
 }
 
 .editteamform label{
@@ -179,7 +217,7 @@ body {
     font-size: 20px;
     display: block;
     color: white;
-    margin-left:5%;
+    margin-left:33%;
 }
 
 .editteamform input{
@@ -226,12 +264,77 @@ body {
 }
 
 .gameInfo {
-    text-align: center;
-    width: 390px;
+    width: 540px;
     height: 300px;
     border: 5px solid black;
     color: white;
+}
 
+.gameInfo h1 {
+    text-align: center;
+}
+.gameInfo select {
+    position: absolute;
+    left: 50%;
+    top: 20%;
+}
+.gameInfo .game_status{
+    position: absolute;
+    left: 18%;
+    top: 20%;
+}
+.gameInfo #game_penalty{
+    position: absolute;
+    left: 18%;
+    top: 30%;
+}
+.gameInfo #game_penalty_value {
+    position: absolute;
+    left: 50%;
+    top: 30%;
+}
+.gameInfo #game_time{
+    position: absolute;
+    left: 18%;
+    top: 42%;
+}
+.gameInfo #game_penalty_time{
+    position: absolute;
+    left: 50%;
+    top: 42%;
+}
+.gameInfo #timer{
+    position: absolute;
+    left: 18%;
+    top: 55%;
+}
+.gameInfo #game_timer{
+    position: absolute;
+    left: 50%;
+    top: 55%;
+}
+
+.gameInfo #team_points{
+    position: absolute;
+    left: 18%;
+    top: 68%;
+}
+.gameInfo #game_points{
+    position: absolute;
+    left: 50%;
+    top: 68%;
+}
+
+.gameInfo #new_game_label{
+    position: absolute;
+    left: 18%;
+    top: 20%;
+}
+
+.gameInfo #game_name{
+    position: absolute;
+    left: 50%;
+    top: 20%;
 }
 
 table.leaderboard {
@@ -243,8 +346,15 @@ table.leaderboard {
     box-shadow: 4px 6px #003300;
     border: 3px solid #000000;
     background-color: #00bb00;
-    top: 11%;
+    top: 13%;
 
+}
+table.leaderboard a:link {
+    color: white;
+}
+
+table.leaderboard a:visited {
+    color: white;
 }
 
 table.leaderboard thead, table.leaderboard tbody {
@@ -283,9 +393,34 @@ table.leaderboard th, table.leaderboard td {
     width: 100%;
 }
 
+
+.submitteam {
+    box-shadow: 2px 4px #008d00;
+    background-color: #57cf5b;
+    text-shadow: 0px 2px 3px rgba(0, 0, 0, 1.0);
+    color: white;
+}
+
+.submitlandmark {
+    box-shadow: 2px 4px #008d00;
+    background-color: #57cf5b;
+    text-shadow: 0px 2px 3px rgba(0, 0, 0, 1.0);
+    color: white;
+}
+.submitlandmark a:visited{
+    color:white;
+}
+
+table.answeredlandmarks a:link {
+    color: white;
+}
+
+table.answeredlandmarks a:visited {
+    color: white;
+}
+
 table.answeredlandmarks tbody {
     overflow: auto;
-
 }
 
 table.answeredlandmarks tr {
@@ -299,7 +434,7 @@ table.answeredlandmarks th, table.answeredlandmarks td {
     0px 3px 13px rgba(0, 0, 0, 0.1),
     0px 9px 23px rgba(0, 0, 0, 0.1);
     text-align: left;
-    width: 33%;
+    width: 26%;
 }
 
 table.answeredlandmarks td {
@@ -342,19 +477,61 @@ table.answeredlandmarks td {
 }
 
 .editlandmarktitle {
-  font-weight: bold;
-  color: white;
-  height: 10px;
-  font-size: xx-large;
+    font-weight: bold;
+    color: white;
+    height: 10px;
+    font-size: xx-large;
 }
 
 .landarkeditlabels {
-  vertical-align: top;
-  height: 10px;
-  width: 200px;
-  resize: none;
-  display: inline-block;
-  color: white;
-  font-weight: bold;
+    vertical-align: top;
+    height: 10px;
+    width: 200px;
+    resize: none;
+    display: inline-block;
+    color: white;
+    font-weight: bold;
 
+}
+
+.leftsidebar {
+    position: fixed;
+    left: 10px;
+    top: 12.5%;
+    width: 150px;
+    height: 437px;
+    color: rgba(255,255,255,1);
+    -o-text-overflow: clip;
+    text-overflow: clip;
+    background: -webkit-linear-gradient(45deg,
+    rgba(0,0,0,0.2) 25%,
+    rgba(0,0,0,0) 25%, rgba(0,0,0,0) 50%,
+    rgba(255,255,255,0.2) 50%,
+    rgba(255,255,255,0.2) 75%,
+    rgba(0,0,0,0) 75%,
+    rgba(0,0,0,0) 0),
+    rgb(0, 200, 0);
+    -webkit-background-size: 50px 50px;
+    background-size: 50px 50px;
+}
+
+.rightsidebar {
+    position: fixed;
+    right: 0;
+    top: 12.5%;
+    width: 150px;
+    height: 437px;
+    color: rgba(255,255,255,1);
+    -o-text-overflow: clip;
+    text-overflow: clip;
+    background: -webkit-linear-gradient(45deg,
+    rgba(0,0,0,0.2) 25%,
+    rgba(0,0,0,0) 25%, rgba(0,0,0,0) 50%,
+    rgba(255,255,255,0.2) 50%,
+    rgba(255,255,255,0.2) 75%,
+    rgba(0,0,0,0) 75%,
+    rgba(0,0,0,0) 0),
+    rgb(0, 200, 0);
+    -webkit-background-size: 50px 50px;
+    background-size: 50px 50px;
 }

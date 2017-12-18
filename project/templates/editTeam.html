@@ -1,9 +1,11 @@
 {% extends 'basic.html' %}
 {% load filters %}
-
+{% block header %}
+    <link rel="stylesheet" href="/static/gamepage.css">
+{% endblock %}
 {% block Nav-Bar %}
 
-    <a class="eScavenge">Team: {{ team }}</a>
+    <a class="eScavenge">Team: {{ teamName }}</a>
 
 {% endblock %}
 
@@ -16,15 +18,15 @@
 {% endblock %}
 
 {% block command-box %}
-     <p class="editteamtitle">EDIT TEAM</p>
+     <p class="editteamtitle">ADD/EDIT TEAM</p>
     <br>
 
     <form action="/editTeamAction/" method="post" class="editteamform">
             {% csrf_token %}
-            <label id="usernameLabelEdit" for="usernameedit">Change Username</label>
+            <label id="usernameLabelEdit" for="usernameedit">Add/Change Username</label>
             <input type="text" id="usernameedit" name="usernameedit">
             <br/>
-            <label id="passwordLabelEdit" for="passwordedit">Change Password</label>
+            <label id="passwordLabelEdit" for="passwordedit">Add/Change Password</label>
             <input type="text" id="passwordedit" name="passwordedit">
             <br/>
             <input type="submit" class="update" name="update" value="Update">
