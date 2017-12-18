@@ -33,7 +33,6 @@ class TestLogin(TestCase):
 
     def test_login_team(self):
         response = self.clientGameMaker.post('/login', {'username': 'gamemaker', 'password': '1234'}, follow=True)
-        print(response.content)
         self.assertRedirects(response, '/gamemaker')
         self.assertContains(response, 'New Game', html=True)
         response = self.clientGameMaker.post('/saveGame/', {'game_name': 'game1', 'game_penalty_value': '0',
@@ -41,7 +40,8 @@ class TestLogin(TestCase):
                                                             'game_timer':'00:00:00', 'NewSubmit': 'blah'}, follow=True)
         self.assertContains(response, 'game1', html=True)
         response = self.clientGameMaker.get('/editTeam?name=NewTeam')
-        self.assertContains(response, "")
+        self.assertContains(response, "Add New Team", html=True)
+
 
 
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'}, follow=True)
