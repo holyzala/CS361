@@ -5,7 +5,7 @@
 {% endblock %}
 {% block Nav-Bar %}
 
-    <a class="eScavenge">{% if teamName != 'NewTeam' %} {{ teamName }} {% else %} Creating New Team {% endif %}</a>
+    <a class="eScavenge">{% if teamName != 'NewTeam' %} Editing: {{ teamName }} {% else %} Creating New Team {% endif %}</a>
 
 {% endblock %}
 
@@ -14,6 +14,7 @@
         {% csrf_token %}
         <label id="deleteLabel" for="deleteteam"></label>
         <input type="submit" id="deleteteam" name="deleteteam" value="Delete Team">
+        <input type="hidden" name="old_name" value={{ teamName }}>
     </form>
 {% endblock %}
 

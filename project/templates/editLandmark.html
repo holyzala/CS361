@@ -5,7 +5,11 @@
 {% endblock %}
 {% block title %} Landmark: {{ landmark_name }} {% endblock %}
 {% block Nav-Bar %}
-    <a class="eScavenge">Game: {{ game_name }}</a>
+    {% if landmark_name != 'NewLandmark' %}
+    <a class="eScavenge">Edit: {{ landmark_name }}</a>
+    {% else %}
+    <a class="eScavenge">Add New Landmark</a>
+    {% endif %}
 {% endblock %}
 
 
@@ -15,7 +19,7 @@
             <form action="/editLandmark/" method="post">
                 {% csrf_token %}
                 <input type="hidden" name="landmark_name" value={{ landmark_name }}>
-                <input type="submit" class="delbutton" name="deletelandmark" value="DELETE LANDMARK">
+                <input type="submit" id="deletelandmark" name="deletelandmark" value="Delete Landmark">
             </form>
         </div>
     {% endif %}
@@ -31,9 +35,9 @@
                 </div>
             </div>
             {% if landmark_name != 'NewLandmark' %}
-                <p class="editlandmarktitle">EDIT LANDMARK</p>
+                <p class="editlandmarktitle">Edit: {{ landmark_name }}</p>
             {% else %}
-                <p class="editlandmarktitle">ADD LANDMARK</p>
+                <p class="editlandmarktitle">Add New Landmark</p>
             {% endif %}
             <br/>
             {% if game.started %}
@@ -47,26 +51,26 @@
                 <input type="hidden" name="landmark_name" value={{ landmark_name }}>
                 <table>
                     <tr>
-                        <td class="landarkeditlabels">Landmark Name:</td>
-                        <td><input type="text" class="editfield" name="editLMname" value="{{ landmark.name }}"></td>
+                        <td id="landmarkeditname">Landmark Name:</td>
+                        <td><input type="text" id="editname" name="editLMname" value={{ landmark.name }}></td>
                     </tr>
                     <tr>
-                        <td class="landarkeditlabels">Landmark Clue:</td>
-                        <td><input type="text" class="editfield" name="editLMclue" value="{{ landmark.clue }}"></td>
+                        <td id="landmarkeditclue">Landmark Clue:</td>
+                        <td><input type="text" id="editclue" name="editLMclue" value={{ landmark.clue }}></td>
                     </tr>
                     <tr>
-                        <td class="landarkeditlabels">Landmark Question:</td>
-                        <td><input type="text" class="editfield" name="editLMquestion" value="{{ landmark.question }}">
+                        <td id="landmarkeditquestion">Landmark Question:</td>
+                        <td><input type="text" id="editquestion" name="editLMquestion" value={{ landmark.question }}>
                         </td>
                     </tr>
                     <tr>
-                        <td class="landarkeditlabels">Landmark Answer:</td>
-                        <td><input type="text" class="editfield" name="editLManswer" value="{{ landmark.answer }}"></td>
+                        <td id="landmarkeditanswer">Landmark Answer:</td>
+                        <td><input type="text" id="editanswer" name="editLManswer" value={{ landmark.answer }}></td>
                     </tr>
                 </table>
                 </div>
                 <div class="userInteraction">
-                <input type="submit" class="editButton" name="editLandmark" value="Update">
+                <input type="submit" id="landmarksubmit" name="landmarksubmit" value="Submit">
             {% endif %}
             </div>
     </form>

@@ -306,6 +306,18 @@ body {
     font-size: 15px;
 }
 
+.dropdown #deletelandmark{
+    color:white;
+    float: right;
+    width: 140px;
+    height: 50px;
+    margin-right: 20px;
+    box-shadow: 2px 3px #003300;
+    border: 3px solid #000000;
+    background-color: #00bb00;
+    font-size: 15px;
+}
+
 #noGame {
     color: white;
 }
@@ -395,6 +407,52 @@ table.leaderboard {
     background-color: #00bb00;
     top: 13%;
 
+}
+
+.gameInfo #landmarkeditname{
+    position: absolute;
+    left: 17%;
+    top: 30%;
+}
+
+.gameInfo #editname{
+    position: absolute;
+    left: 47%;
+    top: 30%;
+}
+
+.gameInfo #landmarkeditclue{
+    position: absolute;
+    left: 17%;
+    top: 40%;
+}
+
+.gameInfo #editclue{
+    position: absolute;
+    left: 47%;
+    top: 40%;
+}
+.gameInfo #landmarkeditquestion{
+    position: absolute;
+    left: 17%;
+    top: 50%;
+}
+
+.gameInfo #editquestion{
+    position: absolute;
+    left: 47%;
+    top: 50%;
+}
+.gameInfo #landmarkeditanswer{
+    position: absolute;
+    left: 17%;
+    top: 60%;
+}
+
+.gameInfo #editanswer{
+    position: absolute;
+    left: 47%;
+    top: 60%;
 }
 table.leaderboard a:link {
     color: white;
@@ -531,7 +589,7 @@ table.answeredlandmarks td {
     text-align: center;
 }
 
-.landarkeditlabels {
+.landmarkeditname {
     vertical-align: top;
     height: 10px;
     width: 200px;
@@ -539,7 +597,20 @@ table.answeredlandmarks td {
     display: inline-block;
     color: white;
     font-weight: bold;
+}
 
+.userInteraction #landmarksubmit{
+    position: absolute;
+    padding: 14px 50px;
+    bottom: 5%;
+    font-size: 15px;
+    left: 35%;
+    box-shadow: 2px 4px #008d00;
+    text-shadow: 0px 4px 3px rgba(0, 0, 0, 1.0),
+    0px 8px 13px rgba(0, 0, 0, 0.1),
+    0px 18px 23px rgba(0, 0, 0, 0.1);
+    background-color: #57cf5b;
+    color: white;
 }
 
 .leftsidebar {
