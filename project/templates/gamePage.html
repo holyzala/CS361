@@ -116,11 +116,15 @@
     {% if game != "NewGame" %}
         <table class="leaderboard">
             <thead>
-            <th>Game Status:
-                {% if game.started %} In Progress
-                {% elif game.ended %} Game Over
-                {% else %} Not Started</th>
-                {% endif %}
+            <tr>
+                <th colspan="2">
+                    Game Status:
+                    {% if game.started %} In Progress
+                    {% elif game.ended %} Game Over
+                    {% else %} Not Started
+                    {% endif %}
+                </th>
+            </tr>
             <tr>
                 <th><span class="text">Team Name</span></th>
                 <th><span class="text">Team Points</span></th>
@@ -173,9 +177,11 @@
                     {% endfor %}
                     <tr>
                         <td>
-                            <button class="submitlandmark"><a type="hidden" href="/editLandmark?landmark=NewLandmark">Add a
+                            <button class="submitlandmark"><a href="/editLandmark?landmark=NewLandmark">Add
+                                a
                                 Landmark</a></button>
                         </td>
+                        <td></td>
                         <td></td>
                         <td></td>
                     </tr>

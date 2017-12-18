@@ -23,26 +23,27 @@
 
 
 {% block command-box %}
-    <div class="editLandmark">
-     <div class="leftsidebar">
-                    <div class="rightsidebar">
-                    </div>
+    <form action="/editLandmark/" method="post">
+        {% csrf_token %}
+        <div class="gameInfo">
+            <div class="leftsidebar">
+                <div class="rightsidebar">
                 </div>
-        {% if landmark_name != 'NewLandmark' %}
-            <p class="editlandmarktitle">EDIT LANDMARK</p>
-        {% else %}
-            <p class="editlandmarktitle">ADD LANDMARK</p>
-        {% endif %}
-        <br>
-        {% if game.started %}
-            <p style="color:white; text-align: center; font-size: 25px;">The game has started. No editing while game in
-                progress.</p>
-        {% elif game.ended %}
-            <p style="color:white; text-align: center; font-size: 25px;">The game has ended. No landmarks are
-                editable</p>
-        {% else %}
-            <form action="/editLandmark/" method="post">
-                {% csrf_token %}
+            </div>
+            {% if landmark_name != 'NewLandmark' %}
+                <p class="editlandmarktitle">EDIT LANDMARK</p>
+            {% else %}
+                <p class="editlandmarktitle">ADD LANDMARK</p>
+            {% endif %}
+            <br/>
+            {% if game.started %}
+                <p style="color:white; text-align: center; font-size: 25px;">The game has started. No editing while game
+                    in
+                    progress.</p>
+            {% elif game.ended %}
+                <p style="color:white; text-align: center; font-size: 25px;">The game has ended. No landmarks are
+                    editable</p>
+            {% else %}
                 <input type="hidden" name="landmark_name" value={{ landmark_name }}>
                 <table>
                     <tr>
@@ -62,21 +63,11 @@
                         <td class="landarkeditlabels">Landmark Answer:</td>
                         <td><input type="text" class="editfield" name="editLManswer" value={{ landmark.answer }}></td>
                     </tr>
-                    <tr>
-                        <td colspan="2">
-                            <input type="submit" , class="editButton" , name="editLandmark" , value="Update">
-                        </td>
-                    </tr>
                 </table>
-            </form>
-        {% endif %}
-    </div>
-
+                </div>
+                <div class="userInteraction">
+                <input type="submit" class="editButton" name="editLandmark" value="Update">
+            {% endif %}
+            </div>
+    </form>
 {% endblock %}
-
-
-{% block side-bar %}
-{% endblock %}
-
-{% block leaderboard %}
-    r{% endblock %}
