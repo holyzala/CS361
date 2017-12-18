@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
+from django.contrib import messages
 
 from .CLI import CLI, COMMANDS
 from .models import GMFactory, Team, Landmark, Game
@@ -53,28 +54,33 @@ def teamPage(request):
     team = Team.objects.get(username=request.session.get('username'))
     command = ''
     output = ''
+    teamexists = None
     if request.method == 'POST':
         if request.POST.get("logoutbutton"):
             return redirect('/logout')
         if request.POST.get("changeteam"):
             command += 'editteam'
             if request.POST.get('changeusername'):
-                command += f' name {request.POST["changeusername"]}'
+                try:
+                    teamexists = Team.objects.get(username=request.POST.get('changeusername'))
+                except Team.DoesNotExist:
+                    command += f' name {request.POST["changeusername"]}'
+                output = 'Team Already Exists'
             if request.POST.get('changepassword'):
                 command += f' password {request.POST["changepassword"]}'
         elif request.POST.get("quitQuestion"):
             command += f'giveup {team.username} {team.password}'
         elif request.POST.get("answerQuestion"):
             command += f' answer \'{request.POST.get("commandline", None)}\''
-        output = CLI(COMMANDS).command(command, user)
-        if request.POST.get('changeusername'):
+        if not teamexists:
+            output = CLI(COMMANDS).command(command, user)
+        if request.POST.get('changeusername') and not teamexists:
             request.session['username'] = request.POST["changeusername"]
     userpage = Team.objects.get(username=request.session.get('username'))
     teamlist = userpage.game.teams.order_by('-points')
     teamhistory = userpage.history.all()
     context = {'team': userpage, 'teamlist': teamlist, 'teamhistory': teamhistory, 'output': output}
     return render(request, 'teamPage.html', context)
-
 
 def editTeam(request):
     context = {'teamName': request.GET['name']}
@@ -189,7 +195,6 @@ def save_game(request):
     username = request.session.get('username')
     if username != GM.username:
         return HttpResponseForbidden()
-
     game_name = request.POST['game_name']
     is_new = request.POST.get('NewSubmit')
     if not is_new:
