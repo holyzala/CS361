@@ -18,7 +18,7 @@
         <div>
             <form action="/editLandmark/" method="post">
                 {% csrf_token %}
-                <input type="hidden" name="landmark_name" value={{ landmark_name }}>
+                <input type="hidden" name="landmark_name" value="{{ landmark_name }}">
                 <input type="submit" id="deletelandmark" name="deletelandmark" value="Delete Landmark">
             </form>
         </div>
@@ -48,24 +48,24 @@
                 <p style="color:white; text-align: center; font-size: 25px;">The game has ended. No landmarks are
                     editable</p>
             {% else %}
-                <input type="hidden" name="landmark_name" value={{ landmark_name }}>
+                <input type="hidden" name="landmark_name" value="{{ landmark_name }}">
                 <table>
                     <tr>
                         <td id="landmarkeditname">Landmark Name:</td>
-                        <td><input type="text" id="editname" name="editLMname" value={{ landmark.name }}></td>
+                        <td><input type="text" id="editname" name="editLMname" value="{{ landmark.name }}"></td>
                     </tr>
                     <tr>
                         <td id="landmarkeditclue">Landmark Clue:</td>
-                        <td><input type="text" id="editclue" name="editLMclue" value={{ landmark.clue }}></td>
+                        <td><input type="text" id="editclue" name="editLMclue" value="{{ landmark.clue }}"></td>
                     </tr>
                     <tr>
                         <td id="landmarkeditquestion">Landmark Question:</td>
-                        <td><input type="text" id="editquestion" name="editLMquestion" value={{ landmark.question }}>
+                        <td><input type="text" id="editquestion" name="editLMquestion" value="{{ landmark.question }}">
                         </td>
                     </tr>
                     <tr>
                         <td id="landmarkeditanswer">Landmark Answer:</td>
-                        <td><input type="text" id="editanswer" name="editLManswer" value={{ landmark.answer }}></td>
+                        <td><input type="text" id="editanswer" name="editLManswer" value="{{ landmark.answer }}"></td>
                     </tr>
                 </table>
                 </div>
