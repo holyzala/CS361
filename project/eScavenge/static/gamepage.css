@@ -481,6 +481,7 @@ table.answeredlandmarks td {
     color: white;
     height: 10px;
     font-size: xx-large;
+    text-align: center;
 }
 
 .landarkeditlabels {
