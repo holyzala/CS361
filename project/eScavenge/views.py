@@ -97,7 +97,7 @@ def editTeamAction(request):
             cli.command(addInput, user)
             return redirect('/')
         if request.POST.get('deleteteam'):
-            deleteInput = f'removeteam {request.GET.get("name")}'
+            deleteInput = f' removeteam {request.POST.get("old_name")}'
             cli.command(deleteInput, user)
             return redirect('/')
         commandInput = 'editteam'

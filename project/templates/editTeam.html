@@ -13,6 +13,7 @@
     <form action="/editTeamAction/" method="post">
         {% csrf_token %}
         <label id="deleteLabel" for="deleteteam"></label>
+        <input type="hidden" name="old_name" value={{ teamName }}>
         <input type="submit" id="deleteteam" name="deleteteam" value="Delete Team">
     </form>
 {% endblock %}
