@@ -21,7 +21,7 @@
     <div class="dropdown">
         <button class="dropbtn">{{ username }}</button>
         <div class="dropdown-content">
-            <input type="hidden" id="logoutbutton"><a class= "logoutbutton" href="/logout">Log Out</a></inputbutton>
+            <input type="hidden" id="logoutbutton"><a class="logoutbutton" href="/logout">Log Out</a></inputbutton>
         </div>
     </div>
 {% endblock %}
@@ -36,11 +36,13 @@
                     <tr>
                         <td><span class="game_status">Status:</span></td>
                         {% with game|get_status as status %}
-                            <td><select name="game_status">
-                                <option value="0" {% if status == 0 %}selected{% endif %}>Not Started</option>
-                                <option value="1" {% if status == 1 %}selected{% endif %}>Running</option>
-                                <option value="2" {% if status == 2 %}selected{% endif %}>Finished</option>
-                            </select></td>
+                            <td>
+                                <select name="game_status">
+                                    <option value="0" {% if status == 0 %}selected{% endif %}>Not Started</option>
+                                    <option value="1" {% if status == 1 %}selected{% endif %}>Running</option>
+                                    <option value="2" {% if status == 2 %}selected{% endif %}>Finished</option>
+                                </select>
+                            </td>
                         {% endwith %}
                     </tr>
                     <tr>
@@ -73,10 +75,10 @@
     {% else %}
         <form action="/saveGame/" id="NewGame" method="post">
             <div class="gameInfo">
-                 <div class="leftsidebar">
+                <div class="leftsidebar">
                     <div class="rightsidebar">
                     </div>
-                    </div>
+                </div>
                 {% csrf_token %}
                 <table>
                     <h1>New Game</h1>
@@ -133,7 +135,12 @@
                     <td>{{ team.points }}</td>
                 </tr>
             {% endfor %}
-            <tr><td><button class="submitteam"><a href="/editTeam?name=NewTeam">Add a Team</a></button></td><td></td></tr>
+            <tr>
+                <td>
+                    <button class="submitteam"><a href="/editTeam?name=NewTeam">Add a Team</a></button>
+                </td>
+                <td></td>
+            </tr>
             </tbody>
         </table>
     {% endif %}
@@ -164,7 +171,14 @@
                             <td>{{ landmark.answer }}</td>
                         </tr>
                     {% endfor %}
-                    <tr><td><button class="submitlandmark"><a type="hidden" href="/editLandmark?name=NewLandmark">Add a Landmark</a></button></td><td></td><td></td></tr>
+                    <tr>
+                        <td>
+                            <button class="submitlandmark"><a type="hidden" href="/editLandmark?name=NewLandmark">Add a
+                                Landmark</a></button>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
                     </tbody>
                 </table>
             {% endif %}
