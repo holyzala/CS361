@@ -77,39 +77,33 @@ def teamPage(request):
 
 
 def editTeam(request):
-    context = {'team' : 'Team1'}
+    context = {'teamName' : request.GET['name']}
     return render(request, "editTeam.html", context)
-
-
+    
 def editTeamAction(request):
-    user = GM.username
     cli = CLI(COMMANDS)
-    #user = request.session.get('username')
-    gamecommand = "load game1"
+    user = request.session.get('username')
 
-    cli.command(gamecommand, user)
 
-    #if user is None or user != GM.username:
-        #return redirect('/')
+    if user is None or user != GM.username:
+        return HttpResponseForbidden()
 
     if request.method == 'POST':
-        '''
-            #deleteInput = ''
-            #if request.POST['deleteteam']:
-                #deleteInput = 'removeteam ' <code for the current team>
+        if request.GET.get('name') == 'NewTeam':
+            addInput = 'addteam'
+            addInput += f' {request.POST["usernameedit"]}'
+            addInput += f' {request.POST["passwordedit"]}'
+            cli.command(addInput, user)
+            return redirect('/')
 
-            #li.command(commandInput, user)
-        '''
-        deleteInput = 'removeteam'
 
-        if request.POST.get("deleteteam"):
-            deleteInput += ' team1'
+        if request.POST['deleteteam']:
+            deleteInput = f'removeteam {request.GET.get("name")}'
             cli.command(deleteInput, user)
             return redirect('/')
-        
 
-        commandInput = 'editteam team1'
 
+        commandInput = 'editteam'
         if request.POST["usernameedit"]:
                 commandInput += f' name {request.POST["usernameedit"]}'
 

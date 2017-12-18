@@ -119,7 +119,7 @@
             <tbody>
             {% for team in game|get_all_teams %}
                 <tr>
-                    {% with "/teamEdit?name="|add:team.username as editUrl %}
+                    {% with "/editTeam?name="|add:team.username as editUrl %}
                         <td><a href={{ editUrl }}>{{ team.username }}</a></td>
                     {% endwith %}
                     <td>{{ team.points }}</td>
