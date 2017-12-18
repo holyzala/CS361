@@ -22,7 +22,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^chooseGame', views.choose_game, name='choosegame'),
     url(r'^editLandmark', views.editLandmark, name='editlandmark'),
-    url(r'^editTeam', views.editTeam, name='editTeam'),
+    url(r'^editTeam$', views.editTeam, name='editTeam'),
     url(r'^editTeamAction', views.editTeamAction, name='editTeamAction'),
     url(r'^gamemaker', views.game_page, name='gamemaker'),
     url(r'^login', views.login, name='login'),

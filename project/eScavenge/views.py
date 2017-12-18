@@ -83,40 +83,35 @@ def teamPage(request):
     return render(request, 'teamPage.html', context)
 
 def editTeam(request):
-    context = {'teamName' : request.GET['name']}
+    context = {'teamName': request.GET['name']}
     return render(request, "editTeam.html", context)
+
 
 def editTeamAction(request):
     cli = CLI(COMMANDS)
     user = request.session.get('username')
     game = request.session.get('game_name')
+    command = f'load {Game.objects.get(name=game).name}'
+    cli.command(command, user)
     if user is None or user != GM.username:
         return HttpResponseForbidden()
-
-
     if request.method == 'POST':
-        if request.POST.get('name') == 'NewTeam':
+        if request.POST.get('old_name') == 'NewTeam':
             addInput = 'addteam'
             addInput += f' {request.POST["usernameedit"]}'
             addInput += f' {request.POST["passwordedit"]}'
             cli.command(addInput, user)
             return redirect('/')
-
-
-        if request.POST['deleteteam']:
+        if request.POST.get('deleteteam'):
             deleteInput = f'removeteam {request.GET.get("name")}'
             cli.command(deleteInput, user)
             return redirect('/')
-
-
         commandInput = 'editteam'
-        if request.POST["usernameedit"]:
+        if request.POST.get("usernameedit"):
                 commandInput += f' name {request.POST["usernameedit"]}'
-
-        if request.POST["passwordedit"]:
+        if request.POST.get("passwordedit"):
                 commandInput += f' password {request.POST["passwordedit"]}'
-
-        cli.command(commandInput, user)
+        cli.command(commandInput, request.POST.get('old_name'))
 
         return redirect('/')
 
@@ -126,35 +121,57 @@ def logout(request):
     return redirect('/')
 
 
+@require_http_methods(['GET', 'POST'])
 def editLandmark(request):
-    landmark = request.GET['landmark']
-    game = request.GET['game']
-    user = 'gamemaker'
+    if request.session.get('username') != GM.username:
+        return HttpResponseForbidden()
+    if request.method == 'GET':
+        return edit_landmark_get(request)
+    return edit_landmark_post(request)
+
+
+def edit_landmark_post(request):
+    landmark_old_name = request.POST.get('landmark_name')
+    game = request.session.get('game_name')
     gamecommand = "load " + game
     cli = CLI(COMMANDS)
-    cli.command(gamecommand, user)
+    cli.command(gamecommand, GM.username)
     command = ''
-    if request.method == 'POST':
-        if request.POST.get('deletelandmark'):
-            command += 'removelandmark '
-        #if request.POST.get('landmarkname'):
-            command += f' {landmark}'
-            cli.command(command, user)
-        if request.POST.get('editLandmark'):
+    if request.POST.get('deletelandmark'):
+        command += 'removelandmark '
+        command += f' {landmark_old_name}'
+        cli.command(command, GM.username)
+    if request.POST.get('editLandmark'):
+        if landmark_old_name != 'NewLandmark':
             command += 'editlandmark '
-            command += f' { landmark }'
+            command += f' { landmark_old_name }'
             if request.POST.get('editLMname'):
-                command += f' name { request.POST["editLMname"] }'
+                command += f' name \'{ request.POST["editLMname"] }\''
             if request.POST.get('editLMclue'):
-                command += f' clue { request.POST["editLMclue"] }'
+                command += f' clue \'{ request.POST["editLMclue"] }\''
             if request.POST.get('editLMquestion'):
-                command += f' question { request.POST["editLMquestion"] }'
+                command += f' question \'{ request.POST["editLMquestion"] }\''
             if request.POST.get('editLManswer'):
-                command += f' answer { request.POST["editLManswer"] }'
-            if request.POST.get('editLMgame'):
-                command += f' game { request.POST["editLMgame"] }'
-            cli.command(command, user)
-    return render(request, 'editLandmark.html')
+                command += f' answer \'{ request.POST["editLManswer"] }\''
+        else:
+            command += 'addlandmark '
+            command += f' \'{ request.POST["editLMname"] }\''
+            command += f' \'{ request.POST["editLMclue"] }\''
+            command += f' \'{ request.POST["editLMquestion"] }\''
+            command += f' \'{ request.POST["editLManswer"] }\''
+        cli.command(command, GM.username)
+    return redirect('/')
+
+
+def edit_landmark_get(request):
+    landmark_name = request.GET['landmark']
+    game_name = request.session.get('game_name')
+    landmark = None
+    if landmark_name != 'NewLandmark':
+        landmark = Landmark.objects.get(name=landmark_name)
+
+    context = {'game_name': game_name, 'landmark_name': landmark_name, 'landmark': landmark}
+    return render(request, 'editLandmark.html', context)
 
 
 @require_http_methods(['GET'])
@@ -181,7 +198,7 @@ def save_game(request):
     game_name = request.POST['game_name']
     is_new = request.POST.get('NewSubmit')
     if not is_new:
-        status = request.POST['game_status']
+        status = int(request.POST['game_status'])
     penalty_value = request.POST['game_penalty_value']
     penalty_time = request.POST['game_penalty_time']
     timer = request.POST['game_timer']
@@ -197,13 +214,16 @@ def save_game(request):
 
         if cur_status == 0 and status == 1:
             cli = CLI(COMMANDS)
-            cli.command(f'load {game}', GM.username)
-            cli.command('start')
+            cli.command(f'load {game_name}', GM.username)
+            cli.command('start', GM.username)
         if cur_status != 2 and status == 2:
             game.ended = True
+            game.full_clean()
+            game.save()
     else:
         game = Game.objects.create(name=game_name, started=False, ended=False, penalty_value=0, penalty_time=0,
                                    timer=None, landmark_points=0)
+    game.refresh_from_db()
     game.penalty_time = penalty_time
     game.penalty_value = penalty_value
     game.landmark_points = points

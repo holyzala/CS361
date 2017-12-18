@@ -23,12 +23,23 @@
 
     <form action="/editTeamAction/" method="post" class="editteamform">
             {% csrf_token %}
+            {% if teamName != "NewTeam" %}
             <label id="usernameLabelEdit" for="usernameedit">Add/Change Username</label>
-            <input type="text" id="usernameedit" name="usernameedit">
+            <input type="text" id="usernameedit" name="usernameedit" value={{ teamName }}>
+            <input type="hidden" name="old_name" value={{ teamName }}>
             <br/>
             <label id="passwordLabelEdit" for="passwordedit">Add/Change Password</label>
-            <input type="text" id="passwordedit" name="passwordedit">
+            <input type="text" id="passwordedit" name="passwordedit" value={{ teamName | getteampassword }}>
             <br/>
+            {% else %}
+            <label id="usernameLabelEdit" for="usernameedit">Add/Change Username</label>
+            <input type="text" id="usernameedit" name="usernameedit" pattern="\w+" required>
+            <input type="hidden" name="old_name" value={{ teamName }}>
+            <br/>
+            <label id="passwordLabelEdit" for="passwordedit">Add/Change Password</label>
+            <input type="text" id="passwordedit" name="passwordedit" pattern="\w+" required>
+            <br/>
+            {% endif %}
             <input type="submit" class="update" name="update" value="Update">
         </form>
 {% endblock %}
