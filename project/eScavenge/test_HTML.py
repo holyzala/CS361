@@ -13,6 +13,7 @@ GM_NAME = "gamemaker"
 class TestLogin(TestCase):
     def setUp(self):
         self.client = Client()
+        self.clientGameMaker = Client()
 
     def test_post_index(self):
         response = self.client.post('/')
@@ -34,6 +35,15 @@ class TestLogin(TestCase):
         cli = CLI(COMMANDS)
         cli.command('create game1', GM_NAME)
         cli.command('addteam team1 1234', GM_NAME)
+        response = self.clientGameMaker.post('/login', {'username': 'gamemaker', 'password': '1234'})
+        print(response.content)
+        self.assertRedirects(response, expected_url='/gamemaker')
+        self.assertContains(response, '<h1>New Game</h1>', html=True)
+        response = self.clientGameMaker.post('/saveGame/', {'game_name': 'game1', 'game_penalty_value': '0',
+                                                 'game_penalty_time': '0'})
+        self.assertContains(response, 'game1', html=True)
+
+        self.clientGameMaker.get('/editTeam?name=NewTeam')
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
         self.assertContains(response, '<title> Team: team1 </title>', html=True)
 
