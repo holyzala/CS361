@@ -1,6 +1,8 @@
 {% extends 'basic.html' %}
 {% load filters %}
-
+{% block header %}
+    <link rel="stylesheet" href="/static/gamepage.css">
+{% endblock %}
 {% block Nav-Bar %}
 
     <a class="eScavenge">Team: {{ teamName }}</a>
