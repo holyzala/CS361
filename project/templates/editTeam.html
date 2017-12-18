@@ -13,20 +13,18 @@
     <form action="/editTeamAction/" method="post">
         {% csrf_token %}
         <label id="deleteLabel" for="deleteteam"></label>
-        <input type="hidden" name="old_name" value={{ teamName }}>
         <input type="submit" id="deleteteam" name="deleteteam" value="Delete Team">
     </form>
 {% endblock %}
 
 {% block command-box %}
-    <div class="gameInfo">
-    {% if teamName != "NewTeam" %}
+    <form action="/editTeamAction/" method="post" class="editteamform">
+        <div class="gameInfo">
+        {% if teamName != "NewTeam" %}
      <p class="editteamtitle">Edit Team: {{ teamName }} </p>
     {% else %}
         <p class="editteamtitle">Add New Team</p>
     {% endif %}
-    <br>
-    <form action="/editTeamAction/" method="post" class="editteamform">
             {% csrf_token %}
             {% if teamName != "NewTeam" %}
             <label id="usernameLabelEdit" for="usernameedit">Change Username</label>
@@ -45,11 +43,11 @@
             <input type="text" id="passwordedit" name="passwordedit" pattern="\w+" required>
             <br/>
             {% endif %}
-            <div class="userInteraction">
-                <input type="submit" class="update" name="update" value="Update">
             </div>
-        </div>
-    </form>
+            <div class="userInteraction">
+                <input type="submit" id="usersubmit" name="usersubmit" value="Submit">
+            </div>
+        </form>
 {% endblock %}
 
 {% block leaderboard %}
