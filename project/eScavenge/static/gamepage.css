@@ -1,0 +1,537 @@
+body {
+    background-color: #71f457;
+    font-family: Helvetica;
+}
+
+.Nav-Bar {
+    background-color: #006000;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 75px;
+    box-shadow: 4px 6px #006000;
+}
+
+.outputBox{
+    font-weight: bold;
+    color: black;
+    text-align: center;
+    text-shadow: 0px 1px 3px rgba(255, 255, 255, 1.0),
+    0px 1px 13px rgba(255, 255, 255, 0.1),
+    0px 8px 23px rgba(255, 255, 255, 0.1);
+    background-color: #8aff8e;
+    box-shadow: 4px 6px #111111;
+    border-radius: 25px;
+    position: fixed;
+    top: 10px;
+    left: 33%;
+    height: 50px;
+    width: 450px;
+}
+.eScavenge {
+    font-family: Helvetica;
+    border-radius: 20px;
+    border-color: black;
+    border-width: 2px;
+    float: left;
+    width: auto;
+    border: none;
+    outline: none;
+    display: block;
+    color: #f2f2f2;
+    text-shadow: 0px 4px 3px rgba(0, 0, 0, 1.0),
+    0px 8px 13px rgba(0, 0, 0, 0.1),
+    0px 18px 23px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 16px 16px;
+    text-decoration: none;
+    font-size: 30px;
+}
+
+.selected_game{
+    border: none;
+    position: absolute;
+    top: 25%;
+    left: 1%;
+    text-align: center;
+    font-size: 15px;
+    height: 29px;
+    padding: 5px; /* If you add too much padding here, the options won't show in IE */
+    width: 108px;
+}
+
+#submitgame {
+    position: absolute;
+    top: 30%;
+    left: 10%;
+    box-shadow: 2px 4px #008d00;
+    background-color: #57cf5b;
+    color: white;
+}
+.help {
+
+    font-family: Helvetica;
+    border-radius: 20px;
+    border-color: black;
+    border-width: 2px;
+    float: right;
+    width: auto;
+    border: none;
+    outline: none;
+    display: block;
+    color: #f2f2f2;
+    text-shadow: 0px 4px 3px rgba(0, 0, 0, 1.0),
+    0px 8px 13px rgba(0, 0, 0, 0.1),
+    0px 18px 23px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 20px 20px;
+    text-decoration: none;
+    font-size: 20px;
+}
+
+.delbutton {
+    background-color: red;
+    color: black;
+
+    padding: 14px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 2px 4px #003300;
+}
+
+.dropbtn {
+    background-color: #4CAF50;
+    color: white;
+
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 2px 4px #003300;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+    float: right;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    min-width: 150px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    font-family: Helvetica;
+    border: 5px solid black;
+    right: 5px;
+    padding: 5px;
+    background-color: #3e8e41;
+}
+
+.dropdown-content .logoutbutton{
+    background-color: #3e8e41;
+    text-align: center;
+}
+
+.dropdown-content a {
+    background-color: #3e8e41;
+    color: white;
+    font-family: Helvetica;
+    padding: 14px 30px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #71f457
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+}
+
+#answerQuestion {
+    position: relative;
+    top: 20px;
+    left: 25px;
+    float: left;
+    box-shadow: 1px 2px #003300;
+}
+
+#quitQuestion {
+    position: relative;
+    top: 20px;
+    right: 25px;
+    float: right;
+    box-shadow: 1px 2px #003300;
+}
+
+#commandline {
+    positon: relative;
+    width: 385px;
+}
+
+
+.userInteraction {
+    height: 80px;
+    widgth: 100px;
+    border: 5px solid black;
+    box-shadow: 2px 4px #003300;
+}
+#submit{
+    position: absolute;
+    padding: 14px 50px;
+    bottom: 5%;
+    font-size: 15px;
+    left: 35%;
+    box-shadow: 2px 4px #008d00;
+    text-shadow: 0px 4px 3px rgba(0, 0, 0, 1.0),
+    0px 8px 13px rgba(0, 0, 0, 0.1),
+    0px 18px 23px rgba(0, 0, 0, 0.1);
+    background-color: #57cf5b;
+    color: white;
+}
+.command-box {
+    height: 400px;
+    width: 550px;
+    box-shadow: 2px 8px #001100;
+    border: 3px solid #008d00;
+    background-color: #00bb00;
+    position: fixed;
+    top: 15%;
+    left: 30%;
+    text-shadow: 0px 4px 3px rgba(0, 0, 0, 1.0),
+    0px 8px 13px rgba(0, 0, 0, 0.1),
+    0px 18px 23px rgba(0, 0, 0, 0.1);
+    box-shadow: 2px 4px #003300;
+}
+
+.editteamform label{
+    vertical-align: top;
+    font-size: 20px;
+    display: block;
+    color: white;
+    margin-left:33%;
+}
+
+.editteamform input{
+    display: block;
+    margin-top: 10px;
+    margin-left:33%;
+
+}
+
+.editteamtitle{
+    font-size: 35px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}
+
+.update{
+    background-color: yellow;
+    color: black;
+    font-weight: bold;
+    position: absolute;
+    bottom: 20%;
+    left: 6%;
+    height: 40px;
+    width: 90px;
+    padding: 14px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 2px 4px #003300;
+}
+
+.dropdown #deleteteam{
+    float: right;
+    width: 100%;
+    height: 50px;
+    margin-right: 20px;
+    background-color: red;
+    font-size: 25px;
+}
+
+#noGame {
+    color: white;
+}
+
+.gameInfo {
+    width: 540px;
+    height: 300px;
+    border: 5px solid black;
+    color: white;
+}
+
+.gameInfo h1 {
+    text-align: center;
+}
+.gameInfo select {
+    position: absolute;
+    left: 50%;
+    top: 20%;
+}
+.gameInfo .game_status{
+    position: absolute;
+    left: 18%;
+    top: 20%;
+}
+.gameInfo #game_penalty{
+    position: absolute;
+    left: 18%;
+    top: 30%;
+}
+.gameInfo #game_penalty_value {
+    position: absolute;
+    left: 50%;
+    top: 30%;
+}
+.gameInfo #game_time{
+    position: absolute;
+    left: 18%;
+    top: 42%;
+}
+.gameInfo #game_penalty_time{
+    position: absolute;
+    left: 50%;
+    top: 42%;
+}
+.gameInfo #timer{
+    position: absolute;
+    left: 18%;
+    top: 55%;
+}
+.gameInfo #game_timer{
+    position: absolute;
+    left: 50%;
+    top: 55%;
+}
+
+.gameInfo #team_points{
+    position: absolute;
+    left: 18%;
+    top: 68%;
+}
+.gameInfo #game_points{
+    position: absolute;
+    left: 50%;
+    top: 68%;
+}
+
+.gameInfo #new_game_label{
+    position: absolute;
+    left: 18%;
+    top: 20%;
+}
+
+.gameInfo #game_name{
+    position: absolute;
+    left: 50%;
+    top: 20%;
+}
+
+table.leaderboard {
+    display: table;
+    right: 0px;
+    width: 300px;
+    position: absolute;
+    color: white;
+    box-shadow: 4px 6px #003300;
+    border: 3px solid #000000;
+    background-color: #00bb00;
+    top: 13%;
+
+}
+table.leaderboard a:link {
+    color: white;
+}
+
+table.leaderboard a:visited {
+    color: white;
+}
+
+table.leaderboard thead, table.leaderboard tbody {
+    width: 100%;
+}
+
+table.leaderboard tbody {
+    overflow: auto;
+    height: 150px;
+}
+
+table.leaderboard tr {
+    width: 100%;
+    display: table;
+    text-align: center;
+}
+
+table.leaderboard th, table.leaderboard td {
+    width: 33%;
+}
+
+.scrollable {
+    border: 1px solid black;
+    width: 100%;
+    height: 100px;
+    background-color: #006000;
+    color: white;
+    position: absolute;
+    padding-bottom: 20px;
+    padding-top: 5px;
+    bottom: 0px;
+    overflow: auto;
+}
+
+.answeredlandmarks {
+    width: 100%;
+}
+
+
+.submitteam {
+    box-shadow: 2px 4px #008d00;
+    background-color: #57cf5b;
+    text-shadow: 0px 2px 3px rgba(0, 0, 0, 1.0);
+    color: white;
+}
+
+.submitlandmark {
+    box-shadow: 2px 4px #008d00;
+    background-color: #57cf5b;
+    text-shadow: 0px 2px 3px rgba(0, 0, 0, 1.0);
+    color: white;
+}
+.submitlandmark a:visited{
+    color:white;
+}
+
+table.answeredlandmarks a:link {
+    color: white;
+}
+
+table.answeredlandmarks a:visited {
+    color: white;
+}
+
+table.answeredlandmarks tbody {
+    overflow: auto;
+}
+
+table.answeredlandmarks tr {
+    display: table;
+    width: 100%;
+    text-align: center;
+}
+
+table.answeredlandmarks th, table.answeredlandmarks td {
+    text-shadow: 0px 2px 3px rgba(0, 0, 0, 1.0),
+    0px 3px 13px rgba(0, 0, 0, 0.1),
+    0px 9px 23px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    width: 26%;
+}
+
+table.answeredlandmarks td {
+    border-bottom: 1px solid black;
+
+}
+
+.answeredlandmarks tr:nth-child(even) {
+    background-color: #009900;
+}
+
+.editLandmark {
+    width: 390px;
+    height: 330px;
+    border: 5px solid black;
+}
+
+.submitEdit {
+    height: 50px;
+    widgth: 100px;
+    border: 5px solid black;
+    box-shadow: 2px 4px #003300;
+}
+
+.editButton {
+    background-color: yellow;
+    color: black;
+    font-weight: bold;
+
+    position: absolute;
+    bottom: 3%;
+    left: 39%;
+    height: 40px;
+    width: 90px;
+    padding: 14px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 2px 4px #003300;
+}
+
+.editlandmarktitle {
+    font-weight: bold;
+    color: white;
+    height: 10px;
+    font-size: xx-large;
+}
+
+.landarkeditlabels {
+    vertical-align: top;
+    height: 10px;
+    width: 200px;
+    resize: none;
+    display: inline-block;
+    color: white;
+    font-weight: bold;
+
+}
+
+.leftsidebar {
+    position: fixed;
+    left: 10px;
+    top: 12.5%;
+    width: 150px;
+    height: 437px;
+    color: rgba(255,255,255,1);
+    -o-text-overflow: clip;
+    text-overflow: clip;
+    background: -webkit-linear-gradient(45deg,
+    rgba(0,0,0,0.2) 25%,
+    rgba(0,0,0,0) 25%, rgba(0,0,0,0) 50%,
+    rgba(255,255,255,0.2) 50%,
+    rgba(255,255,255,0.2) 75%,
+    rgba(0,0,0,0) 75%,
+    rgba(0,0,0,0) 0),
+    rgb(0, 200, 0);
+    -webkit-background-size: 50px 50px;
+    background-size: 50px 50px;
+}
+
+.rightsidebar {
+    position: fixed;
+    right: 0;
+    top: 12.5%;
+    width: 150px;
+    height: 437px;
+    color: rgba(255,255,255,1);
+    -o-text-overflow: clip;
+    text-overflow: clip;
+    background: -webkit-linear-gradient(45deg,
+    rgba(0,0,0,0.2) 25%,
+    rgba(0,0,0,0) 25%, rgba(0,0,0,0) 50%,
+    rgba(255,255,255,0.2) 50%,
+    rgba(255,255,255,0.2) 75%,
+    rgba(0,0,0,0) 75%,
+    rgba(0,0,0,0) 0),
+    rgb(0, 200, 0);
+    -webkit-background-size: 50px 50px;
+    background-size: 50px 50px;
+}
