@@ -185,6 +185,7 @@ body {
     box-shadow: 2px 4px #003300;
 }
 #submit{
+    position: absolute;
     padding: 14px 50px;
     bottom: 5%;
     font-size: 15px;
@@ -212,7 +213,7 @@ body {
 }
 
 
-.gameInfo #passwordedit{
+.gameInfo #usernameedit{
     position: absolute;
     left: -1.5%;
     top: 30%;
@@ -220,14 +221,14 @@ body {
     box-shadow: 2px 4px #003300;
 }
 
-.gameInfo #passwordLabelEdit{
+.gameInfo #usernameLabelEdit{
     position: absolute;
     left: 3%;
     top: 25%;
     font-size: 15px;
 }
 
-.gameInfo #usernameedit{
+.gameInfo #passwordedit{
     position: absolute;
     left: -1.5%;
     top: 50%;
@@ -235,7 +236,7 @@ body {
     box-shadow: 2px 4px #003300;
 
 }
-.gameInfo #usernameLabelEdit{
+.gameInfo #passwordLabelEdit{
     position: absolute;
     left: 3%;
     top: 45%;
