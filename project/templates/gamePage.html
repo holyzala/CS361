@@ -163,7 +163,7 @@
                     {% for landmark in game|get_all_landmarks %}
                         <tr>
                             <td>
-                                <a href="/editLandmark?landmark={{ landmark.name }}&game={{ game.name }}">{{ landmark.name }}</a>
+                                <a href="/editLandmark?landmark={{ landmark.name }}">{{ landmark.name }}</a>
                             </td>
 
                             <td>{{ landmark.clue }}</td>
@@ -173,7 +173,7 @@
                     {% endfor %}
                     <tr>
                         <td>
-                            <button class="submitlandmark"><a type="hidden" href="/editLandmark?name=NewLandmark">Add a
+                            <button class="submitlandmark"><a type="hidden" href="/editLandmark?landmark=NewLandmark">Add a
                                 Landmark</a></button>
                         </td>
                         <td></td>
