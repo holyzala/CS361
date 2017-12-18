@@ -48,7 +48,7 @@ class TestTeamLogout(TestCase):
     def test_logout(self):
         self.client.post('/login', {'username': 'team1', 'password': '1234'})
         response = self.client.post('/teamPage/', {'logoutbutton': 'Log out'})
-        self.assertRedirects(response, expected_url='/', status_code=302, target_status_code=200)
+        self.assertRedirects(response, expected_url='/logout', status_code=302, target_status_code=302)
 
 
 class TestTeamPageGameStart(TestCase):

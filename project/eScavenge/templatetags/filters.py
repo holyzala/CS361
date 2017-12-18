@@ -1,5 +1,5 @@
 from django import template
-from ..models import GMFactory
+from ..models import GMFactory, Team
 from datetime import timedelta
 
 from functools import reduce
@@ -43,3 +43,9 @@ def zero_if_none(timer):
     if timer is None:
         return timedelta(0)
     return timer
+
+
+@register.filter
+def getteampassword(team):
+    username = Team.objects.get(username=team)
+    return username.password
