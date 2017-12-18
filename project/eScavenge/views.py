@@ -1,4 +1,5 @@
 from datetime import timedelta
+from urllib.parse import unquote
 
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect
@@ -163,7 +164,7 @@ def edit_landmark_post(request):
 
 
 def edit_landmark_get(request):
-    landmark_name = request.GET['landmark']
+    landmark_name = unquote(request.GET['landmark'])
     game_name = request.session.get('game_name')
     game = Game.objects.get(name=game_name)
     landmark = None
