@@ -165,11 +165,12 @@ def edit_landmark_post(request):
 def edit_landmark_get(request):
     landmark_name = request.GET['landmark']
     game_name = request.session.get('game_name')
+    game = Game.objects.get(name=game_name)
     landmark = None
     if landmark_name != 'NewLandmark':
         landmark = Landmark.objects.get(name=landmark_name)
 
-    context = {'game_name': game_name, 'landmark_name': landmark_name, 'landmark': landmark}
+    context = {'game_name': game_name, 'landmark_name': landmark_name, 'landmark': landmark, 'game': game}
     return render(request, 'editLandmark.html', context)
 
 
