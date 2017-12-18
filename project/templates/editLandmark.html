@@ -14,7 +14,7 @@
 
 
 {% block dropdown %}
-    {% if landmark_name != 'NewLandmark' %}
+    {% if landmark_name != 'NewLandmark' and not game.started %}
         <div>
             <form action="/editLandmark/" method="post">
                 {% csrf_token %}

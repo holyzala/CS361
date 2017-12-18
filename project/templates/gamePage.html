@@ -168,7 +168,7 @@
                     {% for landmark in game|get_all_landmarks %}
                         <tr>
                             <td>
-                                <a href="/editLandmark?landmark={{ landmark.name }}">{{ landmark.name }}</a>
+                                <a href="/editLandmark?landmark={{ landmark.name|urlencode }}">{{ landmark.name }}</a>
                             </td>
 
                             <td>{{ landmark.clue }}</td>
