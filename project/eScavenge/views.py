@@ -84,31 +84,28 @@ def editTeam(request):
 def editTeamAction(request):
     cli = CLI(COMMANDS)
     user = request.session.get('username')
-
+    game = request.session.get('game_name')
+    command = f'load {Game.objects.get(name=game).name}'
+    cli.command(command, user)
     if user is None or user != GM.username:
         return HttpResponseForbidden()
-
     if request.method == 'POST':
-        if request.GET.get('name') == 'NewTeam':
+        if request.POST.get('old_name') == 'NewTeam':
             addInput = 'addteam'
             addInput += f' {request.POST["usernameedit"]}'
             addInput += f' {request.POST["passwordedit"]}'
             cli.command(addInput, user)
             return redirect('/')
-
-        if request.POST['deleteteam']:
+        if request.POST.get('deleteteam'):
             deleteInput = f'removeteam {request.GET.get("name")}'
             cli.command(deleteInput, user)
             return redirect('/')
-
         commandInput = 'editteam'
-        if request.POST["usernameedit"]:
+        if request.POST.get("usernameedit"):
                 commandInput += f' name {request.POST["usernameedit"]}'
-
-        if request.POST["passwordedit"]:
+        if request.POST.get("passwordedit"):
                 commandInput += f' password {request.POST["passwordedit"]}'
-
-        cli.command(commandInput, user)
+        cli.command(commandInput, request.POST.get('old_name'))
 
         return redirect('/')
 
@@ -119,7 +116,7 @@ def logout(request):
 
 
 def editLandmark(request):
-    landmark = request.GET['landmark']
+    landmark = request.POST['landmark']
     game = request.GET['game']
     user = 'gamemaker'
     gamecommand = "load " + game
