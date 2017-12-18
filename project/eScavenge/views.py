@@ -112,7 +112,6 @@ def editTeamAction(request):
         if request.POST.get("passwordedit"):
                 commandInput += f' password {request.POST["passwordedit"]}'
         cli.command(commandInput, request.POST.get('old_name'))
-
         return redirect('/')
 
 
