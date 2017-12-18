@@ -171,7 +171,7 @@ def save_game(request):
     game_name = request.POST['game_name']
     is_new = request.POST.get('NewSubmit')
     if not is_new:
-        status = request.POST['game_status']
+        status = int(request.POST['game_status'])
     penalty_value = request.POST['game_penalty_value']
     penalty_time = request.POST['game_penalty_time']
     timer = request.POST['game_timer']
@@ -187,13 +187,16 @@ def save_game(request):
 
         if cur_status == 0 and status == 1:
             cli = CLI(COMMANDS)
-            cli.command(f'load {game}', GM.username)
-            cli.command('start')
+            cli.command(f'load {game_name}', GM.username)
+            cli.command('start', GM.username)
         if cur_status != 2 and status == 2:
             game.ended = True
+            game.full_clean()
+            game.save()
     else:
         game = Game.objects.create(name=game_name, started=False, ended=False, penalty_value=0, penalty_time=0,
                                    timer=None, landmark_points=0)
+    game.refresh_from_db()
     game.penalty_time = penalty_time
     game.penalty_value = penalty_value
     game.landmark_points = points
