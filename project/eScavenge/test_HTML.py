@@ -4,7 +4,6 @@ from functools import reduce
 
 from django.test import Client, TestCase
 
-from .CLI import CLI, COMMANDS
 from .models import Team, Landmark
 
 GM_NAME = "gamemaker"
