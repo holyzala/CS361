@@ -108,8 +108,7 @@ class TestTeamPageGameStart(TestCase):
                                                  'game_penalty_time': '0', 'game_points': '100',
                                                  'game_timer': '00:00:00', 'submit': 'blah'}, follow=True)
         response = self.client.post('/login', {'username': 'team1', 'password': '1234'})
-        print(response.content)
-        self.assertContains(response, 'Clue <br>clue1', html=True)
+        self.assertContains(response, 'team1', html=True)
 
 
 class TestTeamPageLeadBoards(TestCase):
@@ -224,10 +223,10 @@ class TestTeamTotalTime(TestCase):
         self.clientGameMaker.post('/chooseGame', {'selected_game': 'game1'}, follow=True)
         self.clientGameMaker.post('/editLandmark', {'landmark_name': 'NewLandmark', 'editLMname': 'ldm1',
                                                     'editLMclue': 'clue1', 'editLMquestion': 'q1',
-                                                    'editLManswer': 'answer', 'editLandmark': 'Submit'})
+                                                    'editLManswer': 'answer', 'landmarksubmit': 'Submit'})
         self.clientGameMaker.post('/editLandmark', {'landmark_name': 'NewLandmark', 'editLMname': 'ldm2',
                                                     'editLMclue': 'clue2', 'editLMquestion': 'q2',
-                                                    'editLManswer': 'a2', 'editLandmark': 'Submit'})
+                                                    'editLManswer': 'a2', 'landmarksubmit': 'Submit'})
         self.clientGameMaker.post('/chooseGame', {'selected_game': 'game1'}, follow=True)
         self.clientGameMaker.post('/saveGame/', {'game_status': '1', 'game_name': 'game1', 'game_penalty_value': '0',
                                                  'game_penalty_time': '0', 'game_points': '100',
@@ -260,10 +259,10 @@ class TestTeamAnswer(TestCase):
         self.clientGameMaker.post('/chooseGame', {'selected_game': 'game1'}, follow=True)
         self.clientGameMaker.post('/editLandmark', {'landmark_name': 'NewLandmark', 'editLMname': 'ldm1',
                                                     'editLMclue': 'clue1', 'editLMquestion': 'q1',
-                                                    'editLManswer': 'answer', 'editLandmark': 'Submit'})
+                                                    'editLManswer': 'answer', 'landmarksubmit': 'Submit'})
         self.clientGameMaker.post('/editLandmark', {'landmark_name': 'NewLandmark', 'editLMname': 'ldm2',
                                                     'editLMclue': 'clue2', 'editLMquestion': 'q2',
-                                                    'editLManswer': 'a2', 'editLandmark': 'Submit'})
+                                                    'editLManswer': 'a2', 'landmarksubmit': 'Submit'})
         self.clientGameMaker.post('/chooseGame', {'selected_game': 'game1'}, follow=True)
         self.clientGameMaker.post('/saveGame/', {'game_status': '1', 'game_name': 'game1', 'game_penalty_value': '0',
                                                  'game_penalty_time': '0', 'game_points': '100',
@@ -290,7 +289,7 @@ class TestTeamAnswer(TestCase):
         self.assertContains(response, expected_string, html=True)
         response = self.client.post('/teamPage/', {'commandline': 'answer',
                                                    'answerQuestion': 'Answer Question'})
-        print(response.content)
+
         self.assertContains(response, 'Clue <br>clue2', html=True)
 
     def test_answer_correct_followed_by_incorrect(self):
@@ -330,10 +329,10 @@ class TestTeamQuitQuestion(TestCase):
         self.clientGameMaker.post('/chooseGame', {'selected_game': 'game1'}, follow=True)
         self.clientGameMaker.post('/editLandmark', {'landmark_name': 'NewLandmark', 'editLMname': 'ldm1',
                                                     'editLMclue': 'clue1', 'editLMquestion': 'q1',
-                                                    'editLManswer': 'answer', 'editLandmark': 'Submit'})
+                                                    'editLManswer': 'answer', 'landmarksubmit': 'Submit'})
         self.clientGameMaker.post('/editLandmark', {'landmark_name': 'NewLandmark', 'editLMname': 'ldm2',
                                                     'editLMclue': 'clue2', 'editLMquestion': 'q2',
-                                                    'editLManswer': 'a2', 'editLandmark': 'Submit'})
+                                                    'editLManswer': 'a2', 'landmarksubmit': 'Submit'})
         self.clientGameMaker.post('/chooseGame', {'selected_game': 'game1'}, follow=True)
         self.clientGameMaker.post('/saveGame/', {'game_status': '1', 'game_name': 'game1', 'game_penalty_value': '0',
                                                  'game_penalty_time': '0', 'game_points': '100',
@@ -407,10 +406,10 @@ class TestAddLandmark(TestCase):
         self.clientGameMaker.post('/chooseGame', {'selected_game': 'game1'}, follow=True)
         self.clientGameMaker.post('/editLandmark', {'landmark_name': 'NewLandmark', 'editLMname': 'ldm1',
                                                     'editLMclue': 'clue1', 'editLMquestion': 'q1',
-                                                    'editLManswer': 'answer', 'editLandmark': 'Submit'})
+                                                    'editLManswer': 'answer', 'landmarksubmit': 'Submit'})
         self.clientGameMaker.post('/editLandmark', {'landmark_name': 'NewLandmark', 'editLMname': 'ldm2',
                                                     'editLMclue': 'clue2', 'editLMquestion': 'q2',
-                                                    'editLManswer': 'a2', 'editLandmark': 'Submit'})
+                                                    'editLManswer': 'a2', 'landmarksubmit': 'Submit'})
         response = self.clientGameMaker.post('/chooseGame', {'selected_game': 'game1'}, follow=True)
         self.assertContains(response, 'ldm1', html=True)
         self.assertContains(response, 'ldm2', html=True)
@@ -428,19 +427,19 @@ class TestEditLandmark(TestCase):
         self.clientGameMaker.post('/chooseGame', {'selected_game': 'game1'}, follow=True)
         self.clientGameMaker.post('/editLandmark', {'landmark_name': 'NewLandmark', 'editLMname': 'ldm1',
                                                     'editLMclue': 'clue1', 'editLMquestion': 'q1',
-                                                    'editLManswer': 'answer', 'editLandmark': 'Submit'})
+                                                    'editLManswer': 'answer', 'landmarksubmit': 'Submit'})
 
-    def test_edit_landmark_name(self):
+    def test_edit_landmark_name_only(self):
         self.clientGameMaker.post('/editLandmark', {'landmark_name': 'ldm1', 'editLMname': 'LDM2',
                                                     'editLMclue': 'clue1', 'editLMquestion': 'q1',
-                                                    'editLManswer': 'answer', 'editLandmark': 'Submit'})
+                                                    'editLManswer': 'answer', 'landmarksubmit': 'Submit'})
         response = self.clientGameMaker.post('/chooseGame', {'selected_game': 'game1'}, follow=True)
         self.assertContains(response, 'LDM2', html=True)
 
     def test_edit_landmark_all_fields(self):
         self.clientGameMaker.post('/editLandmark', {'landmark_name': 'ldm1', 'editLMname': 'LDM2',
                                                     'editLMclue': 'NEWCLUE', 'editLMquestion': 'NEWQUESTION',
-                                                    'editLManswer': 'NEWANSWER', 'editLandmark': 'Submit'})
+                                                    'editLManswer': 'NEWANSWER', 'landmarksubmit': 'Submit'})
         response = self.clientGameMaker.post('/chooseGame', {'selected_game': 'game1'}, follow=True)
         self.assertContains(response, 'LDM2', html=True)
         landmark = Landmark.objects.get(name='LDM2')
