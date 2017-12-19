@@ -141,7 +141,7 @@ def edit_landmark_post(request):
         command += 'removelandmark '
         command += f' {landmark_old_name}'
         cli.command(command, GM.username)
-    if request.POST.get('editLandmark'):
+    if request.POST.get('landmarksubmit'):
         if landmark_old_name != 'NewLandmark':
             command += 'editlandmark '
             command += f' { landmark_old_name }'
