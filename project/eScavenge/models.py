@@ -111,7 +111,6 @@ class Game(models.Model):
             if clue:
                 landmark.clue = clue
             if name:
-                landmark.delete()
                 landmark.name = name
             landmark.full_clean()
             landmark.save()
@@ -249,7 +248,7 @@ class Game(models.Model):
         total_time = current_team.history.aggregate(total=Coalesce(Sum("time_delta"), 0))['total']
         place = self.teams.filter(points__gt=current_team.points).count() + 1
         try:
-            lm_place = list(self.get_landmark_order()).index(current_team.current_landmark.name) + 1
+            lm_place = list(self.get_landmark_order()).index(current_team.current_landmark.id) + 1
         except AttributeError:
             lm_place = self.landmarks.all().count()
         if current_team.current_landmark:
@@ -274,7 +273,7 @@ class Game(models.Model):
         for current_team in self.teams.all():
             total_time = current_team.history.aggregate(test=Coalesce(Sum("time_delta"), 0))['test']
             if current_team.current_landmark:
-                lm_place = list(self.get_landmark_order()).index(current_team.current_landmark.name) + 1
+                lm_place = list(self.get_landmark_order()).index(current_team.current_landmark.id) + 1
                 stat_str = "Team: {}\nYou Are On Landmark {}\nTime Taken For Landmarks: {}\nTotal Points: {}\n"
                 stringList.append(stat_str.format(current_team.username, lm_place,
                                                   str(total_time).split(".")[0], current_team.points))
@@ -287,7 +286,7 @@ class Game(models.Model):
 
 
 class Landmark(models.Model):
-    name = models.TextField(primary_key=True)
+    name = models.TextField(unique=True)
     clue = models.TextField()
     question = models.TextField()
     answer = models.TextField()
